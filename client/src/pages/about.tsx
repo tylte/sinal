@@ -2,9 +2,9 @@ import { Text } from "@chakra-ui/react";
 import React from "react";
 import { Layout } from "../components/Layout";
 
-interface aboutProps {}
+interface AboutProps {}
 
-const About: React.FC<aboutProps> = ({}) => {
+const About: React.FC<AboutProps> = ({}) => {
   return (
     <Layout>
       <Text textAlign={"center"} fontSize="3xl" fontWeight={"bold"}>

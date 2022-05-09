@@ -10,6 +10,7 @@
     "@chakra-ui/react": "1.8.8",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
+    "axios": "^0.27.2",
     "framer-motion": "^6",
     "next": "latest",
     "react": "^17.0.2",
