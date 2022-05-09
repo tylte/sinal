@@ -1,6 +1,14 @@
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { get_word, get_id } from"./Endpoint/start_game";
+export interface IHash {
+  [details: string] : string;
+} 
+
+var tab : IHash = {};
+let id;
+let word;
 
 const app = express();
 const port = 4000;
@@ -13,7 +21,11 @@ app.get("/", (_, res) => {
 });
 
 io.on("connection", (socket) => {
-  socket.emit("hello", "world");
+  id = get_id();
+  word = get_word();
+  tab[id] = word;
+  socket.emit("init", word.split('')[0], id);
+  console.log(get_word().split('')[0]);
   console.log("Connection !");
 });
 
