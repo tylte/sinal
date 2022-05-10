@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { get_word, get_id } from"./Endpoint/start_game";
 import cors from "cors";
 
-var tab : Map<string,string> = new Map();
+export let tab : Map<string,string> = new Map();
 
 const app = express();
 const port = 4000;
