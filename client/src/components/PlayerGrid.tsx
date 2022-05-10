@@ -41,6 +41,8 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     if (!dictionary.has(word)) {
       // TODO: Maybe make a toast for not in dictionary
       console.log("Not in dictionary");
+    } else if (word.length !== length) {
+      console.log("Not right length");
     } else {
       let guessResult = await guessWord(word, id);
       if (hasWon(guessResult)) {
