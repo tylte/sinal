@@ -1,10 +1,8 @@
-import { tab } from "src";
-
 export const RIGHT_POSITION = 1;
 export const FOUND = 2;
 export const NOT_FOUND = 3;
 
-export function get_guess(id: string, word: string) {
+export function get_guess(id: string, word: string, tab: Map<string, string>) {
     let soluce = tab.get(id);
     if ( soluce === undefined )
         soluce = ""
