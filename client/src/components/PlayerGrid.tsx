@@ -34,7 +34,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const handleTryWord = () => {
     if (!dictionary.has(word)) {
       console.log("Not in dictionary");
-    } else {
+    } else if(word.length == length) {
       setTryCount((v) => (v = v + 1));
       const tries = lastTries.slice();
       tries.push(word);
