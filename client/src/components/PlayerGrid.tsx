@@ -10,30 +10,30 @@ import React, { useState } from "react";
 interface PlayerGridProps {
   firstLetter: string;
   length: number;
+  nbLife: number;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
   firstLetter,
   length,
+  nbLife,
 }) => {
-  const [word, setWord] = useState("");
+  const [word, setWord] = useState(firstLetter);
   const [tryCount, setTryCount] = useState(0);
   const [lastTries, setLastTries] = useState<string[]>([]);
 
-  console.log(tryCount);
-  console.log(word);
-  console.log(word);
-
   const handleWordChange = (str: string) => {
-    // TODO: Don't accept letters
-    setWord(str);
+    const re = /\d+/g;
+    if (str.charAt(0) === firstLetter && !re.test(str)) {
+      setWord(str);
+    }
   };
 
   const handleTryWord = () => {
     setTryCount((v) => (v = v + 1));
     const tries = lastTries.slice();
     tries.push(word);
-    setWord("");
+    setWord(firstLetter);
     setLastTries(tries);
   };
 
@@ -42,8 +42,8 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     inputArrayField.push(<PinInputField key={i} />);
   }
   const inputArray = [];
-  for (let i = 0; i < length; i++) {
-    let value = "";
+  for (let i = 0; i < nbLife; i++) {
+    let value = firstLetter;
     if (i < lastTries.length) {
       value = lastTries[i];
     }
