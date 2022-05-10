@@ -10,11 +10,13 @@ import React, { useState } from "react";
 interface PlayerGridProps {
   firstLetter: string;
   length: number;
+  nbLife: number;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
   firstLetter,
   length,
+  nbLife,
 }) => {
   const [word, setWord] = useState("");
   const [tryCount, setTryCount] = useState(0);
@@ -42,7 +44,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     inputArrayField.push(<PinInputField key={i} />);
   }
   const inputArray = [];
-  for (let i = 0; i < length; i++) {
+  for (let i = 0; i < nbLife; i++) {
     let value = "";
     if (i < lastTries.length) {
       value = lastTries[i];

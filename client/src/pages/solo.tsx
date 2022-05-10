@@ -11,26 +11,31 @@ const Solo: React.FC<SoloProps> = ({}) => {
   const [length, setLength] = useState(8);
   const [id, setId] = useState("123");
   const [firstLetter, setFirstLetter] = useState("a");
+  const [nbLife, setNbLife] = useState<null | number>(null);
 
-  //   TODO: connect with server
-  //   useEffect(() => {
-  //     axios
-  //       .post<StartGameResponse>("http://localhost:4000/start_game", {
-  //         mode: "solo",
-  //       })
-  //       .then(({ data: { first_letter, id, length } }) => {
-  //         setLength(length);
-  //         setFirstLetter(first_letter);
-  //         setId(id);
-  //       });
-  //   }, []);
+  useEffect(() => {
+    axios
+      .post<StartGameResponse>("http://localhost:4000/start_game", {
+        mode: "solo",
+      })
+      .then(({ data: { first_letter, id, length, nb_life } }) => {
+        setLength(length);
+        setFirstLetter(first_letter);
+        setId(id);
+        setNbLife(nb_life);
+      });
+  }, []);
 
   return (
     <Layout>
       <Text mb={5} align="center" fontSize={"larger"}>
         Partie Solo
       </Text>
-      <PlayerGrid firstLetter={firstLetter} length={length} />
+      {nbLife === null ? (
+        <></>
+      ) : (
+        <PlayerGrid firstLetter={firstLetter} length={length} nbLife={nbLife} />
+      )}
     </Layout>
   );
 };
