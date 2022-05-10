@@ -23,7 +23,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [lastTries, setLastTries] = useState<string[]>([]);
 
   const handleWordChange = (str: string) => {
-    // TODO: Don't accept letters
     const re = /\d+/g;
     if (str.charAt(0) === firstLetter && !re.test(str)) {
       setWord(str);
