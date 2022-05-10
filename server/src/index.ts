@@ -5,7 +5,7 @@ import { get_word, get_id } from "./Endpoint/start_game";
 import cors from "cors";
 import { get_dictionary } from "./Endpoint/dictionary";
 
-var tab: Map<string, string> = new Map();
+export var idToWord : Map<string,string> = new Map();
 
 const app = express();
 const port = 4000;
@@ -21,16 +21,11 @@ app.get("/dictionary", (_, res) => {
 });
 
 app.post("/start_game", (req, res) => {
-  let id = get_id();
-  let word = get_word();
-  tab.set(id, word);
-  console.log(word);
-  res.send({
-    length: word.length,
-    first_letter: word.charAt(0),
-    id: id,
-    nb_life: 6,
-  });
+ let id = get_id();
+ let word = get_word();
+ idToWord.set(id, word);
+ console.log(word);
+ res.send( {length:word.length, first_letter:word.charAt(0), id:id, nb_life:6});
 });
 
 io.on("connection", (socket) => {});
