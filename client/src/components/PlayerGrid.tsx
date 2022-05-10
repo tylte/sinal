@@ -5,7 +5,8 @@ import {
   PinInputField,
   Stack,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { DictionaryContext } from "../utils/dico";
 
 interface PlayerGridProps {
   firstLetter: string;
@@ -18,25 +19,28 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   length,
   nbLife,
 }) => {
-  const [word, setWord] = useState("");
+  const dictionary = useContext(DictionaryContext);
+  const [word, setWord] = useState(firstLetter);
   const [tryCount, setTryCount] = useState(0);
   const [lastTries, setLastTries] = useState<string[]>([]);
 
-  console.log(tryCount);
-  console.log(word);
-  console.log(word);
-
   const handleWordChange = (str: string) => {
-    // TODO: Don't accept letters
-    setWord(str);
+    const re = /\d+/g;
+    if (str.charAt(0) === firstLetter && !re.test(str)) {
+      setWord(str);
+    }
   };
 
   const handleTryWord = () => {
-    setTryCount((v) => (v = v + 1));
-    const tries = lastTries.slice();
-    tries.push(word);
-    setWord("");
-    setLastTries(tries);
+    if (!dictionary.has(word)) {
+      console.log("Not in dictionary");
+    } else {
+      setTryCount((v) => (v = v + 1));
+      const tries = lastTries.slice();
+      tries.push(word);
+      setWord(firstLetter);
+      setLastTries(tries);
+    }
   };
 
   const inputArrayField = [];
@@ -45,7 +49,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   }
   const inputArray = [];
   for (let i = 0; i < nbLife; i++) {
-    let value = "";
+    let value = firstLetter;
     if (i < lastTries.length) {
       value = lastTries[i];
     }

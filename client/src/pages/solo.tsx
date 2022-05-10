@@ -8,9 +8,9 @@ import { StartGameResponse } from "../types";
 interface SoloProps {}
 
 const Solo: React.FC<SoloProps> = ({}) => {
-  const [length, setLength] = useState(8);
-  const [id, setId] = useState("123");
-  const [firstLetter, setFirstLetter] = useState("a");
+  const [length, setLength] = useState<number | null>(null);
+  const [id, setId] = useState<string | null>(null);
+  const [firstLetter, setFirstLetter] = useState<string | null>(null);
   const [nbLife, setNbLife] = useState<null | number>(null);
 
   useEffect(() => {
@@ -31,7 +31,10 @@ const Solo: React.FC<SoloProps> = ({}) => {
       <Text mb={5} align="center" fontSize={"larger"}>
         Partie Solo
       </Text>
-      {nbLife === null ? (
+      {nbLife === null ||
+      id === null ||
+      length === null ||
+      firstLetter === null ? (
         <></>
       ) : (
         <PlayerGrid firstLetter={firstLetter} length={length} nbLife={nbLife} />
