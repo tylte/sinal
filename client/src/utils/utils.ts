@@ -1,6 +1,6 @@
 import { LetterResult } from "./types";
 
-export const hasWon = (result: LetterResult[]): boolean => {
+export const isWordCorrect = (result: LetterResult[]): boolean => {
   for (let i = 0; i < result.length; i++) {
     const res = result[i];
     if (res !== LetterResult.RIGHT_POSITION) {
