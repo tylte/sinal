@@ -46,7 +46,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
 
   const handleTryWord = async () => {
     if (!dictionary.has(word) || word.length !== length) {
-      // TODO: Maybe make a toast for not in dictionary
       let text = "";
       let toast_id = "";
       if (word.length !== length) {
@@ -71,8 +70,12 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       let guessResult = await guessWord(word, id);
       console.log(guessResult);
       if (isWordCorrect(guessResult)) {
-        // TODO: toast winning ?
-        alert("Won!");
+        toast({
+          title: "Vous avez trouvé le mot !",
+          status: "success",
+          duration: 1500,
+          isClosable: true,
+        });
         setHasWon(true);
       }
       setTryCount((v) => (v = v + 1));
