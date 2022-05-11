@@ -29,6 +29,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [word, setWord] = useState(firstLetter);
   const [tryCount, setTryCount] = useState(0);
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
+  const toast = useToast();
 
   const handleWordChange = (str: string) => {
     // Check that first letter doesn't change and word will not contain digits
@@ -39,7 +40,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   };
 
   const handleTryWord = async () => {
-    const toast = useToast();
     if (!dictionary.has(word) || word.length !== length)  {
       // TODO: Maybe make a toast for not in dictionary
       var text = ""
