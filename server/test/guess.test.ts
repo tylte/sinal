@@ -4,6 +4,7 @@ let idToWord : Map<string, string> = new Map();
 idToWord.set("a", "abcd");
 idToWord.set("b", "abca");
 idToWord.set("c", "abad");
+idToWord.set("d", "trottez");
 
 describe("testing get_guess", () => {
   test("tout bon", () => {
@@ -23,5 +24,8 @@ describe("testing get_guess", () => {
   });
   test("bien placée puis mal placée", () => {
     expect(get_guess("c", "aazz", idToWord)).toStrictEqual([LetterResult.RIGHT_POSITION, LetterResult.FOUND, LetterResult.NOT_FOUND, LetterResult.NOT_FOUND]);
+  });
+  test("2 lettres", () => {
+    expect(get_guess("d", "trottez", idToWord)).toStrictEqual([LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION]);
   });
 });

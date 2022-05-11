@@ -30,6 +30,9 @@ export function get_guess(id: string, word: string, tab: Map<string, string>) {
     //for each letter, if it's somewhere else in the soluce word and the nb of occurence is set to 0, then the value FOUND is set in the array
     for ( let i = 0; i < word.length; i++ ) {
         let char = word.charAt(i);
+        if ( ret[i] == LetterResult.RIGHT_POSITION )
+            continue;
+
         for ( let j = 0; j < word.length; j++ ) {
             if ( soluce.charAt(j) == char && i != j ) {
                 let nb = found.get(char);
