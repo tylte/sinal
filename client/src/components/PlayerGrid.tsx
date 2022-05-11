@@ -4,6 +4,7 @@ import {
   PinInput,
   PinInputField,
   Stack,
+  useToast
 } from "@chakra-ui/react";
 import React, { useContext, useState } from "react";
 import { guessWord } from "../utils/api";
@@ -38,11 +39,23 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   };
 
   const handleTryWord = async () => {
-    if (!dictionary.has(word)) {
+    const toast = useToast();
+    if (!dictionary.has(word) || word.length !== length)  {
       // TODO: Maybe make a toast for not in dictionary
-      console.log("Not in dictionary");
-    } else if (word.length !== length) {
-      console.log("Not right length");
+      var text = ""
+      if (word.length !== length) {
+        text = "Mot trop court"
+        console.log("Too short");
+      } else {
+        text = "Le mot n'est pas dans le dictionnaire"
+        console.log("Not in dictionary");
+      }
+      toast({
+        title: text,
+        status: 'error',
+        duration: 500,
+        isClosable: true,
+      })
     } else {
       let guessResult = await guessWord(word, id);
       if (hasWon(guessResult)) {
