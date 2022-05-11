@@ -7,6 +7,7 @@ import { get_dictionary } from "./Endpoint/dictionary";
 import { get_guess } from "./Endpoint/guess";
 import { v4 as uuidv4 } from 'uuid';
 import "./utils/type.ts";
+import { Lobby, lobbyMap } from "./utils/type";
 
 
 export var idToWord : Map<string,string> = new Map();
@@ -45,14 +46,21 @@ app.post("/guess", (req, res) => {
 });
 
 io.on("connection", (socket) => {
- socket.on('create', function(room) {
+/* socket.on('create', function(room) {
   console.log(rooms);
    socket.join(room);
- });
- socket.on('result', function({ room, result }) {
-   console.log(room);
-   io.to(room).emit('roomResult', result);
- });
+ });*/
+ socket.on('join_lobby', function({ lobbyId, playerId, playerName, isPublic }) {
+  socket.join(lobbyId);
+  if(lobbyMap.get(lobbyId) !== undefined) {
+    lobbyMap.set(lobbyId, new Lobby(lobbyId, "pre-game", lobbyMap.get(lobbyId)!.name, 2, playerName, isPublic, "1vs1"));
+    socket.emit("join_lobby_response", {success: true,
+      message: "Le lobby à été rejoins !"});
+    } else {
+      socket.emit("join_lobby_response", {success: false,
+        message: "Le lobby donné n'éxiste pas !"});
+    }
+});
 
 });
 
