@@ -7,6 +7,7 @@ import { get_dictionary } from "./Endpoint/dictionary";
 import { get_guess } from "./Endpoint/guess";
 import { v4 as uuidv4 } from 'uuid';
 import "./utils/type.ts";
+import { Lobby, lobbyMap, playerMap } from "./utils/type";
 
 
 export var idToWord : Map<string,string> = new Map();
@@ -47,11 +48,40 @@ app.post("/guess", (req, res) => {
 io.on("connection", (socket) => {
  socket.on('create', function(room) {
   console.log(rooms);
-   socket.join(room);
+  socket.join(room);
  });
+
  socket.on('result', function({ room, result }) {
    console.log(room);
    io.to(room).emit('roomResult', result);
+ });
+
+ socket.on("create_lobby", function({ mode, place, isPublic, owner, name }) {
+  let lobby = new Lobby();
+  let lobbyId = get_id();
+
+  lobby.id = lobbyId;
+  lobby.state = "pre-game";
+  lobby.name = name;
+  if ( mode == "1vs1" )
+    lobby.totalPlace = 2;
+  else
+    lobby.totalPlace = place;
+
+  lobby.currentPlace = 1;
+  let player = playerMap.get(owner);
+  if ( player !== undefined )
+    lobby.playerList.push( player );
+
+  lobby.owner = owner;
+  lobby.isPublic = isPublic;
+  lobby.mode = mode;
+
+  lobbyMap.set(lobbyId, lobby);
+
+  socket.join(lobbyId);
+  socket.emit("create_lobby_response", lobbyId);
+  
  });
 
 });
