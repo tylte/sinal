@@ -6,6 +6,8 @@ import cors from "cors";
 import { get_dictionary } from "./Endpoint/dictionary";
 import { get_guess } from "./Endpoint/guess";
 import { v4 as uuidv4 } from 'uuid';
+import "./utils/type.ts";
+
 
 export var idToWord : Map<string,string> = new Map();
 let rooms : Map<string,Array<Socket>> = new Map(); 
