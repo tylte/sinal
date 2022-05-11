@@ -56,6 +56,14 @@ io.on("connection", (socket) => {
 
 });
 
+io.on("leave_lobby", (socket, room) => {
+  socket.leave(room)
+})
+
+io.on("disconnect", (socket) => {
+
+})
+
 server.listen(port, () => {
   console.log(`Server listening to port ${port}`);
 });
