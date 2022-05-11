@@ -8,9 +8,10 @@ const Index = () => {
    socket.connect();
    let room = 'room1';
    socket.emit('create', room);
-   socket.emit('comm', {room : room, result:'test'});
-    socket.on("update", (arg) => {
-          console.log(arg); // world
+   let result = [1,1,1];
+   socket.emit('result', {room : room, result:result});
+    socket.on("roomResult", (arg) => {
+        console.log(arg); // world
     });
 
   return (

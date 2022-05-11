@@ -1,13 +1,14 @@
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { get_word, get_id } from "./Endpoint/start_game";
 import cors from "cors";
 import { get_dictionary } from "./Endpoint/dictionary";
+import { get_guess } from "./Endpoint/guess";
 import { v4 as uuidv4 } from 'uuid';
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 export var idToWord : Map<string,string> = new Map();
+let rooms : Map<string,Array<Socket>> = new Map(); 
 
 const app = express();
 const port = 4000;
@@ -34,18 +35,23 @@ app.post("/start_game", (req, res) => {
  res.send( {length:word.length, first_letter:word.charAt(0), id:id, nb_life:6});
 });
 
-app.post("/room", (req, res) => {
- });
+app.post("/guess", (req, res) => {
+  let id = req.body.id;
+  let word = req.body.word;
+  console.log(io.sockets);
+  res.send( get_guess( id, word, idToWord ) );
+});
+
 io.on("connection", (socket) => {
-  socket.on('create', function(room) {
-    socket.join(room);
-    console.log(room);
-  });
-  socket.on('create', function({ room, result }) {
-    console.log(room);
-    io.to(room).emit('update', result);
-  });
- 
+ socket.on('create', function(room) {
+  console.log(rooms);
+   socket.join(room);
+ });
+ socket.on('result', function({ room, result }) {
+   console.log(room);
+   io.to(room).emit('roomResult', result);
+ });
+
 });
 
 server.listen(port, () => {
