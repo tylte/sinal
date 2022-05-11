@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import { get_word, get_id } from "./Endpoint/start_game";
 import cors from "cors";
 import { get_dictionary } from "./Endpoint/dictionary";
+import { get_guess } from "./Endpoint/guess";
 
 export var idToWord : Map<string,string> = new Map();
 
@@ -26,6 +27,12 @@ app.post("/start_game", (req, res) => {
  idToWord.set(id, word);
  console.log(word);
  res.send( {length:word.length, first_letter:word.charAt(0), id:id, nb_life:6});
+});
+
+app.post("/guess", (req, res) => {
+  let id = req.body.id;
+  let word = req.body.word;
+  res.send( get_guess( id, word, idToWord ) );
 });
 
 io.on("connection", (socket) => {});
