@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Socket } from "socket.io-client";
 import { LetterResult } from "./types";
 
 export const guessWord = async (
@@ -18,3 +19,9 @@ export const guessWord = async (
   // Error
   return [];
 };
+
+export const addSocketEvents = (socket: Socket | null) => {
+  socket?.on("create_lobby_response", (lobbyId) => {
+    
+  });
+}

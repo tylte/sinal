@@ -6,10 +6,10 @@ import {
   Stack,
   useToast,
 } from "@chakra-ui/react";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import Confetti from "react-confetti";
 import { guessWord } from "../utils/api";
-import { DictionaryContext } from "../utils/dico";
+import { useDictionary } from "../utils/hooks";
 import { TriesHistory } from "../utils/types";
 import { getColorFromResult, isWordCorrect } from "../utils/utils";
 
@@ -29,7 +29,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   nbLife,
   id,
 }) => {
-  const dictionary = useContext(DictionaryContext);
+  const dictionary = useDictionary();
   const [word, setWord] = useState(firstLetter);
   const [tryCount, setTryCount] = useState(0);
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
