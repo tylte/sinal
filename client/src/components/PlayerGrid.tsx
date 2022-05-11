@@ -4,13 +4,16 @@ import {
   PinInput,
   PinInputField,
   Stack,
-  useToast
+  useToast,
 } from "@chakra-ui/react";
 import React, { useContext, useState } from "react";
 import { guessWord } from "../utils/api";
 import { DictionaryContext } from "../utils/dico";
 import { TriesHistory } from "../utils/types";
 import { getColorFromResult, hasWon } from "../utils/utils";
+
+const toast_length_id = "toast_length";
+const toast_not_dictionary_id = "toast_not_dictionary_id";
 
 interface PlayerGridProps {
   firstLetter: string;
@@ -40,22 +43,28 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   };
 
   const handleTryWord = async () => {
-    if (!dictionary.has(word) || word.length !== length)  {
+    if (!dictionary.has(word) || word.length !== length) {
       // TODO: Maybe make a toast for not in dictionary
-      var text = ""
+      let text = "";
+      let toast_id = "";
       if (word.length !== length) {
-        text = "Mot trop court"
+        toast_id = toast_length_id;
+        text = "Mot trop court";
         console.log("Too short");
       } else {
-        text = "Le mot n'est pas dans le dictionnaire"
+        toast_id = toast_not_dictionary_id;
+        text = "Le mot n'est pas dans le dictionnaire";
         console.log("Not in dictionary");
       }
-      toast({
-        title: text,
-        status: 'error',
-        duration: 500,
-        isClosable: true,
-      })
+      if (!toast.isActive(toast_id)) {
+        toast({
+          title: text,
+          id: toast_id,
+          status: "error",
+          duration: 1500,
+          isClosable: true,
+        });
+      }
     } else {
       let guessResult = await guessWord(word, id);
       if (hasWon(guessResult)) {
