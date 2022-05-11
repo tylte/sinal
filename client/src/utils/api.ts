@@ -7,7 +7,7 @@ export const guessWord = async (
 ): Promise<LetterResult[]> => {
   try {
     const { data } = await axios.post<LetterResult[]>(
-      "http://localhost:4000/guess_word",
+      "http://localhost:4000/guess",
       { word, id }
     );
 

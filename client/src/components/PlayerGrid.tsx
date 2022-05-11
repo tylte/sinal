@@ -7,10 +7,11 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import React, { useContext, useState } from "react";
+import Confetti from "react-confetti";
 import { guessWord } from "../utils/api";
 import { DictionaryContext } from "../utils/dico";
 import { TriesHistory } from "../utils/types";
-import { getColorFromResult, hasWon } from "../utils/utils";
+import { getColorFromResult, isWordCorrect } from "../utils/utils";
 
 const toast_length_id = "toast_length";
 const toast_not_dictionary_id = "toast_not_dictionary_id";
@@ -32,6 +33,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [word, setWord] = useState(firstLetter);
   const [tryCount, setTryCount] = useState(0);
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
+  const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
 
   const handleWordChange = (str: string) => {
@@ -67,16 +69,17 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       }
     } else {
       let guessResult = await guessWord(word, id);
-      if (hasWon(guessResult)) {
+      console.log(guessResult);
+      if (isWordCorrect(guessResult)) {
         // TODO: toast winning ?
         alert("Won!");
-      } else {
-        setTryCount((v) => (v = v + 1));
-        const tries = triesHistory.slice();
-        tries.push({ wordTried: word, result: [] });
-        setWord(firstLetter);
-        setTriesHistory(tries);
+        setHasWon(true);
       }
+      setTryCount((v) => (v = v + 1));
+      const tries = triesHistory.slice();
+      tries.push({ wordTried: word, result: guessResult });
+      setWord(firstLetter);
+      setTriesHistory(tries);
     }
   };
 
@@ -103,7 +106,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     inputArray.push(
       <HStack key={i}>
         <PinInput
-          isDisabled={i != tryCount}
+          isDisabled={i != tryCount || hasWon}
           onChange={handleWordChange}
           value={i != tryCount ? value : word}
           type="alphanumeric"
@@ -117,6 +120,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
 
   return (
     <Stack spacing={5} align={"center"}>
+      {hasWon && <Confetti />}
       {inputArray}
       <Button onClick={handleTryWord} mt={4}>
         try word
