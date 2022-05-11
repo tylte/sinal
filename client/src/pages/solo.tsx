@@ -3,7 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Layout } from "../components/Layout";
 import { PlayerGrid } from "../components/PlayerGrid";
-import { StartGameResponse } from "../types";
+import { StartGameResponse } from "../utils/types";
 
 interface SoloProps {}
 
@@ -37,7 +37,12 @@ const Solo: React.FC<SoloProps> = ({}) => {
       firstLetter === null ? (
         <></>
       ) : (
-        <PlayerGrid firstLetter={firstLetter} length={length} nbLife={nbLife} />
+        <PlayerGrid
+          id={id}
+          firstLetter={firstLetter}
+          length={length}
+          nbLife={nbLife}
+        />
       )}
     </Layout>
   );
