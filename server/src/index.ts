@@ -50,28 +50,59 @@ app.post("/guess", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  socket.on('create', function(room) {
-   socket.join(room);
-  });
-  socket.on('join_lobby', function(result) {
-    if(lobbyMap.get(result.lobbyId) !== undefined) {
-      if(lobbyMap.get(result.lobbyId)!.currentPlace < lobbyMap.get(result.lobbyId)!.totalPlace) {
-        socket.join(result.lobbyId);
-        lobbyMap.get(result.lobbyId)!.playerList[lobbyMap.get(result.lobbyId)!.currentPlace];
-        lobbyMap.get(result.lobbyId)!.currentPlace++;
-        playerMap.set(result.playerId, {id:result.playerId, name:result.playerName});
-        socket.emit("join_lobby_response", {success: true,
-          message: "Le lobby à été rejoins !"});
-      } else {
-        socket.emit("join_lobby_response", {success: false,
-          message: "Le lobby est déja plein !"});
-      }
+ console.log("connected");
+ socket.on('create', function(room) {
+  console.log(rooms);
+  socket.join(room);
+ });
+
+ socket.on("create_lobby", function({ mode, place, isPublic, owner, name }) {
+  let lobby = new Lobby();
+  let lobbyId = get_id();
+
+  lobby.id = lobbyId;
+  lobby.state = "pre-game";
+  lobby.name = name;
+  if ( mode == "1vs1" )
+    lobby.totalPlace = 2;
+  else
+    lobby.totalPlace = place;
+
+  lobby.currentPlace = 1;
+  let player = playerMap.get(owner);
+  if ( player !== undefined )
+    lobby.playerList.push( player );
+
+  lobby.owner = owner;
+  lobby.isPublic = isPublic;
+  lobby.mode = mode;
+
+  lobbyMap.set(lobbyId, lobby);
+
+  socket.join(lobbyId);
+  socket.emit("create_lobby_response", lobbyId);
+  
+ });
+ socket.on('join_lobby', function(result) {
+  if(lobbyMap.get(result.lobbyId) !== undefined) {
+    if(lobbyMap.get(result.lobbyId)!.currentPlace < lobbyMap.get(result.lobbyId)!.totalPlace) {
+      socket.join(result.lobbyId);
+      lobbyMap.get(result.lobbyId)!.playerList[lobbyMap.get(result.lobbyId)!.currentPlace];
+      lobbyMap.get(result.lobbyId)!.currentPlace++;
+      playerMap.set(result.playerId, {id:result.playerId, name:result.playerName});
+      socket.emit("join_lobby_response", {success: true,
+        message: "Le lobby à été rejoins !"});
     } else {
-      console.log("enter");
       socket.emit("join_lobby_response", {success: false,
-        message: "Le lobby donné n'existe pas !"});
+        message: "Le lobby est déja plein !"});
     }
-  });
+  } else {
+    console.log("enter");
+    socket.emit("join_lobby_response", {success: false,
+      message: "Le lobby donné n'existe pas !"});
+  }
+});
+
 });
 
 server.listen(port, () => {

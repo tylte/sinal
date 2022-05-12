@@ -19,4 +19,4 @@ export class Lobby {
 
 export let lobbyMap: Map<string, Lobby> = new Map();
 
-export let playerMap: Map<string, Player> = new Map();
+export let playerMap : Map<string,Player> = new Map();
