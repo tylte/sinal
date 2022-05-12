@@ -169,10 +169,10 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
     <Layout variant="large">
       <Flex direction={"column"}>
         <Text mb={5} align="center" fontSize={"3xl"}>
-          lobby publique
+          Liste des lobbys
         </Text>
         <Box mx="auto" my="4">
-          <Button onClick={onOpen}>creer un lobby</Button>
+          <Button onClick={onOpen}>Créer un lobby</Button>
         </Box>
         <SimpleGrid minChildWidth="250px" spacing="40px">
           {lobbies.map((lobby) => (
