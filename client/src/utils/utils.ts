@@ -1,4 +1,4 @@
-import { LetterResult } from "./types";
+import { LetterResult, LobbyState } from "./types";
 
 export const isWordCorrect = (result: LetterResult[]): boolean => {
   for (let i = 0; i < result.length; i++) {
@@ -25,4 +25,19 @@ export const getColorFromResult = (result: LetterResult[]): string[] => {
   }
 
   return ret;
+};
+
+export const isLobbyJoinable = (
+  currentPlace: number,
+  totalPlace: number,
+  gameState: LobbyState
+): boolean => {
+  if (currentPlace >= totalPlace) {
+    return false;
+  }
+  if (gameState !== "pre-game") {
+    return false;
+  }
+
+  return true;
 };
