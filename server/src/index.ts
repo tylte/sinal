@@ -106,7 +106,9 @@ io.on("connection", (socket) => {
 });
 
 socket.on("create_player", function(playerName) {
-  
+  let playerId = get_id();
+  playerMap.set(playerId, playerName);
+  return playerId;
 });
 
 });
