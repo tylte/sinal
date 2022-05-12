@@ -140,7 +140,7 @@ io.on("connection", (socket) => {
       });
     }
   });
-  
+
   socket.on("leave_lobby", (params) => {
     // params : roomId, playerId
     const playerList = lobbyMap.get(params.roomId)?.playerList;

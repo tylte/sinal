@@ -34,8 +34,8 @@ export const addJoinLobbyEvent = (
   router: NextRouter
 ) => {
   socket?.on("join_lobby_response", (arg) => {
-    console.log("enter");
     if (arg.success) {
+      console.log("enter")
     } else {
       console.log(arg.message);
     }
