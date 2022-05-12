@@ -38,7 +38,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>rejoindre multijoueur</ModalHeader>
+        <ModalHeader>Choisissez un pseudo</ModalHeader>
         <Alert
           status="error"
           variant="subtle"
@@ -48,10 +48,10 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
           textAlign="center"
         >
           <AlertIcon />
-          <AlertTitle>avertissement !</AlertTitle>
+          <AlertTitle>Attention !</AlertTitle>
           <AlertDescription>
-            vous êtes sur le point de jouer contre de vrais joueurs humains,
-            entrez à vos risques et périls
+            Vous êtes sur le point de jouer contre de vrais joueurs humains,
+            entrez à vos risques et périls.
           </AlertDescription>
         </Alert>
         <ModalCloseButton />
@@ -59,7 +59,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
           <Input
             value={pseudo}
             onChange={handlePseudoChange}
-            placeholder="pseudonyme"
+            placeholder="Pseudonyme"
           />
         </ModalBody>
 
@@ -71,7 +71,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
               onClick={() => router.push("/lobby")}
               isDisabled={pseudo.length === 0}
             >
-              join the battle
+              Rejoindre la bataille
             </Button>
           </Flex>
         </ModalFooter>
