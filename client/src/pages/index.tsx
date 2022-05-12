@@ -1,7 +1,7 @@
 import { GameModeMenu } from "../components/GameModeMenu";
 import { Layout } from "../components/Layout";
 import { useSocket } from "../utils/hooks";
-import { addSocketEvents } from "src/utils/api";
+import { addCreateLobbyEvent } from "src/utils/api";
 
 const Index = () => {
   // const socket = io("ws://localhost:4000");
@@ -14,8 +14,6 @@ const Index = () => {
   socket?.on("roomResult", (arg) => {
     console.log(arg); // world
   });
-
-  addSocketEvents(socket);
   
   return (
     <Layout>

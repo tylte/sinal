@@ -7,10 +7,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { DictionaryContext, SocketContext } from "../utils/context";
 import { io, Socket } from "socket.io-client";
+import { addCreateLobbyEvent } from "src/utils/api";
+import { useRouter } from "next/router";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [dictionary, setDictionnary] = useState<Set<string> | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     axios.get<string[]>("http://localhost:4000/dictionary").then(({ data }) => {
@@ -20,8 +23,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       });
       setDictionnary(set);
     });
-
-    setSocket(io("ws://localhost:4000"));
+    let socket = io("ws://localhost:4000");
+    setSocket(socket);
+    addCreateLobbyEvent(socket, router);
   }, []);
   return (
     <SocketContext.Provider value={socket}>
