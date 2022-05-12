@@ -119,6 +119,12 @@ socket.on("leave_lobby", (params) => { // params : roomId, playerId
   console.log("Joueur retiré")
 })
 
+socket.on("create_player", (playerName) => {
+  let playerId = get_id();
+  playerMap.set(playerId, playerName);
+  socket.emit("create_player_response", playerId);
+})
+
 });
 
 // TODO : Disconnect ?
