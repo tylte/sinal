@@ -21,18 +21,23 @@ export const guessWord = async (
   return [];
 };
 
-export const addCreateLobbyEvent = (socket: Socket | null, router : NextRouter) => {
+export const addCreateLobbyEvent = (
+  socket: Socket | null,
+  router: NextRouter
+) => {
   socket?.on("create_lobby_response", (lobbyId) => {
     router.push(`/lobby/${lobbyId}`);
   });
-}
-export const addJoinLobbyEvent = (socket: Socket | null, router : NextRouter) => {
+};
+export const addJoinLobbyEvent = (
+  socket: Socket | null,
+  router: NextRouter
+) => {
   socket?.on("join_lobby_response", (arg) => {
     console.log("enter");
-    if(arg.success) {
-      
+    if (arg.success) {
     } else {
       console.log(arg.message);
     }
   });
-}
+};

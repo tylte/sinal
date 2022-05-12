@@ -49,81 +49,84 @@ app.post("/guess", (req, res) => {
 });
 
 io.on("connection", (socket) => {
- console.log("connected");
- socket.on('create', function(room) {
-  console.log(rooms);
-  socket.join(room);
- });
+  console.log("connected");
+  socket.on("create", function (room) {
+    console.log(rooms);
+    socket.join(room);
+  });
 
- socket.on("create_lobby", function({ mode, place, isPublic, owner, name }) {
- 
-  let lobbyId = get_id();
-  let lobby:Lobby = {id:lobbyId, 
-    state:"pre-game", 
-    name:name, 
-    totalPlace:0, 
-    currentPlace:1, 
-    playerList:new Array(),
-    owner:owner,
-    isPublic:isPublic,
-    mode:mode
-  }
+  socket.on("create_lobby", function ({ mode, place, isPublic, owner, name }) {
+    let lobbyId = get_id();
+    let lobby: Lobby = {
+      id: lobbyId,
+      state: "pre-game",
+      name: name,
+      totalPlace: 0,
+      currentPlace: 1,
+      playerList: new Array(),
+      owner: owner,
+      isPublic: isPublic,
+      mode: mode,
+    };
 
-  if ( mode == "1vs1" )
-    lobby.totalPlace = 2;
-  else
-    lobby.totalPlace = place;
+    if (mode == "1vs1") lobby.totalPlace = 2;
+    else lobby.totalPlace = place;
 
-  let player = playerMap.get(owner);
-  if ( player !== undefined )
-    lobby.playerList.push( player );
+    let player = playerMap.get(owner);
+    if (player !== undefined) lobby.playerList.push(player);
 
-  lobbyMap.set(lobbyId, lobby);
+    lobbyMap.set(lobbyId, lobby);
 
-  socket.join(lobbyId);
-  socket.emit("create_lobby_response", lobbyId);
-  
- });
- socket.on('join_lobby', function(result) {
-  let lobby = lobbyMap.get(result.lobbyId);
-  if(lobby !== undefined) {
-    if(lobby!.currentPlace < lobby!.totalPlace) {
-      socket.join(result.lobbyId);
-      lobby!.playerList[lobby!.currentPlace];
-      lobby!.currentPlace++;
-      playerMap.set(result.playerId, {id:result.playerId, name:result.playerName});
-      socket.emit("join_lobby_response", {success: true,
-        message: "Le lobby à été rejoins !"});
+    socket.join(lobbyId);
+    socket.emit("create_lobby_response", lobbyId);
+  });
+  socket.on("join_lobby", function (result) {
+    let lobby = lobbyMap.get(result.lobbyId);
+    if (lobby !== undefined) {
+      if (lobby!.currentPlace < lobby!.totalPlace) {
+        socket.join(result.lobbyId);
+        lobby!.playerList[lobby!.currentPlace];
+        lobby!.currentPlace++;
+        playerMap.set(result.playerId, {
+          id: result.playerId,
+          name: result.playerName,
+        });
+        socket.emit("join_lobby_response", {
+          success: true,
+          message: "Le lobby à été rejoins !",
+        });
+      } else {
+        socket.emit("join_lobby_response", {
+          success: false,
+          message: "Le lobby est déja plein !",
+          lobby: lobby,
+        });
+      }
     } else {
-      socket.emit("join_lobby_response", {success: false,
-        message: "Le lobby est déja plein !", lobby:lobby});
+      console.log("enter");
+      socket.emit("join_lobby_response", {
+        success: false,
+        message: "Le lobby donné n'existe pas !",
+      });
     }
-  } else {
-    console.log("enter");
-    socket.emit("join_lobby_response", {success: false,
-      message: "Le lobby donné n'existe pas !"});
-  }
-});
-
+  });
 });
 
 io.on("leave_lobby", (socket, roomId, playerId) => {
-  const playerList = lobbyMap.get(roomId)?.playerList
+  const playerList = lobbyMap.get(roomId)?.playerList;
   if (playerList !== undefined) {
-    for (var i = 0; i<playerList.length ; i++) {
-       if (playerList[i].id === playerId) {
-         playerList.splice(i, 1);
-         i--;
-       }
+    for (var i = 0; i < playerList.length; i++) {
+      if (playerList[i].id === playerId) {
+        playerList.splice(i, 1);
+        i--;
+      }
     }
   }
-  socket.leave(roomId)
-})
+  socket.leave(roomId);
+});
 
 // TODO : Disconnect ?
-io.on("disconnect", (socket) => {
-
-})
+io.on("disconnect", (socket) => {});
 
 server.listen(port, () => {
   console.log(`Server listening to port ${port}`);
