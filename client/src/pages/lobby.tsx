@@ -158,7 +158,7 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   return (
     <Layout variant="large">
       <Text mb={5} align="center" fontSize={"3xl"}>
-        lobby publique
+        Liste des lobbys
       </Text>
       <SimpleGrid minChildWidth="250px" spacing="40px">
         {lobbies.map((lobby) => (

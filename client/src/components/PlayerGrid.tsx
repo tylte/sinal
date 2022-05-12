@@ -123,7 +123,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       {hasWon && <Confetti />}
       {inputArray}
       <Button onClick={handleTryWord} mt={4}>
-        try word
+        Tenter le mot !
       </Button>
     </Stack>
   );
