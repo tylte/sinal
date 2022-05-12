@@ -41,16 +41,16 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>creation de lobby</ModalHeader>
+        <ModalHeader>Création de lobby</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {/* GAME MODE */}
-          <Text my={2}>mode de jeu</Text>
+          <Text my={2}>Mode de jeu</Text>
           <RadioGroup onChange={setGameMode} value={gameMode}>
             <Stack direction="row">
               <Radio value="1vs1">1 vs 1</Radio>
               <Radio isDisabled={true} value="2">
-                battle royale
+                Battle Royale
               </Radio>
               <Radio isDisabled={true} value="3">
                 2 vs 2
@@ -58,7 +58,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
             </Stack>
           </RadioGroup>
           {/* PLACE */}
-          <Text my={2}>place</Text>
+          <Text my={2}>Place</Text>
           <NumberInput defaultValue={2} min={2} max={2}>
             <NumberInputField />
             <NumberInputStepper>
@@ -67,18 +67,18 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
             </NumberInputStepper>
           </NumberInput>
           {/* PUBLIC/PRIVE */}
-          <Text my={2}>visibilite</Text>
+          <Text my={2}>Visibilité</Text>
           <RadioGroup onChange={setIsPublic} value={isPublic}>
             <Stack direction="row">
-              <Radio value="true">public</Radio>
-              <Radio value="false">private</Radio>
+              <Radio value="true">Public</Radio>
+              <Radio value="false">Privée</Radio>
             </Stack>
           </RadioGroup>
         </ModalBody>
 
         <ModalFooter>
           <Button colorScheme="blue" mr={3} onClick={createLobby}>
-            creer lobby
+            Créer lobby
           </Button>
         </ModalFooter>
       </ModalContent>
