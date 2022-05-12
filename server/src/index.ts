@@ -49,88 +49,92 @@ app.post("/guess", (req, res) => {
 });
 
 io.on("connection", (socket) => {
- console.log("connected");
+  console.log("connected");
 
- socket.on("create_lobby", function({ mode, place, isPublic, owner, name }) {
- 
-  let lobbyId = get_id() // TODO
-  let lobby:Lobby = {id:lobbyId, //TODO
-    state:"pre-game", 
-    name:name, 
-    totalPlace:0, 
-    currentPlace:1, 
-    playerList:new Array<Player>(),
-    owner:owner.id,
-    isPublic:isPublic,
-    mode:mode
-  }
+  socket.on("create_lobby", function ({ mode, place, isPublic, owner, name }) {
+    let lobbyId = get_id(); // TODO
+    let lobby: Lobby = {
+      id: lobbyId, //TODO
+      state: "pre-game",
+      name: name,
+      totalPlace: 0,
+      currentPlace: 1,
+      playerList: new Array<Player>(),
+      owner: owner.id,
+      isPublic: isPublic,
+      mode: mode,
+    };
 
-  if ( mode == "1vs1" )
-    lobby.totalPlace = 2;
-  else
-    lobby.totalPlace = place;
+    if (mode == "1vs1") lobby.totalPlace = 2;
+    else lobby.totalPlace = place;
 
-  let player = playerMap.get(owner.id);
-  if ( player !== undefined )
-    lobby.playerList.push( owner );
-  else {
-    playerMap.set(owner.id, owner)
-    lobby.playerList.push(owner);
-  }
+    let player = playerMap.get(owner.id);
+    if (player !== undefined) lobby.playerList.push(owner);
+    else {
+      playerMap.set(owner.id, owner);
+      lobby.playerList.push(owner);
+    }
 
-  lobbyMap.set(lobbyId, lobby);
+    lobbyMap.set(lobbyId, lobby);
 
-  socket.join(lobbyId);
-  socket.emit("create_lobby_response", lobbyId);
-  
- });
- socket.on('join_lobby', function(result) {
-  let lobby = lobbyMap.get(result.lobbyId);
-  if(lobby !== undefined) {
-    if(lobby!.currentPlace < lobby!.totalPlace) {
-      socket.join(result.lobbyId);
-      lobby!.playerList[lobby!.currentPlace];
-      lobby!.currentPlace++;
-      playerMap.set(result.playerId, {id:result.playerId, name:result.playerName});
-      socket.emit("join_lobby_response", {success: true,
-        message: "Le lobby à été rejoins !"});
+    socket.join(lobbyId);
+    socket.emit("create_lobby_response", lobbyId);
+  });
+  socket.on("join_lobby", function (result) {
+    let lobby = lobbyMap.get(result.lobbyId);
+    if (lobby !== undefined) {
+      if (lobby!.currentPlace < lobby!.totalPlace) {
+        socket.join(result.lobbyId);
+        lobby!.playerList[lobby!.currentPlace];
+        lobby!.currentPlace++;
+        playerMap.set(result.playerId, {
+          id: result.playerId,
+          name: result.playerName,
+        });
+        socket.emit("join_lobby_response", {
+          success: true,
+          message: "Le lobby à été rejoins !",
+        });
+      } else {
+        socket.emit("join_lobby_response", {
+          success: false,
+          message: "Le lobby est déja plein !",
+          lobby: lobby,
+        });
+      }
     } else {
-      socket.emit("join_lobby_response", {success: false,
-        message: "Le lobby est déja plein !", lobby:lobby});
+      console.log("enter");
+      socket.emit("join_lobby_response", {
+        success: false,
+        message: "Le lobby donné n'existe pas !",
+      });
     }
-  } else {
-    console.log("enter");
-    socket.emit("join_lobby_response", {success: false,
-      message: "Le lobby donné n'existe pas !"});
-  }
-});
+  });
 
-socket.on("leave_lobby", (params) => { // params : roomId, playerId
-  const playerList = lobbyMap.get(params.roomId)?.playerList
-  if (playerList !== undefined) {
-    for (var i = 0; i<playerList.length ; i++) {
-       if (playerList[i].id === params.playerId) {
-         playerList.splice(i, 1);
-         i--;
-       }
+  socket.on("leave_lobby", (params) => {
+    // params : roomId, playerId
+    const playerList = lobbyMap.get(params.roomId)?.playerList;
+    if (playerList !== undefined) {
+      for (var i = 0; i < playerList.length; i++) {
+        if (playerList[i].id === params.playerId) {
+          playerList.splice(i, 1);
+          i--;
+        }
+      }
     }
-  }
-  socket.leave(params.roomId)
-  console.log("Joueur retiré")
-})
+    socket.leave(params.roomId);
+    console.log("Joueur retiré");
+  });
 
-socket.on("create_player", (playerName) => {
-  let playerId = get_id();
-  playerMap.set(playerId, playerName);
-  socket.emit("create_player_response", playerId);
-})
-
+  socket.on("create_player", (playerName) => {
+    let playerId = get_id();
+    playerMap.set(playerId, playerName);
+    socket.emit("create_player_response", playerId);
+  });
 });
 
 // TODO : Disconnect ?
-io.on("disconnect", (socket) => {
-
-})
+io.on("disconnect", (socket) => {});
 
 server.listen(port, () => {
   console.log(`Server listening to port ${port}`);
