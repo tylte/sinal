@@ -107,6 +107,24 @@ io.on("connection", (socket) => {
 
 });
 
+io.on("leave_lobby", (socket, roomId, playerId) => {
+  const playerList = lobbyMap.get(roomId)?.playerList
+  if (playerList !== undefined) {
+    for (var i = 0; i<playerList.length ; i++) {
+       if (playerList[i].id === playerId) {
+         playerList.splice(i, 1);
+         i--;
+       }
+    }
+  }
+  socket.leave(roomId)
+})
+
+// TODO : Disconnect ?
+io.on("disconnect", (socket) => {
+
+})
+
 server.listen(port, () => {
   console.log(`Server listening to port ${port}`);
 });
