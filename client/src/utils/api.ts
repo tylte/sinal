@@ -26,3 +26,13 @@ export const addCreateLobbyEvent = (socket: Socket | null, router : NextRouter) 
     router.push(`/lobby/${lobbyId}`);
   });
 }
+export const addJoinLobbyEvent = (socket: Socket | null, router : NextRouter) => {
+  socket?.on("join_lobby_response", (arg) => {
+    console.log("enter");
+    if(arg.success) {
+      
+    } else {
+      console.log(arg.message);
+    }
+  });
+}

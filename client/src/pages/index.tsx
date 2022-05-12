@@ -1,7 +1,6 @@
 import { GameModeMenu } from "../components/GameModeMenu";
 import { Layout } from "../components/Layout";
 import { useSocket } from "../utils/hooks";
-import { addCreateLobbyEvent } from "src/utils/api";
 
 const Index = () => {
   // const socket = io("ws://localhost:4000");
