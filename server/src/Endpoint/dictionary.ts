@@ -1,5 +1,5 @@
-import dictionary from '../../../server/data/dictionary.json';
+import dict_full from '../../../server/data/dictionary_full.json';
 
 export function get_dictionary() {
-    return dictionary
+    return dict_full
 }
