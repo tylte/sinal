@@ -1,5 +1,13 @@
-import { SimpleGrid, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  SimpleGrid,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
 import React from "react";
+import { CreateLobbyModal } from "../components/CreateLobbyModal";
 import { Layout } from "../components/Layout";
 import { LobbyProfile } from "../components/LobbyProfile";
 import { Lobby } from "../utils/types";
@@ -155,16 +163,24 @@ const lobbies: Lobby[] = [
 ];
 
 const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   return (
     <Layout variant="large">
-      <Text mb={5} align="center" fontSize={"3xl"}>
-        lobby publique
-      </Text>
-      <SimpleGrid minChildWidth="250px" spacing="40px">
-        {lobbies.map((lobby) => (
-          <LobbyProfile key={lobby.id} lobby={lobby} />
-        ))}
-      </SimpleGrid>
+      <Flex direction={"column"}>
+        <Text mb={5} align="center" fontSize={"3xl"}>
+          lobby publique
+        </Text>
+        <Box mx="auto" my="4">
+          <Button onClick={onOpen}>creer un lobby</Button>
+        </Box>
+        <SimpleGrid minChildWidth="250px" spacing="40px">
+          {lobbies.map((lobby) => (
+            <LobbyProfile key={lobby.id} lobby={lobby} />
+          ))}
+        </SimpleGrid>
+      </Flex>
+      <CreateLobbyModal isOpen={isOpen} onClose={onClose} />
     </Layout>
   );
 };
