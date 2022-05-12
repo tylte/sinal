@@ -51,11 +51,9 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       if (word.length !== length) {
         toast_id = toast_length_id;
         text = "Mot trop court";
-        console.log("Too short");
       } else {
         toast_id = toast_not_dictionary_id;
         text = "Le mot n'est pas dans le dictionnaire";
-        console.log("Not in dictionary");
       }
       if (!toast.isActive(toast_id)) {
         toast({
@@ -68,7 +66,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       }
     } else {
       let guessResult = await guessWord(word, id);
-      console.log(guessResult);
       if (isWordCorrect(guessResult)) {
         toast({
           title: "Vous avez trouvé le mot !",
