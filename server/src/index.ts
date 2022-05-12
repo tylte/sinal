@@ -103,9 +103,8 @@ io.on("connection", (socket) => {
   }
 });
 
-});
-
-io.on("leave_lobby", (socket, roomId, playerId) => {
+socket.on("leave_lobby", (roomId, playerId) => {
+  console.log(lobbyMap.get(roomId)?.playerList)
   const playerList = lobbyMap.get(roomId)?.playerList
   if (playerList !== undefined) {
     for (var i = 0; i<playerList.length ; i++) {
@@ -116,7 +115,10 @@ io.on("leave_lobby", (socket, roomId, playerId) => {
     }
   }
   socket.leave(roomId)
+  console.log(lobbyMap.get(roomId)?.playerList)
 })
+
+});
 
 // TODO : Disconnect ?
 io.on("disconnect", (socket) => {
