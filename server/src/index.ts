@@ -9,7 +9,6 @@ import "./utils/type.ts";
 import { Lobby, lobbyMap, Player, playerMap } from "./utils/type";
 
 export var idToWord: Map<string, string> = new Map();
-let rooms: Map<string, Array<Socket>> = new Map();
 
 const app = express();
 const port = 4000;
@@ -78,32 +77,6 @@ io.on("connection", (socket) => {
     lobbyMap.set(lobbyId, lobby);
   });
 
-  socket.on("create_lobby", function ({ mode, place, isPublic, owner, name }) {
-    let lobbyId = get_id();
-    let lobby: Lobby = {
-      id: lobbyId,
-      state: "pre-game",
-      name: name,
-      totalPlace: 0,
-      currentPlace: 1,
-      playerList: new Array(),
-      owner: owner,
-      isPublic: isPublic,
-      mode: mode,
-    };
-
-    if (mode == "1vs1") lobby.totalPlace = 2;
-    else lobby.totalPlace = place;
-
-    let player = playerMap.get(owner);
-    if (player !== undefined) lobby.playerList.push(player);
-
-    lobbyMap.set(lobbyId, lobby);
-
-    socket.join(lobbyId);
-    socket.emit("create_lobby_response", lobbyId);
-  });
-
   socket.on("join_lobby", function (result) {
     let lobby = lobbyMap.get(result.lobbyId);
     if (lobby !== undefined) {
@@ -122,18 +95,14 @@ io.on("connection", (socket) => {
           success: true,
           message: "Le lobby à été rejoins !",
         });
-
       } else {
-
         socket.emit("join_lobby_response", {
           success: false,
           message: "Le lobby est déja plein !",
           lobby: lobby,
         });
-
       }
     } else {
-      
       socket.emit("join_lobby_response", {
         success: false,
         message: "Le lobby donné n'existe pas !",
@@ -154,6 +123,12 @@ io.on("connection", (socket) => {
     }
     socket.leave(params.roomId);
     console.log("Joueur retiré");
+  });
+
+  socket.on("create_player", (playerName) => {
+    let playerId = get_id();
+    playerMap.set(playerId, playerName);
+    socket.emit("create_player_response", playerId);
   });
 });
 
