@@ -2,7 +2,6 @@ import { ChakraProvider } from "@chakra-ui/react";
 
 import theme from "../theme";
 import { AppProps } from "next/app";
-import { DarkModeSwitch } from "../components/DarkModeSwitch";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -32,7 +31,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     let socket = io("ws://localhost:4000");
     setSocket(socket);
     addCreateLobbyEvent(socket, router);
-    addJoinLobbyEvent(socket, router);
+    addJoinLobbyEvent(socket);
   }, []);
   return (
     <PlayerContext.Provider value={[player, setPlayer]}>
@@ -41,7 +40,6 @@ function MyApp({ Component, pageProps }: AppProps) {
           value={dictionary !== null ? dictionary : new Set()}
         >
           <ChakraProvider resetCSS theme={theme}>
-            <DarkModeSwitch />
             <Component {...pageProps} />
           </ChakraProvider>
         </DictionaryContext.Provider>

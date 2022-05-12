@@ -1,7 +1,8 @@
 import axios from "axios";
 import { NextRouter } from "next/router";
+import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
-import { LetterResult } from "./types";
+import { LetterResult, Player } from "./types";
 
 export const guessWord = async (
   word: string,
@@ -21,18 +22,36 @@ export const guessWord = async (
   return [];
 };
 
-export const addCreateLobbyEvent = (socket: Socket | null, router : NextRouter) => {
+export const addCreateLobbyEvent = (
+  socket: Socket | null,
+  router: NextRouter
+) => {
   socket?.on("create_lobby_response", (lobbyId) => {
     router.push(`/lobby/${lobbyId}`);
   });
-}
-export const addJoinLobbyEvent = (socket: Socket | null, router : NextRouter) => {
+};
+export const addJoinLobbyEvent = (socket: Socket | null) => {
   socket?.on("join_lobby_response", (arg) => {
     console.log("enter");
-    if(arg.success) {
-      
+    if (arg.success) {
     } else {
       console.log(arg.message);
     }
   });
-}
+};
+
+export const addCreatePlayerEvent = (
+  socket: Socket | null,
+  playerName: string,
+  setPlayer: Dispatch<SetStateAction<Player | null>> | null,
+  router: NextRouter
+) => {
+  socket?.on("create_player_response", (playerId: string) => {
+    if (setPlayer) {
+      setPlayer({ id: playerId, name: playerName });
+      router.push("/lobby");
+    } else {
+      console.error("Couldn't create user !?");
+    }
+  });
+};
