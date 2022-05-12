@@ -62,6 +62,7 @@ io.on("connection", (socket) => {
 
 io.on("leave_lobby", (socket, room) => {
   socket.leave(room)
+  
 })
 
 io.on("disconnect", (socket) => {
