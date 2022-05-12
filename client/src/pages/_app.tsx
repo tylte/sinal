@@ -5,14 +5,20 @@ import { AppProps } from "next/app";
 import { DarkModeSwitch } from "../components/DarkModeSwitch";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { DictionaryContext, SocketContext } from "../utils/context";
+import {
+  DictionaryContext,
+  PlayerContext,
+  SocketContext,
+} from "../utils/context";
 import { io, Socket } from "socket.io-client";
 import { addCreateLobbyEvent, addJoinLobbyEvent } from "src/utils/api";
 import { useRouter } from "next/router";
+import { Player } from "../utils/types";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [dictionary, setDictionnary] = useState<Set<string> | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [player, setPlayer] = useState<Player | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -29,16 +35,18 @@ function MyApp({ Component, pageProps }: AppProps) {
     addJoinLobbyEvent(socket, router);
   }, []);
   return (
-    <SocketContext.Provider value={socket}>
-      <DictionaryContext.Provider
-        value={dictionary !== null ? dictionary : new Set()}
-      >
-        <ChakraProvider resetCSS theme={theme}>
-          <DarkModeSwitch />
-          <Component {...pageProps} />
-        </ChakraProvider>
-      </DictionaryContext.Provider>
-    </SocketContext.Provider>
+    <PlayerContext.Provider value={[player, setPlayer]}>
+      <SocketContext.Provider value={socket}>
+        <DictionaryContext.Provider
+          value={dictionary !== null ? dictionary : new Set()}
+        >
+          <ChakraProvider resetCSS theme={theme}>
+            <DarkModeSwitch />
+            <Component {...pageProps} />
+          </ChakraProvider>
+        </DictionaryContext.Provider>
+      </SocketContext.Provider>
+    </PlayerContext.Provider>
   );
 }
 
