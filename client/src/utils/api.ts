@@ -1,4 +1,5 @@
 import axios from "axios";
+import { NextRouter } from "next/router";
 import { Socket } from "socket.io-client";
 import { LetterResult } from "./types";
 
@@ -20,8 +21,18 @@ export const guessWord = async (
   return [];
 };
 
-export const addSocketEvents = (socket: Socket | null) => {
+export const addCreateLobbyEvent = (socket: Socket | null, router : NextRouter) => {
   socket?.on("create_lobby_response", (lobbyId) => {
-    
+    router.push(`/lobby/${lobbyId}`);
+  });
+}
+export const addJoinLobbyEvent = (socket: Socket | null, router : NextRouter) => {
+  socket?.on("join_lobby_response", (arg) => {
+    console.log("enter");
+    if(arg.success) {
+      
+    } else {
+      console.log(arg.message);
+    }
   });
 }

@@ -1,7 +1,6 @@
 import { GameModeMenu } from "../components/GameModeMenu";
 import { Layout } from "../components/Layout";
 import { useSocket } from "../utils/hooks";
-import { addSocketEvents } from "src/utils/api";
 
 const Index = () => {
   // const socket = io("ws://localhost:4000");
@@ -15,8 +14,6 @@ const Index = () => {
     playerId: "test",
     playerName: playerName
   });
-
-  addSocketEvents(socket);
   
   return (
     <Layout>
