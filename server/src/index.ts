@@ -6,7 +6,7 @@ import cors from "cors";
 import { get_dictionary } from "./Endpoint/dictionary";
 import { get_guess } from "./Endpoint/guess";
 import "./utils/type.ts";
-import { Lobby, lobbyMap, playerMap } from "./utils/type";
+import { Lobby, lobbyMap, Player, playerMap } from "./utils/type";
 
 export var idToWord: Map<string, string> = new Map();
 let rooms: Map<string, Array<Socket>> = new Map();
@@ -50,21 +50,17 @@ app.post("/guess", (req, res) => {
 
 io.on("connection", (socket) => {
  console.log("connected");
- socket.on('create', function(room) {
-  console.log(rooms);
-  socket.join(room);
- });
 
  socket.on("create_lobby", function({ mode, place, isPublic, owner, name }) {
  
-  let lobbyId = get_id();
-  let lobby:Lobby = {id:lobbyId, 
+  let lobbyId = get_id() // TODO
+  let lobby:Lobby = {id:lobbyId, //TODO
     state:"pre-game", 
     name:name, 
     totalPlace:0, 
     currentPlace:1, 
-    playerList:new Array(),
-    owner:owner,
+    playerList:new Array<Player>(),
+    owner:owner.id,
     isPublic:isPublic,
     mode:mode
   }
@@ -74,9 +70,13 @@ io.on("connection", (socket) => {
   else
     lobby.totalPlace = place;
 
-  let player = playerMap.get(owner);
+  let player = playerMap.get(owner.id);
   if ( player !== undefined )
-    lobby.playerList.push( player );
+    lobby.playerList.push( owner );
+  else {
+    playerMap.set(owner.id, owner)
+    lobby.playerList.push(owner);
+  }
 
   lobbyMap.set(lobbyId, lobby);
 
@@ -105,19 +105,18 @@ io.on("connection", (socket) => {
   }
 });
 
-socket.on("leave_lobby", (roomId, playerId) => {
-  console.log(lobbyMap.get(roomId)?.playerList)
-  const playerList = lobbyMap.get(roomId)?.playerList
+socket.on("leave_lobby", (params) => { // params : roomId, playerId
+  const playerList = lobbyMap.get(params.roomId)?.playerList
   if (playerList !== undefined) {
     for (var i = 0; i<playerList.length ; i++) {
-       if (playerList[i].id === playerId) {
+       if (playerList[i].id === params.playerId) {
          playerList.splice(i, 1);
          i--;
        }
     }
   }
-  socket.leave(roomId)
-  console.log(lobbyMap.get(roomId)?.playerList)
+  socket.leave(params.roomId)
+  console.log("Joueur retiré")
 })
 
 });
