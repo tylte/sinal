@@ -1,4 +1,3 @@
-
 export type Player = {
     id: string,
     name: string,
@@ -7,18 +6,6 @@ export type GameMode = "1vs1";
 export type LobbyState = "in-game" | "pre-game" | "finished";
 
 export class Lobby {
-            constructor(id: string, state: LobbyState, name: string, totalPlace: number, owner:string, isPublic:boolean, mode:GameMode) {
-                this.id = id;
-                this.state = state;
-                this.name = name;
-                this.totalPlace = totalPlace;
-                this.currentPlace = 1;
-                this.playerList[0].id = id;
-                this.playerList[0].name = owner;
-                this.owner = owner;
-                this.isPublic = isPublic;
-                this.mode = mode;
-            }
             public id: string;
             public state: LobbyState;
             public name: string;
@@ -30,6 +17,6 @@ export class Lobby {
             public mode: GameMode;
 }
 
-export let lobbyMap : Map<string,Lobby> = new Map();
+export let lobbyMap: Map<string, Lobby> = new Map();
 
-export let playerMap :Map<string,Player> = new Map();
+export let playerMap: Map<string, Player> = new Map();
