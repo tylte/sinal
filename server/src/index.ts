@@ -103,6 +103,10 @@ io.on("connection", (socket) => {
   }
 });
 
+socket.on("create_player", function(playerName) {
+  
+});
+
 });
 
 server.listen(port, () => {
