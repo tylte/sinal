@@ -56,11 +56,6 @@ io.on("connection", (socket) => {
   socket.join(room);
  });
 
- socket.on('result', function({ room, result }) {
-   console.log(room);
-   io.to(room).emit('roomResult', result);
- });
-
  socket.on("create_lobby", function({ mode, place, isPublic, owner, name }) {
   let lobby = new Lobby();
   let lobbyId = get_id();
@@ -88,6 +83,25 @@ io.on("connection", (socket) => {
   socket.emit("create_lobby_response", lobbyId);
   
  });
+ socket.on('join_lobby', function(result) {
+  if(lobbyMap.get(result.lobbyId) !== undefined) {
+    if(lobbyMap.get(result.lobbyId)!.currentPlace < lobbyMap.get(result.lobbyId)!.totalPlace) {
+      socket.join(result.lobbyId);
+      lobbyMap.get(result.lobbyId)!.playerList[lobbyMap.get(result.lobbyId)!.currentPlace];
+      lobbyMap.get(result.lobbyId)!.currentPlace++;
+      playerMap.set(result.playerId, {id:result.playerId, name:result.playerName});
+      socket.emit("join_lobby_response", {success: true,
+        message: "Le lobby à été rejoins !"});
+    } else {
+      socket.emit("join_lobby_response", {success: false,
+        message: "Le lobby est déja plein !"});
+    }
+  } else {
+    console.log("enter");
+    socket.emit("join_lobby_response", {success: false,
+      message: "Le lobby donné n'existe pas !"});
+  }
+});
 
 });
 

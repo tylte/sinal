@@ -9,10 +9,11 @@ const Index = () => {
   socket?.connect();
   let room = "room1";
   socket?.emit("create", room);
-  let result = [1, 1, 1];
-  socket?.emit("result", { room: room, result: result });
-  socket?.on("roomResult", (arg) => {
-    console.log(arg); // world
+  let lobbyId = "test";
+  let playerName = "test";
+  socket?.emit('join_lobby', {lobbyId: lobbyId,
+    playerId: "test",
+    playerName: playerName
   });
   
   return (
