@@ -21,7 +21,7 @@ const lobbies: Lobby[] = [
   {
     id: "2",
     state: "pre-game",
-    name: "Lobby des mecs sombres",
+    name: "Tom's Lobby",
     totalPlace: 2,
     currentPlace: 1,
     playerList: [{ id: "a", name: "tom" }],
@@ -40,17 +40,129 @@ const lobbies: Lobby[] = [
     isPublic: true,
     mode: "1vs1",
   },
+  {
+    id: "4",
+    state: "in-game",
+    name: "Lobby des mecs chiants avec un nom assez long parce qu'on aime casser les pieds aux devs",
+    totalPlace: 2,
+    currentPlace: 2,
+    playerList: [
+      { id: "123121231", name: "carl" },
+      { id: "12312313", name: "carl" },
+    ],
+    owner: "123121231",
+    isPublic: true,
+    mode: "1vs1",
+  },
+  {
+    id: "5",
+    state: "pre-game",
+    name: "Lobby des mecs cool",
+    totalPlace: 2,
+    currentPlace: 2,
+    playerList: [
+      { id: "11231", name: "bob" },
+      { id: "123123111", name: "carl" },
+    ],
+    owner: "11231",
+    isPublic: true,
+    mode: "1vs1",
+  },
+  {
+    id: "6",
+    state: "pre-game",
+    name: "Lobby des mecs cool",
+    totalPlace: 2,
+    currentPlace: 2,
+    playerList: [
+      { id: "11231", name: "bob" },
+      { id: "123123111", name: "carl" },
+    ],
+    owner: "11231",
+    isPublic: true,
+    mode: "1vs1",
+  },
+  {
+    id: "7",
+    state: "pre-game",
+    name: "Lobby des mecs cool",
+    totalPlace: 2,
+    currentPlace: 2,
+    playerList: [
+      { id: "11231", name: "bob" },
+      { id: "123123111", name: "carl" },
+    ],
+    owner: "11231",
+    isPublic: true,
+    mode: "1vs1",
+  },
+  {
+    id: "8",
+    state: "pre-game",
+    name: "Lobby des mecs cool",
+    totalPlace: 2,
+    currentPlace: 2,
+    playerList: [
+      { id: "11231", name: "bob" },
+      { id: "123123111", name: "carl" },
+    ],
+    owner: "11231",
+    isPublic: true,
+    mode: "1vs1",
+  },
+  {
+    id: "9",
+    state: "pre-game",
+    name: "Lobby des mecs cool",
+    totalPlace: 2,
+    currentPlace: 2,
+    playerList: [
+      { id: "11231", name: "bob" },
+      { id: "123123111", name: "carl" },
+    ],
+    owner: "11231",
+    isPublic: true,
+    mode: "1vs1",
+  },
+  {
+    id: "10",
+    state: "pre-game",
+    name: "Lobby des mecs cool",
+    totalPlace: 2,
+    currentPlace: 2,
+    playerList: [
+      { id: "11231", name: "bob" },
+      { id: "123123111", name: "carl" },
+    ],
+    owner: "11231",
+    isPublic: true,
+    mode: "1vs1",
+  },
+  {
+    id: "11",
+    state: "pre-game",
+    name: "Lobby des mecs cool",
+    totalPlace: 2,
+    currentPlace: 2,
+    playerList: [
+      { id: "11231", name: "bob" },
+      { id: "123123111", name: "carl" },
+    ],
+    owner: "11231",
+    isPublic: true,
+    mode: "1vs1",
+  },
 ];
 
 const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   return (
-    <Layout>
-      <Text mb={5} align="center" fontSize={"larger"}>
-        Partie Solo
+    <Layout variant="large">
+      <Text mb={5} align="center" fontSize={"3xl"}>
+        lobby publique
       </Text>
-      <SimpleGrid minChildWidth="120px" spacing="40px">
+      <SimpleGrid minChildWidth="250px" spacing="40px">
         {lobbies.map((lobby) => (
-          <LobbyProfile lobby={lobby} />
+          <LobbyProfile key={lobby.id} lobby={lobby} />
         ))}
       </SimpleGrid>
     </Layout>
