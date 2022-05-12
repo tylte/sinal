@@ -10,16 +10,32 @@ export const GameModeMenu: React.FC<GameModeMenuProps> = ({}) => {
   return (
     <Stack spacing={4} direction="column" align="center">
       <Text fontWeight={"bold"} fontSize="2xl">
-        Selectionne un mode de jeu
+        selectionne un mode de jeu
       </Text>
-      <Stack w={240}>
+      <Stack w={240} spacing={4}>
         <Button
           onClick={() => router.push("/solo")}
           colorScheme="teal"
           w="100%"
           variant={"outline"}
         >
-          Solo
+          solo
+        </Button>
+        <Button
+          onClick={() => router.push("/solo")}
+          colorScheme="teal"
+          w="100%"
+          variant={"outline"}
+        >
+          creer un lobby
+        </Button>
+        <Button
+          onClick={() => router.push("/lobby")}
+          colorScheme="teal"
+          w="100%"
+          variant={"outline"}
+        >
+          aller aux lobbies
         </Button>
       </Stack>
     </Stack>

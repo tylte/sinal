@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { DictionaryContext, SocketContext } from "../utils/context";
 import { io, Socket } from "socket.io-client";
-import { addCreateLobbyEvent } from "src/utils/api";
+import { addCreateLobbyEvent, addJoinLobbyEvent } from "src/utils/api";
 import { useRouter } from "next/router";
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -26,6 +26,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     let socket = io("ws://localhost:4000");
     setSocket(socket);
     addCreateLobbyEvent(socket, router);
+    addJoinLobbyEvent(socket, router);
   }, []);
   return (
     <SocketContext.Provider value={socket}>
