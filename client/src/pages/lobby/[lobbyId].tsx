@@ -9,10 +9,14 @@ const Lobby: React.FC<LobbyProps> = ({}) => {
   const socket = useSocket();
   const router = useRouter();
   let lobbyId = router.query.lobbyId;
-  if(lobbyId !== undefined) {
-    socket?.emit("join_lobby", {lobbyId:lobbyId, playerId:"test", playerName:"test"});
+  if (lobbyId !== undefined) {
+    socket?.emit("join_lobby", {
+      lobbyId: lobbyId,
+      playerId: "test",
+      playerName: "test",
+    });
   }
-    return <Layout>Inside lobby</Layout>;
+  return <Layout>Inside lobby</Layout>;
 };
 
 export default Lobby;
