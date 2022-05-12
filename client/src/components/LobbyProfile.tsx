@@ -9,7 +9,6 @@ import {
 import React from "react";
 import { Lobby } from "../utils/types";
 import NextLink from "next/link";
-import { PlayerList } from "./PlayerList";
 import { isLobbyJoinable } from "../utils/utils";
 
 interface LobbyProfileProps {
@@ -19,10 +18,12 @@ interface LobbyProfileProps {
 export const LobbyProfile: React.FC<LobbyProfileProps> = ({
   lobby: { name, id, mode, state, currentPlace, totalPlace, owner, playerList },
 }) => {
+  let playerOwner = playerList.find(({ id }) => owner === id);
+  let isJoinable = isLobbyJoinable(currentPlace, totalPlace, state);
   return (
     <Tooltip label={name}>
       <LinkBox borderWidth="1px" borderRadius="lg" p={2}>
-        {isLobbyJoinable(currentPlace, totalPlace, state) && (
+        {isJoinable && (
           <NextLink href={`/lobby/${id}`} passHref>
             <LinkOverlay></LinkOverlay>
           </NextLink>
@@ -32,6 +33,13 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
             whiteSpace={"nowrap"}
             overflow={"hidden"}
             textOverflow={"ellipsis"}
+            color={
+              isJoinable
+                ? "green.300"
+                : state === "in-game"
+                ? "orange.300"
+                : "red.300"
+            }
           >
             {name}
           </Text>
@@ -42,7 +50,7 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
             </Text>
             <Text fontStyle={"italic"}>{state}</Text>
           </HStack>
-          <PlayerList owner={owner} players={playerList} />
+          {playerOwner !== undefined && <Text>{playerOwner.name} (owner)</Text>}
         </Stack>
       </LinkBox>
     </Tooltip>

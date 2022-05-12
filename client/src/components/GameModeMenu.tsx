@@ -1,11 +1,14 @@
-import { Stack, Button, Text } from "@chakra-ui/react";
+import { Stack, Button, Text, useDisclosure } from "@chakra-ui/react";
 import React from "react";
 import { useRouter } from "next/router";
+import { CreatePlayerModal } from "./CreatePlayerModal";
 
 interface GameModeMenuProps {}
 
 export const GameModeMenu: React.FC<GameModeMenuProps> = ({}) => {
   const router = useRouter();
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <Stack spacing={4} direction="column" align="center">
@@ -22,22 +25,23 @@ export const GameModeMenu: React.FC<GameModeMenuProps> = ({}) => {
           solo
         </Button>
         <Button
-          onClick={() => router.push("/solo")}
+          onClick={onOpen}
           colorScheme="teal"
           w="100%"
           variant={"outline"}
         >
-          creer un lobby
+          multijoueur
         </Button>
-        <Button
+        {/* <Button
           onClick={() => router.push("/lobby")}
           colorScheme="teal"
           w="100%"
           variant={"outline"}
         >
           aller aux lobbies
-        </Button>
+        </Button> */}
       </Stack>
+      <CreatePlayerModal isOpen={isOpen} onClose={onClose} />
     </Stack>
   );
 };
