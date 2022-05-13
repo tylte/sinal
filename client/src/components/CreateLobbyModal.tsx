@@ -18,7 +18,6 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { NextRouter, useRouter } from "next/router";
 import React from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
