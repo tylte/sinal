@@ -51,9 +51,9 @@ io.on("connection", (socket) => {
   console.log("connected");
 
   socket.on("create_lobby", function ({ mode, place, isPublic, owner, name }) {
-    let lobbyId = get_id(); // TODO
+    let lobbyId = get_id();
     let lobby: Lobby = {
-      id: lobbyId, //TODO
+      id: lobbyId,
       state: "pre-game",
       name: name,
       totalPlace: 0,

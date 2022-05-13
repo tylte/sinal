@@ -6,7 +6,7 @@ import {
   Stack,
   useToast,
 } from "@chakra-ui/react";
-import React, { KeyboardEventHandler, useState } from "react";
+import React, { useState } from "react";
 import Confetti from "react-confetti";
 import { guessWord } from "../utils/api";
 import { useDictionary } from "../utils/hooks";
