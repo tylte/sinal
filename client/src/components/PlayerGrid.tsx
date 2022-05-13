@@ -37,6 +37,12 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
 
+  const handleKeyPressed = (event) => {
+    if (event.key === "Enter") {
+      handleTryWord();
+    }
+  }
+
   const handleWordChange = (str: string) => {
     // Check that first letter doesn't change and word will not contain digits
     let str_upper = str.toUpperCase();
@@ -101,7 +107,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     } else {
       for (let i = 0; i < length; i++) {
         inputArrayField.push(
-          <PinInputField key={i} backgroundColor="grey" color="white" />
+          <PinInputField onKeyDown={handleKeyPressed} key={i} backgroundColor="grey" color="white" />
         );
       }
     }
