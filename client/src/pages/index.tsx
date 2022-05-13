@@ -1,25 +1,24 @@
+import { useSocket } from "src/utils/hooks";
 import { GameModeMenu } from "../components/GameModeMenu";
 import { Layout } from "../components/Layout";
 // import { addCreateLobbyEvent } from "src/utils/api";
 
 const Index = () => {
-  // const socket = io("ws://localhost:4000");
-  // const socket = useSocket();
-  // socket?.connect();
-  // let room = "room1";
-  // socket?.emit("create", room);
-  // let lobbyId = "test";
-  // let playerName = "test";
-  // socket?.emit('join_lobby', {lobbyId: lobbyId,
-  //   playerId: "test",
-  //   playerName: playerName
-  // });
-  // socket?.emit('join_lobby', {lobbyId: lobbyId,
-  //   playerId: "test2",
-  //   playerName: "Coucou"
-  // });
-  // socket?.emit("leave_lobby", {roomId: lobbyId, 
-  //   playerId: "test2"})
+  const socket = useSocket();
+  socket?.connect();
+  let lobbyId = "test";
+  socket?.emit('create_lobby', {mode: "1vs1",
+    place: 2,
+    isPublic: true,
+    owner: {id:"test", name:"lol"},
+    name:"test"
+  });
+  socket?.emit('join_lobby', {lobbyId: lobbyId,
+    player : {id: "test2",
+    name: "Coucou"}
+  });
+  socket?.emit("leave_lobby", {roomId: lobbyId, 
+    id: "test2"})
   return (
     <Layout>
       <GameModeMenu />

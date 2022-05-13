@@ -1,22 +1,48 @@
-export type Player = {
-  id: string;
-  name: string;
-};
-export type GameMode = "1vs1";
-export type LobbyState = "in-game" | "pre-game" | "finished";
+import { z } from "zod";
 
-export type Lobby = {
-  id: string;
-  state: LobbyState;
-  name: string;
-  totalPlace: number; // nombre de place que le lobby peut contenir en tt
-  currentPlace: number; // nb de joueur dans le lobby actuellement
-  playerList: Player[];
-  owner: string; // id du joueur owner
-  isPublic: boolean;
-  mode: GameMode;
-};
+export const Player = z.object({
+  id: z.string(),
+  name: z.string()
+});
+export type Player = z.infer<typeof Player>;
 
-export let lobbyMap: Map<string, Lobby> = new Map();
+const GameModeEnum = {
+  Mod1:"1vs1",
+} as const;
+export const GameMode = z.nativeEnum(GameModeEnum);
+export type GameModeType = z.infer<typeof GameMode>;
+
+const LobbyStateEnum = {
+  Type1:"in-game",
+  Type2:"pre-game",
+  Type3:"finished",
+} as const;
+export const LobbyState = z.nativeEnum(LobbyStateEnum);
+export type LobbyStateType = z.infer<typeof GameMode>;
+
+export const Lobby = z.object({
+  id: z.string(),
+  state: LobbyState,
+  name: z.string(),
+  totalPlace: z.number(), // nombre de place que le lobby peut contenir en tt
+  currentPlace: z.number(), // nb de joueur dans le lobby actuellement
+  playerList: Player.array(),
+  owner: z.string(), // id du joueur owner
+  isPublic: z.boolean(),
+  mode: GameMode,
+});
+
+//use in create_lobby
+export const Result = z.object({
+  mode: GameMode,
+  place: z.number(),
+  isPublic: z.boolean(),
+  owner: Player,
+  name: z.string(),
+});
+
+export type LobbyType = z.infer<typeof Lobby>;
+
+export let lobbyMap: Map<string, LobbyType> = new Map();
 
 export let playerMap: Map<string, Player> = new Map();
