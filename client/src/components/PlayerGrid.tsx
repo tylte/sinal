@@ -37,11 +37,12 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
 
-  const handleKeyPressed = (event : React.KeyboardEvent<HTMLInputElement>) => { // Type Eve
+  const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    // Type Eve
     if (event.key === "Enter") {
       handleTryWord();
     }
-  }
+  };
 
   const handleWordChange = (str: string) => {
     // Check that first letter doesn't change and word will not contain digits
@@ -98,6 +99,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     let inputArrayField = [];
 
     if (i < triesHistory.length) {
+      // Word history, not editable
       value = triesHistory[i].wordTried.toUpperCase();
       inputArrayField = getColorFromResult(triesHistory[i].result).map(
         (color, index) => (
@@ -106,8 +108,14 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       );
     } else {
       for (let i = 0; i < length; i++) {
+        // Editable input
         inputArrayField.push(
-          <PinInputField onKeyDown={handleKeyPressed} key={i} backgroundColor="grey" color="white" />
+          <PinInputField
+            onKeyDown={handleKeyPressed}
+            key={i}
+            backgroundColor="grey"
+            color="white"
+          />
         );
       }
     }

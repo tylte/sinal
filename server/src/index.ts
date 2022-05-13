@@ -6,7 +6,7 @@ import cors from "cors";
 import { get_dictionary } from "./Endpoint/dictionary";
 import { get_guess } from "./Endpoint/guess";
 import "./utils/type.ts";
-import { Lobby, lobbyMap, Player, playerMap } from "./utils/type";
+import { lobbyMap, Player, playerMap, ArgCreateLobby, LobbyType } from "./utils/type";
 
 export var idToWord: Map<string, string> = new Map();
 
@@ -50,85 +50,100 @@ app.post("/guess", (req, res) => {
 io.on("connection", (socket) => {
   console.log("connected");
 
-  socket.on("create_lobby", function ({ mode, place, isPublic, owner, name }) {
-    let lobbyId = get_id();
-    let lobby: Lobby = {
-      id: lobbyId,
-      state: "pre-game",
-      name: name,
-      totalPlace: 0,
-      currentPlace: 1,
-      playerList: new Array<Player>(),
-      owner: owner.id,
-      isPublic: isPublic,
-      mode: mode,
-    };
+  socket.on("create_lobby", function (result) {
+    let check = ArgCreateLobby.safeParse(result);
+    if (check.success) {
+      let lobbyId = get_id(); // TODO
+      let lobby: LobbyType = {
+        id: lobbyId, //TODO
+        state: "pre-game",
+        name: result.name,
+        totalPlace: 0,
+        currentPlace: 1,
+        playerList: new Array<Player>(),
+        owner: result.owner.id,
+        isPublic: result.isPublic,
+        mode: result.mode,
+      };
+      if (result.mode == "1vs1") lobby.totalPlace = 2;
+      else lobby.totalPlace = result.place;
+      let player = playerMap.get(result.owner.id);
+      if (player !== undefined) lobby.playerList.push(result.owner);
+      else {
+        playerMap.set(result.owner.id, result.owner);
+        lobby.playerList.push(result.owner);
+      }
 
-    if (mode == "1vs1") lobby.totalPlace = 2;
-    else lobby.totalPlace = place;
-
-    let player = playerMap.get(owner.id);
-    if (player !== undefined) lobby.playerList.push(owner);
-    else {
-      playerMap.set(owner.id, owner);
-      lobby.playerList.push(owner);
+      lobbyMap.set(lobbyId, lobby);
+    } else {
+      console.log(check);
     }
-
-    lobbyMap.set(lobbyId, lobby);
   });
+  socket.on("join_lobby", function ({result}) {
+    // params : lobbyId, player {id, name}
+    let player = {id : result.player.id, name:result.player.name}
+    let check = Player.safeParse(player);
+    if (check.success && typeof result.lobbyId === "string") {
+      let lobby = lobbyMap.get(result.lobbyId);
+      if (lobby !== undefined) {
+        if (lobby.currentPlace < lobby.totalPlace) {
+          console.log("join");
+          socket.join(result.lobbyId);
 
-  socket.on("join_lobby", function (result) {
-    let lobby = lobbyMap.get(result.lobbyId);
-    if (lobby !== undefined) {
-      if (lobby.currentPlace < lobby.totalPlace) {
-        socket.join(result.lobbyId);
+          lobby.playerList[lobby.currentPlace] = {
+            id: player.id,
+            name: player.name,
+          };
+          lobby.currentPlace++;
 
-        lobby.playerList[lobby!.currentPlace];
-        lobby.currentPlace++;
-
-        playerMap.set(result.playerId, {
-          id: result.playerId,
-          name: result.playerName,
-        });
-        socket.emit("join_lobby_response", {
-          success: true,
-          message: "Le lobby à été rejoins !",
-        });
+          socket.emit("join_lobby_response", {
+            success: true,
+            message: "Le lobby à été rejoins !",
+          });
+          console.log(lobby);
+        } else {
+          socket.emit("join_lobby_response", {
+            success: false,
+            message: "Le lobby est déja plein !",
+            lobby: lobby,
+          });
+        }
       } else {
         socket.emit("join_lobby_response", {
           success: false,
-          message: "Le lobby est déja plein !",
-          lobby: lobby,
+          message: "Le lobby donné n'existe pas !",
         });
       }
     } else {
-      console.log("enter");
-      socket.emit("join_lobby_response", {
-        success: false,
-        message: "Le lobby donné n'existe pas !",
-      });
+      console.log(check);
     }
   });
 
-  socket.on("leave_lobby", (params) => {
+  socket.on("leave_lobby", ({ roomId, id }) => {
     // params : roomId, playerId
-    const playerList = lobbyMap.get(params.roomId)?.playerList;
-    if (playerList !== undefined) {
-      for (var i = 0; i < playerList.length; i++) {
-        if (playerList[i].id === params.playerId) {
-          playerList.splice(i, 1);
-          i--;
+    if (typeof roomId === "string" && typeof id === "string") {
+      const playerList = lobbyMap.get(roomId)?.playerList;
+      if (playerList !== undefined) {
+        for (var i = 0; i < playerList.length; i++) {
+          if (playerList[i].id === id) {
+            playerList.splice(i, 1);
+            i--;
+          }
         }
       }
+      socket.leave(roomId);
+      console.log("Joueur retiré");
+    } else {
+      console.log("erreur leave_lobby");
     }
-    socket.leave(params.roomId);
-    console.log("Joueur retiré");
   });
 
   socket.on("create_player", (playerName) => {
-    let playerId = get_id();
-    playerMap.set(playerId, playerName);
-    socket.emit("create_player_response", playerId);
+    if (typeof playerName === "string") {
+      let playerId = get_id();
+      playerMap.set(playerId, { id: playerId, name: playerName });
+      socket.emit("create_player_response", playerId);
+    }
   });
 });
 

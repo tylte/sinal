@@ -8,8 +8,10 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { CreateLobbyModal } from "../components/CreateLobbyModal";
+import { CreatePlayerModal } from "../components/CreatePlayerModal";
 import { Layout } from "../components/Layout";
 import { LobbyProfile } from "../components/LobbyProfile";
+import { usePlayer } from "../utils/hooks";
 import { Lobby } from "../utils/types";
 
 interface PublicLobbyProps {}
@@ -164,6 +166,7 @@ const lobbies: Lobby[] = [
 
 const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [player] = usePlayer();
 
   return (
     <Layout variant="large">
@@ -180,6 +183,7 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
           ))}
         </SimpleGrid>
       </Flex>
+      {!player && <CreatePlayerModal isOpen={true} onClose={onClose} />}
       <CreateLobbyModal isOpen={isOpen} onClose={onClose} />
     </Layout>
   );

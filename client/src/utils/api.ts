@@ -22,6 +22,18 @@ export const guessWord = async (
   return [];
 };
 
+export const addSocketConnectionEvent = (
+  socket: Socket | null,
+  setIsConnected: Dispatch<SetStateAction<boolean>>
+) => {
+  socket?.on("connect", () => {
+    setIsConnected(true);
+  });
+  socket?.on("disconnect", () => {
+    setIsConnected(false);
+  });
+};
+
 export const addCreateLobbyEvent = (
   socket: Socket | null,
   router: NextRouter

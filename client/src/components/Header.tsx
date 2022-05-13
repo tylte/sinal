@@ -1,13 +1,15 @@
-import { Flex, Link, Spacer, Text } from "@chakra-ui/react";
+import { Flex, Link, Spacer, Tag, Text } from "@chakra-ui/react";
 import React from "react";
 import NextLink from "next/link";
-import { usePlayer } from "../utils/hooks";
+import { useConnected, usePlayer } from "../utils/hooks";
 import { DarkModeSwitch } from "./DarkModeSwitch";
 
 interface HeaderProps {}
 
 export const Header: React.FC<HeaderProps> = ({}) => {
   const [player] = usePlayer();
+
+  const connected = useConnected();
 
   return (
     <Flex alignItems={"center"}>
@@ -22,6 +24,15 @@ export const Header: React.FC<HeaderProps> = ({}) => {
         </Link>
       </Text>
       <Spacer />
+      {connected ? (
+        <Tag variant={"outline"} colorScheme={"green"} mr={4}>
+          connected
+        </Tag>
+      ) : (
+        <Tag variant={"outline"} colorScheme={"red"} mr={4}>
+          {"disconnected >:("}
+        </Tag>
+      )}
       {player && (
         <Text mr={4} textAlign={"center"}>
           {player.name}
