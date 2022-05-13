@@ -90,7 +90,6 @@ io.on("connection", (socket) => {
           id: result.playerId,
           name: result.playerName,
         });
-
         socket.emit("join_lobby_response", {
           success: true,
           message: "Le lobby à été rejoins !",
@@ -103,6 +102,7 @@ io.on("connection", (socket) => {
         });
       }
     } else {
+      console.log("enter");
       socket.emit("join_lobby_response", {
         success: false,
         message: "Le lobby donné n'existe pas !",

@@ -29,8 +29,9 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   nbLife,
   id,
 }) => {
+  const firstLetterUpper = firstLetter.toUpperCase();
   const dictionary = useDictionary();
-  const [word, setWord] = useState(firstLetter);
+  const [word, setWord] = useState(firstLetterUpper);
   const [tryCount, setTryCount] = useState(0);
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
   const [hasWon, setHasWon] = useState(false);
@@ -38,9 +39,10 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
 
   const handleWordChange = (str: string) => {
     // Check that first letter doesn't change and word will not contain digits
+    let str_upper = str.toUpperCase();
     const re = /\d+/g;
-    if (str.charAt(0) === firstLetter && !re.test(str)) {
-      setWord(str);
+    if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
+      setWord(str_upper);
     }
   };
 
@@ -78,14 +80,14 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       setTryCount((v) => (v = v + 1));
       const tries = triesHistory.slice();
       tries.push({ wordTried: word, result: guessResult });
-      setWord(firstLetter);
+      setWord(firstLetterUpper);
       setTriesHistory(tries);
     }
   };
 
   const inputArray = [];
   for (let i = 0; i < nbLife; i++) {
-    let value = firstLetter;
+    let value = firstLetterUpper;
     let inputArrayField = [];
 
     if (i < triesHistory.length) {
