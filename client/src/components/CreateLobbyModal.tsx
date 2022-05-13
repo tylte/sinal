@@ -41,28 +41,32 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const socket = useSocket();
   const [owner] = usePlayer();
 
-  const createLobby = (socket : Socket | null, owner : Player | null) => {
-    let boolean = isPublic == "true"
-    socket?.emit("create_lobby", { gameMode, nbPlaces, boolean, owner, lobbyName });
+  const createLobby = (socket: Socket | null, owner: Player | null) => {
+    socket?.emit("create_lobby", {
+      gameMode,
+      nbPlaces,
+      isPublic,
+      owner,
+      lobbyName,
+    });
 
     onClose();
   };
-  
-  const handleLobbyName = (event : any) => {
-    setLobbyName(event.target.value);
-  }
 
-  const handleGameMode = (value : string) => {
+  const handleLobbyName = (event: any) => {
+    setLobbyName(event.target.value);
+  };
+
+  const handleGameMode = (value: string) => {
     setGameMode(value);
-    if ( value == "battle-royale" ) {
+    if (value == "battle-royale") {
       setmaxPlaces(50);
       setNbPlaces(50);
-    }
-    else if ( value == "1vs1" ) {
+    } else if (value == "1vs1") {
       setmaxPlaces(2);
       setNbPlaces(2);
     }
-  }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -87,8 +91,15 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
           </RadioGroup>
           {/* PLACE */}
           <Text my={2}>place</Text>
-          <NumberInput onChange={(valueString : string) => setNbPlaces(parseInt(valueString))} value={nbPlaces} min={2} max={maxPlaces}>
-            <NumberInputField/>
+          <NumberInput
+            onChange={(valueString: string) =>
+              setNbPlaces(parseInt(valueString))
+            }
+            value={nbPlaces}
+            min={2}
+            max={maxPlaces}
+          >
+            <NumberInputField />
             <NumberInputStepper>
               <NumberIncrementStepper />
               <NumberDecrementStepper />
@@ -105,7 +116,11 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={() => createLobby(socket, owner)}>
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={() => createLobby(socket, owner)}
+          >
             creer lobby
           </Button>
         </ModalFooter>

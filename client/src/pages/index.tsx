@@ -1,9 +1,10 @@
-import { useSocket } from "src/utils/hooks";
+// import { useSocket } from "src/utils/hooks";
 import { GameModeMenu } from "../components/GameModeMenu";
 import { Layout } from "../components/Layout";
 // import { addCreateLobbyEvent } from "src/utils/api";
 
 const Index = () => {
+  /*
   const socket = useSocket();
   socket?.connect();
   let lobbyId = "test";
@@ -19,6 +20,7 @@ const Index = () => {
   });
   socket?.emit("leave_lobby", {roomId: lobbyId, 
     id: "test2"})
+    */
   return (
     <Layout>
       <GameModeMenu />
