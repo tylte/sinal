@@ -8,6 +8,7 @@ export type Player = z.infer<typeof Player>;
 
 const GameModeEnum = {
   Mod1: "1vs1",
+  Mod2: "battle-royale",
 } as const;
 export const GameMode = z.nativeEnum(GameModeEnum);
 export type GameModeType = z.infer<typeof GameMode>;
