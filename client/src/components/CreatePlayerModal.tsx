@@ -16,6 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
+import { addCreatePlayerEvent } from "../utils/api";
+import { usePlayer, useSocket } from "../utils/hooks";
 
 interface CreatePlayerModalProps {
   isOpen: boolean;
@@ -27,12 +29,23 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
   onClose,
 }) => {
   const router = useRouter();
+  const socket = useSocket();
+  const [_, setPlayer] = usePlayer();
 
   const [pseudo, setPseudo] = useState("");
 
   const handlePseudoChange = (e: any) => {
-    setPseudo(e.target.value);
+    let newPseudo = e.target.value as string;
+    if (newPseudo.length < 50) {
+      setPseudo(newPseudo);
+    }
   };
+
+  const createPlayer = () => {
+    socket?.emit("create_player", pseudo);
+  };
+
+  addCreatePlayerEvent(socket, pseudo, setPlayer, router);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -68,7 +81,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
             <Button
               colorScheme="green"
               mr={3}
-              onClick={() => router.push("/lobby")}
+              onClick={createPlayer}
               isDisabled={pseudo.length === 0}
             >
               Rejoindre la bataille
