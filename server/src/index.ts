@@ -52,7 +52,7 @@ io.on("connection", (socket) => {
 
   socket.on("create_lobby", function (result) {
     if (Result.safeParse(result).success) {
-      let lobbyId = "test"; // TODO
+      let lobbyId = get_id(); // TODO
       let lobby: LobbyType = {
         id: lobbyId, //TODO
         state: "pre-game",
@@ -75,12 +75,11 @@ io.on("connection", (socket) => {
 
       lobbyMap.set(lobbyId, lobby);
     } else {
-      console.log(Result.safeParse(result).success);
+      console.log("erreur create_lobby");
     }
   });
   socket.on("join_lobby", function ({ lobbyId, player: { id, name } }) {
     // params : lobbyId, player {id, name}
-
     if (Player.safeParse({ id, name }).success && typeof lobbyId === "string") {
       let lobby = lobbyMap.get(lobbyId);
       if (lobby !== undefined) {
@@ -113,7 +112,7 @@ io.on("connection", (socket) => {
         });
       }
     } else {
-      console.log(typeof lobbyId === "string");
+      console.log("erreur join_lobby");
     }
   });
 
@@ -132,7 +131,7 @@ io.on("connection", (socket) => {
       socket.leave(roomId);
       console.log("Joueur retiré");
     } else {
-      console.log(typeof id === "string");
+      console.log("erreur leave_lobby");
     }
   });
 

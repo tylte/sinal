@@ -32,8 +32,10 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   if (lobbyId !== undefined) {
     socket?.emit("join_lobby", {
       lobbyId: lobbyId,
-      playerId: "test",
-      playerName: "test",
+      player: {
+        id: "test",
+        name: "test",
+      },
     });
   }
 
