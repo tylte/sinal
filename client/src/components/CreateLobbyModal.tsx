@@ -1,5 +1,6 @@
 import {
   Button,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -16,8 +17,12 @@ import {
   RadioGroup,
   Stack,
   Text,
+  Textarea as TextField ,
 } from "@chakra-ui/react";
 import React from "react";
+import { Socket } from "socket.io-client";
+import { usePlayer, useSocket } from "src/utils/hooks";
+import { Player } from "src/utils/types";
 
 interface CreateLobbyModalProps {
   isOpen: boolean;
@@ -30,12 +35,33 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
 }) => {
   const [gameMode, setGameMode] = React.useState("1vs1");
   const [isPublic, setIsPublic] = React.useState("false");
+  const [lobbyName, setLobbyName] = React.useState("nouveau lobby");
+  const [nbPlaces, setNbPlaces] = React.useState(2);
+  const [maxPlaces, setmaxPlaces] = React.useState(2);
+  const socket = useSocket();
+  const owner = usePlayer();
 
-  const createLobby = () => {
-    // ICI LES EVENTS DE CREATION DE LOBBY
+  const createLobby = (socket : Socket | null, owner : Player | null) => {
+    socket?.emit("create_lobby", { gameMode, nbPlaces, isPublic, owner, lobbyName });
 
     onClose();
   };
+  
+  const handleLobbyName = (event : any) => {
+    setLobbyName(event.target.value);
+  }
+
+  const handleGameMode = (value : string) => {
+    setGameMode(value);
+    if ( value == "battle-royale" ) {
+      setmaxPlaces(50);
+      setNbPlaces(50);
+    }
+    else if ( value == "1vs1" ) {
+      setmaxPlaces(2);
+      setNbPlaces(2);
+    }
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -44,23 +70,24 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         <ModalHeader>creation de lobby</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
+          <Input value={lobbyName} onChange={handleLobbyName} />
           {/* GAME MODE */}
           <Text my={2}>mode de jeu</Text>
-          <RadioGroup onChange={setGameMode} value={gameMode}>
+          <RadioGroup onChange={handleGameMode} value={gameMode}>
             <Stack direction="row">
               <Radio value="1vs1">1 vs 1</Radio>
-              <Radio isDisabled={true} value="2">
+              <Radio isDisabled={false} value="battle-royale">
                 battle royale
               </Radio>
-              <Radio isDisabled={true} value="3">
+              <Radio isDisabled={true} value="2vs2">
                 2 vs 2
               </Radio>
             </Stack>
           </RadioGroup>
           {/* PLACE */}
           <Text my={2}>place</Text>
-          <NumberInput defaultValue={2} min={2} max={2}>
-            <NumberInputField />
+          <NumberInput onChange={(valueString : string) => setNbPlaces(parseInt(valueString))} value={nbPlaces} min={2} max={maxPlaces}>
+            <NumberInputField/>
             <NumberInputStepper>
               <NumberIncrementStepper />
               <NumberDecrementStepper />
@@ -77,7 +104,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={createLobby}>
+          <Button colorScheme="blue" mr={3} onClick={() => createLobby(socket, owner)}>
             creer lobby
           </Button>
         </ModalFooter>

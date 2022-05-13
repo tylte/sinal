@@ -19,7 +19,7 @@ export type Player = {
   id: string;
   name: string;
 };
-export type GameMode = "1vs1";
+export type GameMode = "1vs1" | "battle-royale";
 export type LobbyState = "in-game" | "pre-game" | "finished";
 
 export type Lobby = {
