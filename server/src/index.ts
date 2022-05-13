@@ -6,7 +6,7 @@ import cors from "cors";
 import { get_dictionary } from "./Endpoint/dictionary";
 import { get_guess } from "./Endpoint/guess";
 import "./utils/type.ts";
-import { lobbyMap, Player, playerMap, Result, LobbyType } from "./utils/type";
+import { lobbyMap, Player, playerMap, ArgCreateLobby, LobbyType } from "./utils/type";
 
 export var idToWord: Map<string, string> = new Map();
 
@@ -51,7 +51,7 @@ io.on("connection", (socket) => {
   console.log("connected");
 
   socket.on("create_lobby", function (result) {
-    if (Result.safeParse(result).success) {
+    if (ArgCreateLobby.safeParse(result).success) {
       let lobbyId = get_id(); // TODO
       let lobby: LobbyType = {
         id: lobbyId, //TODO
@@ -78,18 +78,19 @@ io.on("connection", (socket) => {
       console.log("erreur create_lobby");
     }
   });
-  socket.on("join_lobby", function ({ lobbyId, player: { id, name } }) {
+  socket.on("join_lobby", function ({result}) {
     // params : lobbyId, player {id, name}
-    if (Player.safeParse({ id, name }).success && typeof lobbyId === "string") {
-      let lobby = lobbyMap.get(lobbyId);
+    let player = {id : result.player.id, name:result.player.name}
+    if (Player.safeParse(player).success && typeof result.lobbyId === "string") {
+      let lobby = lobbyMap.get(result.lobbyId);
       if (lobby !== undefined) {
         if (lobby.currentPlace < lobby.totalPlace) {
           console.log("join");
-          socket.join(lobbyId);
+          socket.join(result.lobbyId);
 
           lobby.playerList[lobby.currentPlace] = {
-            id: id,
-            name: name,
+            id: player.id,
+            name: player.name,
           };
           lobby.currentPlace++;
 

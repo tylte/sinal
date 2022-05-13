@@ -33,7 +33,7 @@ export const Lobby = z.object({
 });
 
 //use in create_lobby
-export const Result = z.object({
+export const ArgCreateLobby = z.object({
   mode: GameMode,
   place: z.number(),
   isPublic: z.boolean(),
