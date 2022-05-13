@@ -92,6 +92,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     let inputArrayField = [];
 
     if (i < triesHistory.length) {
+      // Word history, not editable
       value = triesHistory[i].wordTried.toUpperCase();
       inputArrayField = getColorFromResult(triesHistory[i].result).map(
         (color, index) => (
@@ -100,6 +101,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       );
     } else {
       for (let i = 0; i < length; i++) {
+        // Editable input
         inputArrayField.push(
           <PinInputField key={i} backgroundColor="grey" color="white" />
         );
