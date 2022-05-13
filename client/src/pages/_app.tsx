@@ -2,23 +2,23 @@ import { ChakraProvider } from "@chakra-ui/react";
 
 import theme from "../theme";
 import { AppProps } from "next/app";
-import { DarkModeSwitch } from "../components/DarkModeSwitch";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  DictionaryContext,
-  PlayerContext,
-  SocketContext,
-} from "../utils/context";
+import { SinalContext } from "../utils/context";
 import { io, Socket } from "socket.io-client";
-import { addCreateLobbyEvent, addJoinLobbyEvent } from "src/utils/api";
+import {
+  addCreateLobbyEvent,
+  addJoinLobbyEvent,
+  addSocketConnectionEvent,
+} from "src/utils/api";
 import { useRouter } from "next/router";
 import { Player } from "../utils/types";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [dictionary, setDictionnary] = useState<Set<string> | null>(null);
+  const [dictionary, setDictionnary] = useState<Set<string>>(new Set());
   const [socket, setSocket] = useState<Socket | null>(null);
   const [player, setPlayer] = useState<Player | null>(null);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,22 +31,26 @@ function MyApp({ Component, pageProps }: AppProps) {
     });
     let socket = io("ws://localhost:4000");
     setSocket(socket);
+    addSocketConnectionEvent(socket, setIsConnected);
     addCreateLobbyEvent(socket, router);
-    addJoinLobbyEvent(socket, router);
+    addJoinLobbyEvent(socket);
   }, []);
+
   return (
-    <PlayerContext.Provider value={[player, setPlayer]}>
-      <SocketContext.Provider value={socket}>
-        <DictionaryContext.Provider
-          value={dictionary !== null ? dictionary : new Set()}
-        >
-          <ChakraProvider resetCSS theme={theme}>
-            <DarkModeSwitch />
-            <Component {...pageProps} />
-          </ChakraProvider>
-        </DictionaryContext.Provider>
-      </SocketContext.Provider>
-    </PlayerContext.Provider>
+    // <PlayerContext.Provider value={[player, setPlayer]}>
+    //   <SocketContext.Provider value={socket}>
+    <SinalContext.Provider
+      value={{
+        dictionary,
+        socket,
+        playerActions: [player, setPlayer],
+        isConnected,
+      }}
+    >
+      <ChakraProvider resetCSS theme={theme}>
+        <Component {...pageProps} />
+      </ChakraProvider>
+    </SinalContext.Provider>
   );
 }
 

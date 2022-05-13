@@ -9,7 +9,6 @@ import "./utils/type.ts";
 import { Lobby, lobbyMap, Player, playerMap } from "./utils/type";
 
 export var idToWord: Map<string, string> = new Map();
-let rooms: Map<string, Array<Socket>> = new Map();
 
 const app = express();
 const port = 4000;
@@ -76,17 +75,17 @@ io.on("connection", (socket) => {
     }
 
     lobbyMap.set(lobbyId, lobby);
-
-    socket.join(lobbyId);
-    socket.emit("create_lobby_response", lobbyId);
   });
+
   socket.on("join_lobby", function (result) {
     let lobby = lobbyMap.get(result.lobbyId);
     if (lobby !== undefined) {
-      if (lobby!.currentPlace < lobby!.totalPlace) {
+      if (lobby.currentPlace < lobby.totalPlace) {
         socket.join(result.lobbyId);
-        lobby!.playerList[lobby!.currentPlace];
-        lobby!.currentPlace++;
+
+        lobby.playerList[lobby!.currentPlace];
+        lobby.currentPlace++;
+
         playerMap.set(result.playerId, {
           id: result.playerId,
           name: result.playerName,

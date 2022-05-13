@@ -67,7 +67,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>creation de lobby</ModalHeader>
+        <ModalHeader>Création de lobby</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Input value={lobbyName} onChange={handleLobbyName} />
@@ -94,11 +94,11 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
             </NumberInputStepper>
           </NumberInput>
           {/* PUBLIC/PRIVE */}
-          <Text my={2}>visibilite</Text>
+          <Text my={2}>Visibilité</Text>
           <RadioGroup onChange={setIsPublic} value={isPublic}>
             <Stack direction="row">
-              <Radio value="true">public</Radio>
-              <Radio value="false">private</Radio>
+              <Radio value="true">Public</Radio>
+              <Radio value="false">Privée</Radio>
             </Stack>
           </RadioGroup>
         </ModalBody>

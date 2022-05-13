@@ -2,13 +2,22 @@ import { Stack, Button, Text, useDisclosure } from "@chakra-ui/react";
 import React from "react";
 import { useRouter } from "next/router";
 import { CreatePlayerModal } from "./CreatePlayerModal";
+import { usePlayer } from "../utils/hooks";
 
 interface GameModeMenuProps {}
 
 export const GameModeMenu: React.FC<GameModeMenuProps> = ({}) => {
   const router = useRouter();
-
+  const [player] = usePlayer();
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const joinMulti = () => {
+    if (!player) {
+      onOpen();
+    } else {
+      router.push("/lobby");
+    }
+  };
 
   return (
     <Stack spacing={4} direction="column" align="center">
@@ -25,7 +34,7 @@ export const GameModeMenu: React.FC<GameModeMenuProps> = ({}) => {
           Solo
         </Button>
         <Button
-          onClick={onOpen}
+          onClick={joinMulti}
           colorScheme="teal"
           w="100%"
           variant={"outline"}
