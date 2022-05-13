@@ -6,7 +6,14 @@ import cors from "cors";
 import { get_dictionary } from "./Endpoint/dictionary";
 import { get_guess } from "./Endpoint/guess";
 import "./utils/type.ts";
-import { lobbyMap, Player, playerMap, ArgCreateLobby, LobbyType } from "./utils/type";
+import {
+  lobbyMap,
+  Player,
+  playerMap,
+  ArgCreateLobby,
+  LobbyType,
+  ArgJoinLobby,
+} from "./utils/type";
 
 export var idToWord: Map<string, string> = new Map();
 
@@ -75,25 +82,30 @@ io.on("connection", (socket) => {
       }
 
       lobbyMap.set(lobbyId, lobby);
+
+      socket.join(lobbyId);
+      socket.emit("create_lobby_response", lobbyId);
     } else {
-      console.log(check);
+      console.log("create_lobby payload : ", result);
+      console.log("create_lobby : ", check);
     }
   });
-  socket.on("join_lobby", function ({result}) {
+  socket.on("join_lobby", function (result) {
     // params : lobbyId, player {id, name}
-    let player = {id : result.player.id, name:result.player.name}
-    let check = Player.safeParse(player);
-    if (check.success && typeof result.lobbyId === "string") {
-      let lobby = lobbyMap.get(result.lobbyId);
-      if (lobby !== undefined) {
+    let check = ArgJoinLobby.safeParse(result);
+    if (check.success) {
+      const { playerId, lobbyId } = check.data;
+      let lobby = lobbyMap.get(lobbyId);
+      let player = playerMap.get(playerId);
+      if (lobby !== undefined && player !== undefined) {
         if (lobby.currentPlace < lobby.totalPlace) {
           console.log("join");
           socket.join(result.lobbyId);
 
-          lobby.playerList[lobby.currentPlace] = {
+          lobby.playerList.push({
             id: player.id,
             name: player.name,
-          };
+          });
           lobby.currentPlace++;
 
           socket.emit("join_lobby_response", {
@@ -115,7 +127,8 @@ io.on("connection", (socket) => {
         });
       }
     } else {
-      console.log(check);
+      console.log("join_lobby payload : ", result);
+      console.log("join_lobby : ", check);
     }
   });
 

@@ -2,20 +2,20 @@ import { z } from "zod";
 
 export const Player = z.object({
   id: z.string(),
-  name: z.string()
+  name: z.string(),
 });
 export type Player = z.infer<typeof Player>;
 
 const GameModeEnum = {
-  Mod1:"1vs1",
+  Mod1: "1vs1",
 } as const;
 export const GameMode = z.nativeEnum(GameModeEnum);
 export type GameModeType = z.infer<typeof GameMode>;
 
 const LobbyStateEnum = {
-  Type1:"in-game",
-  Type2:"pre-game",
-  Type3:"finished",
+  Type1: "in-game",
+  Type2: "pre-game",
+  Type3: "finished",
 } as const;
 export const LobbyState = z.nativeEnum(LobbyStateEnum);
 export type LobbyStateType = z.infer<typeof GameMode>;
@@ -39,6 +39,11 @@ export const ArgCreateLobby = z.object({
   isPublic: z.boolean(),
   owner: Player,
   name: z.string(),
+});
+
+export const ArgJoinLobby = z.object({
+  lobbyId: z.string(),
+  playerId: z.string(),
 });
 
 export type LobbyType = z.infer<typeof Lobby>;

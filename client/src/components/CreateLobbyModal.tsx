@@ -33,7 +33,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   onClose,
 }) => {
   const [gameMode, setGameMode] = React.useState("1vs1");
-  const [isPublic, setIsPublic] = React.useState("false");
+  const [isPublic, setIsPublic] = React.useState(false);
   const [lobbyName, setLobbyName] = React.useState("nouveau lobby");
   const [nbPlaces, setNbPlaces] = React.useState(2);
   const [maxPlaces, setmaxPlaces] = React.useState(2);
@@ -42,11 +42,11 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
 
   const createLobby = (socket: Socket | null, owner: Player | null) => {
     socket?.emit("create_lobby", {
-      gameMode,
-      nbPlaces,
+      mode: gameMode,
+      place: nbPlaces,
       isPublic,
       owner,
-      lobbyName,
+      name: lobbyName,
     });
 
     onClose();
@@ -65,6 +65,10 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
       setmaxPlaces(2);
       setNbPlaces(2);
     }
+  };
+
+  const handleIsPublic = (value: string) => {
+    setIsPublic(value === "true");
   };
 
   return (
@@ -106,7 +110,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
           </NumberInput>
           {/* PUBLIC/PRIVE */}
           <Text my={2}>Visibilité</Text>
-          <RadioGroup onChange={setIsPublic} value={isPublic}>
+          <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>
             <Stack direction="row">
               <Radio value="true">Public</Radio>
               <Radio value="false">Privée</Radio>

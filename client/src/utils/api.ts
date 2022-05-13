@@ -39,6 +39,7 @@ export const addCreateLobbyEvent = (
   router: NextRouter
 ) => {
   socket?.on("create_lobby_response", (lobbyId) => {
+    console.log(lobbyId);
     router.push(`/lobby/${lobbyId}`);
   });
 };
