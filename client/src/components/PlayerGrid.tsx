@@ -47,10 +47,11 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   };
 
   const handleTryWord = async () => {
-    if (!dictionary.has(word) || word.length !== length) {
+    let word_lowercase = word.toLowerCase();
+    if (!dictionary.has(word_lowercase) || word_lowercase.length !== length) {
       let text = "";
       let toast_id = "";
-      if (word.length !== length) {
+      if (word_lowercase.length !== length) {
         toast_id = toast_length_id;
         text = "Mot trop court";
       } else {
@@ -67,7 +68,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
         });
       }
     } else {
-      let guessResult = await guessWord(word, id);
+      let guessResult = await guessWord(word_lowercase, id);
       if (isWordCorrect(guessResult)) {
         toast({
           title: "Vous avez trouvé le mot !",
@@ -79,7 +80,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       }
       setTryCount((v) => (v = v + 1));
       const tries = triesHistory.slice();
-      tries.push({ wordTried: word, result: guessResult });
+      tries.push({ wordTried: word_lowercase, result: guessResult });
       setWord(firstLetterUpper);
       setTriesHistory(tries);
     }
@@ -91,7 +92,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     let inputArrayField = [];
 
     if (i < triesHistory.length) {
-      value = triesHistory[i].wordTried;
+      value = triesHistory[i].wordTried.toUpperCase();
       inputArrayField = getColorFromResult(triesHistory[i].result).map(
         (color, index) => (
           <PinInputField key={index} backgroundColor={color} color="white" />
