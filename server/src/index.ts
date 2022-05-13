@@ -51,7 +51,8 @@ io.on("connection", (socket) => {
   console.log("connected");
 
   socket.on("create_lobby", function (result) {
-    if (ArgCreateLobby.safeParse(result).success) {
+    let check = ArgCreateLobby.safeParse(result);
+    if (check.success) {
       let lobbyId = get_id(); // TODO
       let lobby: LobbyType = {
         id: lobbyId, //TODO
@@ -75,13 +76,14 @@ io.on("connection", (socket) => {
 
       lobbyMap.set(lobbyId, lobby);
     } else {
-      console.log("erreur create_lobby");
+      console.log(check);
     }
   });
   socket.on("join_lobby", function ({result}) {
     // params : lobbyId, player {id, name}
     let player = {id : result.player.id, name:result.player.name}
-    if (Player.safeParse(player).success && typeof result.lobbyId === "string") {
+    let check = Player.safeParse(player);
+    if (check.success && typeof result.lobbyId === "string") {
       let lobby = lobbyMap.get(result.lobbyId);
       if (lobby !== undefined) {
         if (lobby.currentPlace < lobby.totalPlace) {
@@ -113,7 +115,7 @@ io.on("connection", (socket) => {
         });
       }
     } else {
-      console.log("erreur join_lobby");
+      console.log(check);
     }
   });
 
