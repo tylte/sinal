@@ -52,7 +52,7 @@ io.on("connection", (socket) => {
 
   socket.on("create_lobby", function (result) {
     if (Result.safeParse(result).success) {
-      let lobbyId = "test"; // TODO
+      let lobbyId = get_id(); // TODO
       let lobby: LobbyType = {
         id: lobbyId, //TODO
         state: "pre-game",
