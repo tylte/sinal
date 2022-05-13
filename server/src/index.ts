@@ -74,6 +74,8 @@ io.on("connection", (socket) => {
       }
 
       lobbyMap.set(lobbyId, lobby);
+      socket.join(lobbyId);
+      socket.emit("create_lobby_response", lobbyId);
     } else {
       console.log(Result.safeParse(result).success);
     }

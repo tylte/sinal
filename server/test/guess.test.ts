@@ -5,6 +5,7 @@ idToWord.set("a", "abcd");
 idToWord.set("b", "abca");
 idToWord.set("c", "abad");
 idToWord.set("d", "trottez");
+idToWord.set("e", "fermons");
 
 describe("testing get_guess", () => {
   test("tout bon", () => {
@@ -27,5 +28,8 @@ describe("testing get_guess", () => {
   });
   test("2 lettres", () => {
     expect(get_guess("d", "trottez", idToWord)).toStrictEqual([LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION]);
+  });
+  test("fermons", () => {
+    expect(get_guess("e", "fermees", idToWord)).toStrictEqual([LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.NOT_FOUND, LetterResult.NOT_FOUND, LetterResult.RIGHT_POSITION]);
   });
 });

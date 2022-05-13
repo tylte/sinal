@@ -17,8 +17,8 @@ import {
   RadioGroup,
   Stack,
   Text,
-  Textarea as TextField ,
 } from "@chakra-ui/react";
+import { NextRouter, useRouter } from "next/router";
 import React from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
@@ -39,10 +39,11 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const [nbPlaces, setNbPlaces] = React.useState(2);
   const [maxPlaces, setmaxPlaces] = React.useState(2);
   const socket = useSocket();
-  const owner = usePlayer();
+  const [owner] = usePlayer();
 
   const createLobby = (socket : Socket | null, owner : Player | null) => {
-    socket?.emit("create_lobby", { gameMode, nbPlaces, isPublic, owner, lobbyName });
+    let boolean = isPublic == "true"
+    socket?.emit("create_lobby", { gameMode, nbPlaces, boolean, owner, lobbyName });
 
     onClose();
   };
