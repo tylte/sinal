@@ -6,7 +6,7 @@ import {
   Stack,
   useToast,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { KeyboardEventHandler, useState } from "react";
 import Confetti from "react-confetti";
 import { guessWord } from "../utils/api";
 import { useDictionary } from "../utils/hooks";
@@ -36,6 +36,12 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
+
+  const handleKeyPressed = (event : React.KeyboardEvent<HTMLInputElement>) => { // Type Eve
+    if (event.key === "Enter") {
+      handleTryWord();
+    }
+  }
 
   const handleWordChange = (str: string) => {
     // Check that first letter doesn't change and word will not contain digits
@@ -103,7 +109,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       for (let i = 0; i < length; i++) {
         // Editable input
         inputArrayField.push(
-          <PinInputField key={i} backgroundColor="grey" color="white" />
+          <PinInputField onKeyDown={handleKeyPressed} key={i} backgroundColor="grey" color="white" />
         );
       }
     }
