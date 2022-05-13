@@ -6,7 +6,7 @@ import {
   Stack,
   useToast,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { KeyboardEventHandler, useState } from "react";
 import Confetti from "react-confetti";
 import { guessWord } from "../utils/api";
 import { useDictionary } from "../utils/hooks";
@@ -37,7 +37,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
 
-  const handleKeyPressed = (event) => {
+  const handleKeyPressed = (event : React.KeyboardEvent<HTMLInputElement>) => { // Type Eve
     if (event.key === "Enter") {
       handleTryWord();
     }
