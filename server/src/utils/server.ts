@@ -177,6 +177,8 @@ export const getServer = () => {
             player.id !== request.playerId;
           });
 
+          lobby.currentPlace = lobby.playerList.length;
+
           // If the player was the owner, change it
           if (
             lobby !== undefined &&
@@ -185,6 +187,7 @@ export const getServer = () => {
           ) {
             lobby.owner = playerList[0].id;
           }
+          console.log(lobby.currentPlace);
         }
 
         // Leave the room
