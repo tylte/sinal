@@ -145,20 +145,21 @@ export const getServer = () => {
       }
     });
 
-    socket.on("leave_lobby", ({ roomId, id }) => {
+    socket.on("leave_lobby", (request) => {
       // params : roomId, playerId
-      if (typeof roomId === "string" && typeof id === "string") {
-        const playerList = lobbyMap.get(roomId)?.playerList;
+      // console.log(typeof request.roomId === "string" request.id === "string")
+      if (request !== undefined && typeof request.roomId === "string" && typeof request.id === "string") {
+        const playerList = lobbyMap.get(request.roomId)?.playerList;
         if (playerList !== undefined) {
           for (var i = 0; i < playerList.length; i++) {
-            if (playerList[i].id === id) {
+            if (playerList[i].id === request.id) {
               playerList.splice(i, 1);
               i--;
             }
           }
         }
-        socket.leave(roomId);
-        io.emit("lobbies_update_leave", {roomId, id});
+        socket.leave(request.roomId);
+        io.emit("lobbies_update_leave", request);
         console.log("Joueur retiré");
       } else {
         console.log("erreur leave_lobby");
