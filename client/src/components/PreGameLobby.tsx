@@ -1,7 +1,7 @@
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect } from "react";
 import { usePlayer, useSocket } from "../utils/hooks";
 import { Lobby } from "../utils/types";
 import { isLobbyJoinable } from "../utils/utils";
@@ -17,6 +17,12 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   const router = useRouter();
   const [player] = usePlayer();
 
+  useEffect(() => {
+    return () => {
+      leaveLobby()
+    }
+  }, []) 
+  
   function leaveLobby() {
       socket?.emit('leave_lobby', {roomId: id, id: player?.id})
       router.push("/lobby")
