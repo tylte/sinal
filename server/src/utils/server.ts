@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { get_lobbies } from "../Endpoint/lobbies";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
@@ -30,6 +31,10 @@ export const getServer = () => {
 
   app.get("/dictionary", (_, res) => {
     res.send(get_dictionary());
+  });
+
+  app.get("/list_lobbies", (_, res) => {
+    res.send(get_lobbies());
   });
 
   app.post("/start_game", (req, res) => {
@@ -89,7 +94,6 @@ export const getServer = () => {
       }
     });
     socket.on("join_lobby", function (result) {
-      // params : lobbyId, player {id, name}
       let check = ArgJoinLobby.safeParse(result);
       if (check.success) {
         const { playerId, lobbyId } = check.data;
@@ -149,14 +153,17 @@ export const getServer = () => {
       }
     });
 
-    socket.on("create_player", (playerName, response) => {
-      if (typeof playerName === "string") {
-        let playerId = get_id();
-        playerMap.set(playerId, { id: playerId, name: playerName });
-        response("Rly !?");
-        socket.emit("create_player_response", playerId);
+    socket.on(
+      "create_player",
+      (playerName, response: (payload: string) => void) => {
+        if (typeof playerName === "string") {
+          let playerId = get_id();
+          playerMap.set(playerId, { id: playerId, name: playerName });
+          //response("Rly !?");
+          socket.emit("create_player_response", playerId);
+        }
       }
-    });
+    );
   });
 
   // TODO : Disconnect ?
