@@ -35,7 +35,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
       "join_lobby",
       {
         lobbyId: lobbyId,
-        playerId: "test",
+        playerId: player?.id,
       },
       (response: { message: string; success: boolean }) => {
         toast({
