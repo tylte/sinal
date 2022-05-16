@@ -34,19 +34,21 @@ export const addSocketConnectionEvent = (
   });
 };
 export const addLobbiesEvent = (socket: Socket | null) => {
-  if(!socket?.hasListeners("lobbies_update_create")) {
-    socket?.on("lobbies_update_create", (arg) => {
-      console.log(arg);
-    });
-  }
-  if(!socket?.hasListeners("lobbies_update_join")) {
-    socket?.on("lobbies_update_join", (arg) => {
-      console.log(arg);
-    });
-  }
-  if(!socket?.hasListeners("lobbies_update_leave")) {
-    socket?.on("lobbies_update_leave", (arg) => {
-      console.log(arg);
-    });
-  }
+  socket?.on("lobbies_update_create", (arg) => {
+    console.log(arg);
+  });
+
+  socket?.on("lobbies_update_join", (arg) => {
+    console.log(arg);
+  });
+
+  socket?.on("lobbies_update_leave", (arg) => {
+    console.log(arg);
+  });
+};
+
+export const removeLobbiesEvent = (socket: Socket | null) => {
+  socket?.removeListener("lobbies_update_create");
+  socket?.removeListener("lobbies_update_join");
+  socket?.removeListener("lobbies_update_leave");
 };
