@@ -38,7 +38,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const toast = useToast();
 
   const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    // Type Eve
     if (event.key === "Enter") {
       handleTryWord();
     }
