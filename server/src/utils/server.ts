@@ -104,7 +104,6 @@ export const getServer = () => {
       }
     });
     socket.on("join_lobby", (result, response) => {
-      // params : lobbyId, player {id, name}
       if (typeof response !== "function") {
         console.log("join_lobby : player name is supposed to be a funtion");
         return;
