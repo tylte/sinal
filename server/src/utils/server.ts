@@ -108,6 +108,7 @@ export const getServer = () => {
           lobbyMap.set(lobbyId, lobby);
           console.log("Lobby created : ", lobby);
           socket.join(lobbyId);
+          player.lobbyId = lobbyId;
           io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
           response(lobbyId);
         } else {
@@ -186,7 +187,7 @@ export const getServer = () => {
         if (playerList !== undefined && lobby !== undefined) {
           // Remove player from the playerList
           lobby.playerList = playerList.filter((player) => {
-            player.id !== request.playerId;
+            return player.id !== request.playerId;
           });
 
           // If the player was the owner, change it
