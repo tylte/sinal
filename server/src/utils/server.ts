@@ -64,45 +64,58 @@ export const getServer = () => {
   io.on("connection", (socket) => {
     console.log("connected");
 
-    socket.on("create_lobby", (result, response: (payload: string) => void) => {
-      if (typeof response !== "function") {
-        console.log("create_lobby : response is supposed to be a function");
-        return;
-      }
-
-      let check = ArgCreateLobby.safeParse(result);
-      if (check.success) {
-        let lobbyId = get_id();
-        let lobby: LobbyType = {
-          id: lobbyId,
-          state: "pre-game",
-          name: result.name,
-          totalPlace: 0,
-          currentPlace: 1,
-          playerList: new Array<Player>(),
-          owner: result.owner.id,
-          isPublic: result.isPublic,
-          mode: result.mode,
-        };
-        if (result.mode == "1vs1") lobby.totalPlace = 2;
-        else lobby.totalPlace = result.place;
-        let player = playerMap.get(result.owner.id);
-        if (player !== undefined) lobby.playerList.push(result.owner);
-        else {
-          playerMap.set(result.owner.id, result.owner);
-          lobby.playerList.push(result.owner);
+    socket.on(
+      "create_lobby",
+      (request, response: (payload: string) => void) => {
+        if (typeof response !== "function") {
+          console.log("create_lobby : response is supposed to be a function");
+          return;
         }
 
-        lobbyMap.set(lobbyId, lobby);
-        console.log("Lobby created : ", lobby);
-        socket.join(lobbyId);
-        io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
-        response(lobbyId);
-      } else {
-        console.log("create_lobby payload : ", result);
-        console.log("create_lobby : ", check);
+        let check = ArgCreateLobby.safeParse(request);
+        if (check.success) {
+          let { isPublic, mode, name, owner, place: totalPlace } = check.data;
+          let lobbyId = get_id();
+          let lobby: LobbyType = {
+            id: lobbyId,
+            state: "pre-game",
+            name,
+            totalPlace,
+            playerList: new Array<Player>(),
+            owner: owner.id,
+            isPublic,
+            mode,
+          };
+          // if (result.mode == "1vs1") {
+          //   lobby.totalPlace = 2;
+          // } else {
+          //   lobby.totalPlace = result.place;
+          // }
+
+          let player = playerMap.get(owner.id);
+          if (player === undefined) {
+            console.log("player doesn't exist");
+            return;
+          }
+
+          lobby.playerList.push(player);
+          // if (player !== undefined) {
+          // } else {
+          //   playerMap.set(result.owner.id, result.owner);
+          //   lobby.playerList.push(result.owner);
+          // }
+
+          lobbyMap.set(lobbyId, lobby);
+          console.log("Lobby created : ", lobby);
+          socket.join(lobbyId);
+          io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
+          response(lobbyId);
+        } else {
+          console.log("create_lobby payload : ", request);
+          console.log("create_lobby : ", check);
+        }
       }
-    });
+    );
     socket.on("join_lobby", (result, response) => {
       // params : lobbyId, player {id, name}
       if (typeof response !== "function") {
@@ -120,7 +133,7 @@ export const getServer = () => {
           player !== undefined &&
           player.lobbyId === null
         ) {
-          if (lobby.currentPlace < lobby.totalPlace) {
+          if (lobby.playerList.length < lobby.totalPlace) {
             console.log("join");
             socket.join(result.lobbyId);
 
@@ -129,7 +142,7 @@ export const getServer = () => {
               name: player.name,
               lobbyId: lobby.id,
             });
-            lobby.currentPlace++;
+
             player.lobbyId = lobbyId;
 
             io.emit("lobbies_update_join", { lobbyId, playerId });
