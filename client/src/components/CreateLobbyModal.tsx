@@ -42,11 +42,11 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
 
   const createLobby = (socket: Socket | null, owner: Player | null) => {
     socket?.emit("create_lobby", {
-      gameMode,
-      nbPlaces,
+      mode: gameMode,
+      place: nbPlaces,
       isPublic,
       owner,
-      lobbyName,
+      name: lobbyName,
     });
 
     onClose();
@@ -67,9 +67,9 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     }
   };
 
-  const handleIsPublic = (value : string) => {
-    setIsPublic( value === "true" );
-  }
+  const handleIsPublic = (value: string) => {
+    setIsPublic(value === "true");
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
