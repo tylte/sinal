@@ -18,6 +18,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 import React from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
@@ -39,15 +40,23 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const [maxPlaces, setmaxPlaces] = React.useState(2);
   const socket = useSocket();
   const [owner] = usePlayer();
+  const router = useRouter();
 
   const createLobby = (socket: Socket | null, owner: Player | null) => {
-    socket?.emit("create_lobby", {
-      mode: gameMode,
-      place: nbPlaces,
-      isPublic,
-      owner,
-      name: lobbyName,
-    });
+    socket?.emit(
+      "create_lobby",
+      {
+        mode: gameMode,
+        place: nbPlaces,
+        isPublic,
+        owner,
+        name: lobbyName,
+      },
+      (lobbyId: string) => {
+        console.log(lobbyId);
+        router.push(`/lobby/${lobbyId}`);
+      }
+    );
 
     onClose();
   };

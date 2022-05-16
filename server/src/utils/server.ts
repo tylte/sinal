@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { get_lobbies } from "../Endpoint/lobbies";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
@@ -32,6 +33,10 @@ export const getServer = () => {
     res.send(get_dictionary());
   });
 
+  app.get("/list_lobbies", (_, res) => {
+    res.send(get_lobbies());
+  });
+
   app.post("/start_game", (req, res) => {
     let id = get_id();
     let word = get_word();
@@ -55,7 +60,12 @@ export const getServer = () => {
   io.on("connection", (socket) => {
     console.log("connected");
 
-    socket.on("create_lobby", function (result) {
+    socket.on("create_lobby", (result, response: (payload: string) => void) => {
+      if (typeof response !== "function") {
+        console.log("create_lobby : response is supposed to be a function");
+        return;
+      }
+
       let check = ArgCreateLobby.safeParse(result);
       if (check.success) {
         let lobbyId = get_id(); // TODO
@@ -80,16 +90,21 @@ export const getServer = () => {
         }
 
         lobbyMap.set(lobbyId, lobby);
-
+        console.log("Lobby created : ", lobby);
         socket.join(lobbyId);
-        socket.emit("create_lobby_response", lobbyId);
+        response(lobbyId);
       } else {
         console.log("create_lobby payload : ", result);
         console.log("create_lobby : ", check);
       }
     });
-    socket.on("join_lobby", function (result) {
+    socket.on("join_lobby", (result, response) => {
       // params : lobbyId, player {id, name}
+      if (typeof response !== "function") {
+        console.log("join_lobby : player name is supposed to be a funtion");
+        return;
+      }
+
       let check = ArgJoinLobby.safeParse(result);
       if (check.success) {
         const { playerId, lobbyId } = check.data;
@@ -106,27 +121,26 @@ export const getServer = () => {
             });
             lobby.currentPlace++;
 
-            socket.emit("join_lobby_response", {
+            response({
               success: true,
               message: "Le lobby à été rejoins !",
             });
             console.log(lobby);
           } else {
-            socket.emit("join_lobby_response", {
+            response({
               success: false,
               message: "Le lobby est déja plein !",
-              lobby: lobby,
             });
           }
         } else {
-          socket.emit("join_lobby_response", {
+          response({
             success: false,
             message: "Le lobby donné n'existe pas !",
           });
         }
       } else {
         console.log("join_lobby payload : ", result);
-        console.log("join_lobby : ", check);
+        console.log("join_lobby : ", check.error);
       }
     });
 
@@ -150,14 +164,24 @@ export const getServer = () => {
       }
     });
 
-    socket.on("create_player", (playerName, response) => {
-      if (typeof playerName === "string") {
+    socket.on(
+      "create_player",
+      (playerName, response: (payload: string) => void) => {
+        if (typeof playerName !== "string") {
+          console.log("create_player : player name is supposed to be a string");
+          return;
+        }
+        if (typeof response !== "function") {
+          console.log("create_player : response is supposed to be function");
+          return;
+        }
+
         let playerId = get_id();
         playerMap.set(playerId, { id: playerId, name: playerName });
-        // response("Rly !?");
-        socket.emit("create_player_response", playerId);
+        console.log(`player created : ${playerName} : ${playerId}`);
+        response(playerId);
       }
-    });
+    );
   });
 
   // TODO : Disconnect ?
