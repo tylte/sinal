@@ -8,7 +8,7 @@ interface PreGameLobbyProps {
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
-  lobby: { name, currentPlace, totalPlace, state },
+  lobby: { name, currentPlace, totalPlace, state, playerList },
 }) => {
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
     ? "En attente de joueur"

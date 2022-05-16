@@ -41,7 +41,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
         toast({
           description: response.message,
           status: response.success ? "success" : "error",
-          duration: 9000,
+          duration: 3000,
           isClosable: true,
         });
       }
