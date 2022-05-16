@@ -82,7 +82,9 @@ export const getServer = () => {
         lobbyMap.set(lobbyId, lobby);
 
         socket.join(lobbyId);
+        io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
         socket.emit("create_lobby_response", lobbyId);
+        io.to("lobbies").emit("test");
       } else {
         console.log("create_lobby payload : ", result);
         console.log("create_lobby : ", check);
@@ -105,7 +107,7 @@ export const getServer = () => {
               name: player.name,
             });
             lobby.currentPlace++;
-
+            io.emit("lobbies_update_join", {lobbyId, playerId});
             socket.emit("join_lobby_response", {
               success: true,
               message: "Le lobby à été rejoins !",
@@ -143,20 +145,24 @@ export const getServer = () => {
           }
         }
         socket.leave(roomId);
+        io.emit("lobbies_update_leave", {roomId, id});
         console.log("Joueur retiré");
       } else {
         console.log("erreur leave_lobby");
       }
     });
 
-    socket.on("create_player", (playerName, response) => {
-      if (typeof playerName === "string") {
-        let playerId = get_id();
-        playerMap.set(playerId, { id: playerId, name: playerName });
-        response("Rly !?");
-        socket.emit("create_player_response", playerId);
+    socket.on(
+      "create_player",
+      (playerName, response: (payload: string) => void) => {
+        if (typeof playerName === "string") {
+          let playerId = get_id();
+          playerMap.set(playerId, { id: playerId, name: playerName });
+          // response("Rly !?");
+          socket.emit("create_player_response", playerId);
+        }
       }
-    });
+    );
   });
 
   // TODO : Disconnect ?

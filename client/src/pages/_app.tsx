@@ -9,6 +9,7 @@ import { io, Socket } from "socket.io-client";
 import {
   addCreateLobbyEvent,
   addJoinLobbyEvent,
+  addLobbiesEvent,
   addSocketConnectionEvent,
 } from "src/utils/api";
 import { useRouter } from "next/router";

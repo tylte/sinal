@@ -68,3 +68,20 @@ export const addCreatePlayerEvent = (
     }
   });
 };
+export const addLobbiesEvent = (socket: Socket | null) => {
+  if(!socket?.hasListeners("lobbies_update_create")) {
+    socket?.on("lobbies_update_create", (arg) => {
+      console.log(arg);
+    });
+  }
+  if(!socket?.hasListeners("lobbies_update_join")) {
+    socket?.on("lobbies_update_join", (arg) => {
+      console.log(arg);
+    });
+  }
+  if(!socket?.hasListeners("lobbies_update_leave")) {
+    socket?.on("lobbies_update_leave", (arg) => {
+      console.log(arg);
+    });
+  }
+};

@@ -6,12 +6,13 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect } from "react";
+import { addLobbiesEvent } from "src/utils/api";
 import { CreateLobbyModal } from "../components/CreateLobbyModal";
 import { CreatePlayerModal } from "../components/CreatePlayerModal";
 import { Layout } from "../components/Layout";
 import { LobbyProfile } from "../components/LobbyProfile";
-import { usePlayer } from "../utils/hooks";
+import { usePlayer, useSocket } from "../utils/hooks";
 import { Lobby } from "../utils/types";
 
 interface PublicLobbyProps {}
@@ -167,6 +168,10 @@ const lobbies: Lobby[] = [
 const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [player] = usePlayer();
+  const socket = useSocket();
+  useEffect(() => { 
+    addLobbiesEvent(socket)
+  }, []);
 
   return (
     <Layout variant="large">
