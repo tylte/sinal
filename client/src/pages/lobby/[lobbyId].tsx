@@ -1,4 +1,4 @@
-import { useDisclosure } from "@chakra-ui/react";
+import { useDisclosure, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
 import { usePlayer, useSocket } from "src/utils/hooks";
@@ -27,13 +27,25 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   const router = useRouter();
   const [player] = usePlayer();
   const { onClose } = useDisclosure();
+  const toast = useToast();
 
   let lobbyId = router.query.lobbyId;
   if (lobbyId !== undefined) {
-    socket?.emit("join_lobby", {
-      lobbyId: lobbyId,
-      playerId: player?.id,
-    });
+    socket?.emit(
+      "join_lobby",
+      {
+        lobbyId: lobbyId,
+        playerId: player?.id,
+      },
+      (response: { message: string; success: boolean }) => {
+        toast({
+          description: response.message,
+          status: response.success ? "success" : "error",
+          duration: 9000,
+          isClosable: true,
+        });
+      }
+    );
   }
 
   if (!player) {
