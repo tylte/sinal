@@ -117,7 +117,6 @@ export const getServer = () => {
       }
     );
     socket.on("join_lobby", (result, response) => {
-      // params : lobbyId, player {id, name}
       if (typeof response !== "function") {
         console.log("join_lobby : player name is supposed to be a funtion");
         return;
@@ -190,6 +189,8 @@ export const getServer = () => {
             player.id !== request.playerId;
           });
 
+          lobby.currentPlace = lobby.playerList.length;
+
           // If the player was the owner, change it
           if (
             lobby !== undefined &&
@@ -198,6 +199,7 @@ export const getServer = () => {
           ) {
             lobby.owner = playerList[0].id;
           }
+          console.log(lobby.currentPlace);
         }
 
         // Leave the room
