@@ -185,14 +185,6 @@ export const getServer = () => {
           ) {
             lobby.owner = playerList[0].id;
           }
-
-          // for (var i = 0; i < playerList.length; i++) {
-          //   if (playerList[i].id === request.id) {
-          //     playerList[i].lobbyId = null
-          //     playerList.splice(i, 1);
-          //     break;
-          //   }
-          // }
         }
 
         // Leave the room
