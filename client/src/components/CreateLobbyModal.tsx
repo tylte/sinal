@@ -18,7 +18,6 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { NextRouter, useRouter } from "next/router";
 import React from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
@@ -34,7 +33,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   onClose,
 }) => {
   const [gameMode, setGameMode] = React.useState("1vs1");
-  const [isPublic, setIsPublic] = React.useState("false");
+  const [isPublic, setIsPublic] = React.useState(false);
   const [lobbyName, setLobbyName] = React.useState("nouveau lobby");
   const [nbPlaces, setNbPlaces] = React.useState(2);
   const [maxPlaces, setmaxPlaces] = React.useState(2);
@@ -67,6 +66,10 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
       setNbPlaces(2);
     }
   };
+
+  const handleIsPublic = (value : string) => {
+    setIsPublic( value === "true" );
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -107,7 +110,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
           </NumberInput>
           {/* PUBLIC/PRIVE */}
           <Text my={2}>Visibilité</Text>
-          <RadioGroup onChange={setIsPublic} value={isPublic}>
+          <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>
             <Stack direction="row">
               <Radio value="true">Public</Radio>
               <Radio value="false">Privée</Radio>
