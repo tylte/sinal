@@ -17,6 +17,7 @@ import {
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { usePlayer, useSocket } from "../utils/hooks";
+import { Player } from "../utils/types";
 
 interface CreatePlayerModalProps {
   isOpen: boolean;
@@ -41,9 +42,9 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
   };
 
   const createPlayer = () => {
-    socket?.emit("create_player", pseudo, (playerId: string) => {
+    socket?.emit("create_player", pseudo, (player: Player) => {
       if (setPlayer) {
-        setPlayer({ id: playerId, name: pseudo });
+        setPlayer(player);
         router.push("/lobby");
       } else {
         console.error("Couldn't create user !?");

@@ -12,11 +12,11 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import React, { useEffect } from "react";
-import { usePlayer, useSocket } from "../utils/hooks";
+import React from "react";
 import { Lobby } from "../utils/types";
 import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
+import { usePlayer } from "../utils/hooks";
 
 interface PreGameLobbyProps {
   lobby: Lobby;
@@ -25,20 +25,8 @@ interface PreGameLobbyProps {
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   lobby: { name, currentPlace, totalPlace, state, playerList, id, owner, mode },
 }) => {
-  const socket = useSocket();
-  const router = useRouter();
   const [player] = usePlayer();
-
-  useEffect(() => {
-    return () => {
-      leaveLobby();
-    };
-  }, []);
-
-  function leaveLobby() {
-    socket?.emit("leave_lobby", { roomId: id, id: player?.id });
-    router.push("/lobby");
-  }
+  const router = useRouter();
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
     ? `En attente de joueur ${currentPlace}/${totalPlace}`
@@ -72,7 +60,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
         <IconButton
           aria-label="quit lobby"
           icon={<ArrowBackIcon />}
-          onClick={leaveLobby}
+          onClick={() => router.push("/lobby")}
         />
         <Button isDisabled={player?.id !== owner} colorScheme={"green"}>
           Commencer
