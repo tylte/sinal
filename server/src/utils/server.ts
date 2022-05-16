@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { get_lobbies } from "../Endpoint/lobbies";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
@@ -30,6 +31,10 @@ export const getServer = () => {
 
   app.get("/dictionary", (_, res) => {
     res.send(get_dictionary());
+  });
+
+  app.get("/list_lobbies", (_, res) => {
+    res.send(get_lobbies());
   });
 
   app.post("/start_game", (req, res) => {
@@ -139,19 +144,20 @@ export const getServer = () => {
       }
     });
 
-    socket.on("leave_lobby", ({ roomId, id }) => {
+    socket.on("leave_lobby", (request) => {
       // params : roomId, playerId
-      if (typeof roomId === "string" && typeof id === "string") {
-        const playerList = lobbyMap.get(roomId)?.playerList;
+      // console.log(typeof request.roomId === "string" request.id === "string")
+      if (request !== undefined && typeof request.roomId === "string" && typeof request.id === "string") {
+        const playerList = lobbyMap.get(request.roomId)?.playerList;
         if (playerList !== undefined) {
           for (var i = 0; i < playerList.length; i++) {
-            if (playerList[i].id === id) {
+            if (playerList[i].id === request.id) {
               playerList.splice(i, 1);
               i--;
             }
           }
         }
-        socket.leave(roomId);
+        socket.leave(request.roomId);
         console.log("Joueur retiré");
       } else {
         console.log("erreur leave_lobby");
