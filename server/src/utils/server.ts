@@ -9,6 +9,7 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import {
   ArgCreateLobby,
   ArgJoinLobby,
+  ArgUpdateWord,
   lobbyMap,
   LobbyType,
   Player,
@@ -239,6 +240,21 @@ export const getServer = () => {
         console.log(`player created : ${playerName} : ${playerId}`);
         io.emit("create_player_response", playerId);
         response(player);
+      }
+    );
+
+    socket.on(
+      "update_word",
+      (request, response) => {
+
+        let check = ArgUpdateWord.safeParse(request);
+        if (check.success) {
+          let { word, lobbyId, playerId } = check.data;
+          io.to(lobbyId).emit("update_word_broadcast", { word, playerId });
+        } else {
+          console.log("update_word payload : ", request);
+          console.log("update_word : ", check);
+        }
       }
     );
   });
