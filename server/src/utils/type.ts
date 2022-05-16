@@ -3,7 +3,9 @@ import { z } from "zod";
 export const Player = z.object({
   id: z.string(),
   name: z.string(),
+  lobbyId: z.nullable(z.string())
 });
+
 export type Player = z.infer<typeof Player>;
 
 const GameModeEnum = {

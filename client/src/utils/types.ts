@@ -15,10 +15,13 @@ export enum LetterResult {
   FOUND,
   NOT_FOUND,
 }
+
 export type Player = {
   id: string;
   name: string;
+  lobbyId:string|null;
 };
+
 export type GameMode = "1vs1" | "battle-royale";
 export type LobbyState = "in-game" | "pre-game" | "finished";
 

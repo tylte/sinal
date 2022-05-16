@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { get_lobbies } from "../Endpoint/lobbies";
+import { get_lobbies, get_lobby_id } from "../Endpoint/lobbies";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
@@ -37,6 +37,10 @@ export const getServer = () => {
     res.send(get_lobbies());
   });
 
+  app.get("/list_lobbies/:id", (req, res) => {
+    res.send(get_lobby_id(req.params.id));
+  })
+
   app.post("/start_game", (req, res) => {
     let id = get_id();
     let word = get_word();
@@ -68,9 +72,9 @@ export const getServer = () => {
 
       let check = ArgCreateLobby.safeParse(result);
       if (check.success) {
-        let lobbyId = get_id(); // TODO
+        let lobbyId = get_id();
         let lobby: LobbyType = {
-          id: lobbyId, //TODO
+          id: lobbyId,
           state: "pre-game",
           name: result.name,
           totalPlace: 0,
@@ -110,7 +114,7 @@ export const getServer = () => {
         const { playerId, lobbyId } = check.data;
         let lobby = lobbyMap.get(lobbyId);
         let player = playerMap.get(playerId);
-        if (lobby !== undefined && player !== undefined) {
+        if (lobby !== undefined && player !== undefined && player.lobbyId === null) {
           if (lobby.currentPlace < lobby.totalPlace) {
             console.log("join");
             socket.join(result.lobbyId);
@@ -118,8 +122,10 @@ export const getServer = () => {
             lobby.playerList.push({
               id: player.id,
               name: player.name,
+              lobbyId: lobby.id
             });
             lobby.currentPlace++;
+            player.lobbyId = lobbyId
 
             response({
               success: true,
@@ -145,28 +151,58 @@ export const getServer = () => {
     });
 
     socket.on("leave_lobby", (request) => {
-      // params : roomId, playerId
-      // console.log(typeof request.roomId === "string" request.id === "string")
-      if (request !== undefined && typeof request.roomId === "string" && typeof request.id === "string") {
-        const playerList = lobbyMap.get(request.roomId)?.playerList;
-        if (playerList !== undefined) {
-          for (var i = 0; i < playerList.length; i++) {
-            if (playerList[i].id === request.id) {
-              playerList.splice(i, 1);
-              i--;
-            }
+      /** 
+       * @param request.roomId - Room of the player
+       * @param request.playerId - ID of the player who have to be removed
+       * 
+      */
+
+      if (request !== undefined && typeof request.roomId === "string" && typeof request.playerId === "string") {
+        let lobby = lobbyMap.get(request.roomId) // Lobby where the user is
+        console.log("ROOMID: ", request.roomId)
+        console.log("PID: ", request.playerId)
+        let playerList = lobbyMap.get(request.roomId)?.playerList; // playerList of this lobby
+        
+        console.log("LOBBY AVANT SUPPR", lobby?.playerList)
+        
+        if (playerList !== undefined && lobby !== undefined) {
+
+          // Remove player from the playerList
+          lobby.playerList = playerList.filter((player) => {
+            player.id !== request.playerId
+          })
+
+          // If the player was the owner, change it
+          if (lobby !== undefined && lobby.owner == request.playerId && playerList.length > 0) {
+            lobby.owner = playerList[0].id
           }
+
+          // for (var i = 0; i < playerList.length; i++) {
+          //   if (playerList[i].id === request.id) {
+          //     playerList[i].lobbyId = null
+          //     playerList.splice(i, 1);
+          //     break;
+          //   }
+          // }
         }
+        console.log("LOBBY APRES SUPPR", lobbyMap.get(request.roomId)?.playerList)
+
+        // Leave the room
         socket.leave(request.roomId);
+        if (playerMap.get(request.playerId) !== undefined) {
+          playerMap.get(request.playerId)!.lobbyId = null
+        }
         console.log("Joueur retiré");
+      } else if (typeof request.roomId === "string" && typeof request.playerId === "string") {
+        console.log("Mauvais type des paramètres d'un paramètre. roomId :", typeof request.roomId, "playerId", typeof request.playerId)
       } else {
-        console.log("erreur leave_lobby");
+        console.log("Request undefined")
       }
     });
 
     socket.on(
       "create_player",
-      (playerName, response: (payload: string) => void) => {
+      (playerName, response: (payload: Player) => void) => {
         if (typeof playerName !== "string") {
           console.log("create_player : player name is supposed to be a string");
           return;
@@ -177,9 +213,10 @@ export const getServer = () => {
         }
 
         let playerId = get_id();
-        playerMap.set(playerId, { id: playerId, name: playerName });
+        let player = { id: playerId, name: playerName, lobbyId: null}
+        playerMap.set(playerId, player);
         console.log(`player created : ${playerName} : ${playerId}`);
-        response(playerId);
+        response(player);
       }
     );
   });

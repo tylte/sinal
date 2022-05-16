@@ -1,6 +1,7 @@
 import { useDisclosure, useToast } from "@chakra-ui/react";
+import axios from "axios";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { Layout } from "../../components/Layout";
@@ -9,20 +10,20 @@ import { Lobby } from "../../utils/types";
 
 interface LobbyProps {}
 
-const lobby: Lobby = {
-  id: "1",
-  state: "pre-game",
-  name: "Lobby de bg",
-  totalPlace: 2,
-  currentPlace: 1,
-  playerList: [{ id: "b", name: "bob" }],
-  owner: "b",
-  isPublic: true,
-  mode: "1vs1",
-};
+// const lobby: Lobby = {
+//   id: "1",
+//   state: "pre-game",
+//   name: "Lobby de bg",
+//   totalPlace: 2,
+//   currentPlace: 1,
+//   playerList: [{ id: "b", name: "bob", lobbyId:"1"}],
+//   owner: "b",
+//   isPublic: true,
+//   mode: "1vs1",
+// };
 
 const LobbyPage: React.FC<LobbyProps> = ({}) => {
-  const { state } = lobby;
+  // const { state } = lobby;
   const socket = useSocket();
   const router = useRouter();
   const [player] = usePlayer();
@@ -30,6 +31,25 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   const toast = useToast();
 
   let lobbyId = router.query.lobbyId;
+  const [lobby, setLobby] = useState<Lobby | null>(null);
+
+  useEffect(() => {
+    axios
+      .get(`http://localhost:4000/list_lobbies/${lobbyId}`)
+      .then(({ data }) => {
+        if (data !== null) {
+          setLobby(data);
+        }
+      });
+    return () => {
+      leaveLobby();
+    };
+  }, []);
+
+  function leaveLobby() {
+    socket?.emit("leave_lobby", { roomId: lobbyId, playerId: player?.id });
+  }
+
   if (lobbyId !== undefined) {
     socket?.emit(
       "join_lobby",
@@ -55,7 +75,10 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
       </Layout>
     );
   }
-
+  if (lobby === null) {
+    return <Layout>Lobby n'existe pas</Layout>;
+  }
+  let state = lobby?.state;
   if (state === "pre-game") {
     return (
       <Layout>
