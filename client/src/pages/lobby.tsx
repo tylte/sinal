@@ -29,11 +29,13 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
     }
   }, []);
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
-  
+
   useEffect(() => {
-    axios.get<Lobby[]>("http://localhost:4000/list_lobbies").then(({data}) => {
-      setLobbies(data);
-    })
+    axios
+      .get<Lobby[]>("http://localhost:4000/list_lobbies")
+      .then(({ data }) => {
+        setLobbies(data);
+      });
   }, []);
 
   return (
