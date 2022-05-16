@@ -109,7 +109,10 @@ export const getServer = () => {
           lobbyMap.set(lobbyId, lobby);
           console.log("Lobby created : ", lobby);
           socket.join(lobbyId);
-          io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
+
+          if (lobby.isPublic) {
+            io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
+          }
           response(lobbyId);
         } else {
           console.log("create_lobby payload : ", request);

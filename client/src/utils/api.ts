@@ -1,8 +1,7 @@
 import axios from "axios";
-import { NextRouter } from "next/router";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
-import { LetterResult } from "./types";
+import { LetterResult, Lobby, UpdateLobbyJoinPayload } from "./types";
 
 export const guessWord = async (
   word: string,
@@ -33,18 +32,55 @@ export const addSocketConnectionEvent = (
     setIsConnected(false);
   });
 };
-export const addLobbiesEvent = (socket: Socket | null) => {
-  socket?.on("lobbies_update_create", (arg) => {
-    console.log(arg);
+export const addLobbiesEvent = (
+  socket: Socket | null,
+  setLobbies: Dispatch<SetStateAction<Lobby[]>>
+) => {
+  socket?.on("lobbies_update_create", (lobby: Lobby) => {
+    setLobbies((lobbies) => [...lobbies, lobby]);
   });
 
-  socket?.on("lobbies_update_join", (arg) => {
-    console.log(arg);
-  });
+  socket?.on(
+    "lobbies_update_join",
+    ({ lobbyId, playerId }: UpdateLobbyJoinPayload) => {
+      setLobbies((lobbies) => {
+        let newLobbies = lobbies.map((lobby) => {
+          if (lobby.id === lobbyId) {
+            lobby.playerList.push({
+              id: playerId,
+              name: "?",
+              lobbyId,
+            });
+            let newLobby = { ...lobby };
+            return newLobby;
+          } else {
+            return lobby;
+          }
+        });
+        return newLobbies;
+      });
+    }
+  );
 
-  socket?.on("lobbies_update_leave", (arg) => {
-    console.log(arg);
-  });
+  socket?.on(
+    "lobbies_update_leave",
+    ({ lobbyId, playerId }: UpdateLobbyJoinPayload) => {
+      setLobbies((lobbies) => {
+        let newLobbies = lobbies.map((lobby) => {
+          if (lobby.id === lobbyId) {
+            let playerList = lobby.playerList.filter(
+              (player) => player.id !== playerId
+            );
+            let newLobby = { ...lobby, playerList };
+            return newLobby;
+          } else {
+            return lobby;
+          }
+        });
+        return newLobbies;
+      });
+    }
+  );
 };
 
 export const removeLobbiesEvent = (socket: Socket | null) => {

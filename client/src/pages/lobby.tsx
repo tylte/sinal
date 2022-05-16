@@ -22,20 +22,21 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [player] = usePlayer();
   const socket = useSocket();
-  useEffect(() => { 
-    addLobbiesEvent(socket)
-    return() => {
-      removeLobbiesEvent(socket);
-    }
-  }, []);
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
 
   useEffect(() => {
+    // Update event lobbies
+    addLobbiesEvent(socket, setLobbies);
+
     axios
       .get<Lobby[]>("http://localhost:4000/list_lobbies")
       .then(({ data }) => {
         setLobbies(data);
       });
+
+    return () => {
+      removeLobbiesEvent(socket);
+    };
   }, []);
 
   return (
