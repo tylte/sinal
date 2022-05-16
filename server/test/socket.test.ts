@@ -50,5 +50,6 @@ describe("Web socket testing", () => {
     clientSocket.emit("create_player", "bob", (res: string) => {
       expect(res).toBe("Rly !?");
     });
+    clientSocket.emit("leave_lobby", "bob");
   });
 });

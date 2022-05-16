@@ -16,7 +16,6 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-import { addCreatePlayerEvent } from "../utils/api";
 import { usePlayer, useSocket } from "../utils/hooks";
 
 interface CreatePlayerModalProps {
@@ -42,10 +41,15 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
   };
 
   const createPlayer = () => {
-    socket?.emit("create_player", pseudo);
+    socket?.emit("create_player", pseudo, (playerId: string) => {
+      if (setPlayer) {
+        setPlayer({ id: playerId, name: pseudo });
+        router.push("/lobby");
+      } else {
+        console.error("Couldn't create user !?");
+      }
+    });
   };
-
-  addCreatePlayerEvent(socket, pseudo, setPlayer, router);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
