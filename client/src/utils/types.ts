@@ -35,3 +35,8 @@ export type Lobby = {
   isPublic: boolean;
   mode: GameMode;
 };
+
+export type UpdateLobbyJoinPayload = {
+  lobbyId: string;
+  playerId: string;
+};

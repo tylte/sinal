@@ -9,6 +9,7 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import {
   ArgCreateLobby,
   ArgJoinLobby,
+  ArgUpdateWord,
   lobbyMap,
   LobbyType,
   Player,
@@ -109,7 +110,9 @@ export const getServer = () => {
           console.log("Lobby created : ", lobby);
           socket.join(lobbyId);
           player.lobbyId = lobbyId;
-          io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
+          if (lobby.isPublic) {
+            io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
+          }
           response(lobbyId);
         } else {
           console.log("create_lobby payload : ", request);
@@ -137,13 +140,9 @@ export const getServer = () => {
             console.log("join");
             socket.join(result.lobbyId);
 
-            lobby.playerList.push({
-              id: player.id,
-              name: player.name,
-              lobbyId: lobby.id,
-            });
-
             player.lobbyId = lobbyId;
+
+            lobby.playerList.push(player);
 
             io.emit("lobbies_update_join", { lobbyId, playerId });
             response({
@@ -242,6 +241,17 @@ export const getServer = () => {
         response(player);
       }
     );
+
+    socket.on("update_word", (request, response) => {
+      let check = ArgUpdateWord.safeParse(request);
+      if (check.success) {
+        let { word, lobbyId, playerId } = check.data;
+        io.to(lobbyId).emit("update_word_broadcast", { word, playerId });
+      } else {
+        console.log("update_word payload : ", request);
+        console.log("update_word : ", check);
+      }
+    });
   });
 
   // TODO : Disconnect ?

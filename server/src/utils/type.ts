@@ -48,6 +48,12 @@ export const ArgJoinLobby = z.object({
   playerId: z.string(),
 });
 
+export const ArgUpdateWord = z.object({
+  word: z.string(),
+  lobbyId: z.string(),
+  playerId: z.string(),
+})
+
 export type LobbyType = z.infer<typeof Lobby>;
 
 export let lobbyMap: Map<string, LobbyType> = new Map();
