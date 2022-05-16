@@ -39,7 +39,7 @@ export const getServer = () => {
 
   app.get("/list_lobbies/:id", (req, res) => {
     res.send(get_lobby_id(req.params.id));
-  })
+  });
 
   app.post("/start_game", (req, res) => {
     let id = get_id();
@@ -96,6 +96,7 @@ export const getServer = () => {
         lobbyMap.set(lobbyId, lobby);
         console.log("Lobby created : ", lobby);
         socket.join(lobbyId);
+        io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
         response(lobbyId);
       } else {
         console.log("create_lobby payload : ", result);
@@ -114,7 +115,11 @@ export const getServer = () => {
         const { playerId, lobbyId } = check.data;
         let lobby = lobbyMap.get(lobbyId);
         let player = playerMap.get(playerId);
-        if (lobby !== undefined && player !== undefined && player.lobbyId === null) {
+        if (
+          lobby !== undefined &&
+          player !== undefined &&
+          player.lobbyId === null
+        ) {
           if (lobby.currentPlace < lobby.totalPlace) {
             console.log("join");
             socket.join(result.lobbyId);
@@ -122,11 +127,12 @@ export const getServer = () => {
             lobby.playerList.push({
               id: player.id,
               name: player.name,
-              lobbyId: lobby.id
+              lobbyId: lobby.id,
             });
             lobby.currentPlace++;
-            player.lobbyId = lobbyId
+            player.lobbyId = lobbyId;
 
+            io.emit("lobbies_update_join", { lobbyId, playerId });
             response({
               success: true,
               message: "Le lobby à été rejoins !",
@@ -151,30 +157,33 @@ export const getServer = () => {
     });
 
     socket.on("leave_lobby", (request) => {
-      /** 
+      /**
        * @param request.roomId - Room of the player
        * @param request.playerId - ID of the player who have to be removed
-       * 
-      */
+       *
+       */
 
-      if (request !== undefined && typeof request.roomId === "string" && typeof request.playerId === "string") {
-        let lobby = lobbyMap.get(request.roomId) // Lobby where the user is
-        console.log("ROOMID: ", request.roomId)
-        console.log("PID: ", request.playerId)
+      if (
+        request !== undefined &&
+        typeof request.roomId === "string" &&
+        typeof request.playerId === "string"
+      ) {
+        let lobby = lobbyMap.get(request.roomId); // Lobby where the user is
         let playerList = lobbyMap.get(request.roomId)?.playerList; // playerList of this lobby
-        
-        console.log("LOBBY AVANT SUPPR", lobby?.playerList)
-        
-        if (playerList !== undefined && lobby !== undefined) {
 
+        if (playerList !== undefined && lobby !== undefined) {
           // Remove player from the playerList
           lobby.playerList = playerList.filter((player) => {
-            player.id !== request.playerId
-          })
+            player.id !== request.playerId;
+          });
 
           // If the player was the owner, change it
-          if (lobby !== undefined && lobby.owner == request.playerId && playerList.length > 0) {
-            lobby.owner = playerList[0].id
+          if (
+            lobby !== undefined &&
+            lobby.owner == request.playerId &&
+            playerList.length > 0
+          ) {
+            lobby.owner = playerList[0].id;
           }
 
           // for (var i = 0; i < playerList.length; i++) {
@@ -185,18 +194,26 @@ export const getServer = () => {
           //   }
           // }
         }
-        console.log("LOBBY APRES SUPPR", lobbyMap.get(request.roomId)?.playerList)
 
         // Leave the room
         socket.leave(request.roomId);
         if (playerMap.get(request.playerId) !== undefined) {
-          playerMap.get(request.playerId)!.lobbyId = null
+          playerMap.get(request.playerId)!.lobbyId = null;
         }
+        io.emit("lobbies_update_leave", request);
         console.log("Joueur retiré");
-      } else if (typeof request.roomId === "string" && typeof request.playerId === "string") {
-        console.log("Mauvais type des paramètres d'un paramètre. roomId :", typeof request.roomId, "playerId", typeof request.playerId)
+      } else if (
+        typeof request.roomId === "string" &&
+        typeof request.playerId === "string"
+      ) {
+        console.log(
+          "Mauvais type des paramètres d'un paramètre. roomId :",
+          typeof request.roomId,
+          "playerId :",
+          typeof request.playerId
+        );
       } else {
-        console.log("Request undefined")
+        console.log("Request undefined");
       }
     });
 
@@ -213,9 +230,10 @@ export const getServer = () => {
         }
 
         let playerId = get_id();
-        let player = { id: playerId, name: playerName, lobbyId: null}
+        let player = { id: playerId, name: playerName, lobbyId: null };
         playerMap.set(playerId, player);
         console.log(`player created : ${playerName} : ${playerId}`);
+        io.emit("create_player_response", playerId);
         response(player);
       }
     );
