@@ -11,8 +11,8 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   lobby: { name, currentPlace, totalPlace, state },
 }) => {
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
-    ? "Plein"
-    : "En attente de joueur";
+    ? "En attente de joueur"
+    : "Plein";
 
   return (
     <Flex direction={"column"} alignContent={"center"}>

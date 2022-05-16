@@ -52,3 +52,8 @@ export type LobbyType = z.infer<typeof Lobby>;
 export let lobbyMap: Map<string, LobbyType> = new Map();
 
 export let playerMap: Map<string, Player> = new Map();
+
+export type JoinLobbyResponse = (payload: {
+  success: boolean;
+  message: string;
+}) => void;
