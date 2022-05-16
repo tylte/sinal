@@ -92,6 +92,7 @@ export const getServer = () => {
         lobbyMap.set(lobbyId, lobby);
         console.log("Lobby created : ", lobby);
         socket.join(lobbyId);
+        io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
         response(lobbyId);
       } else {
         console.log("create_lobby payload : ", result);
@@ -120,7 +121,7 @@ export const getServer = () => {
               name: player.name,
             });
             lobby.currentPlace++;
-
+            io.emit("lobbies_update_join", {lobbyId, playerId});
             response({
               success: true,
               message: "Le lobby à été rejoins !",
@@ -158,6 +159,7 @@ export const getServer = () => {
           }
         }
         socket.leave(request.roomId);
+        io.emit("lobbies_update_leave", request);
         console.log("Joueur retiré");
       } else {
         console.log("erreur leave_lobby");
@@ -179,6 +181,7 @@ export const getServer = () => {
         let playerId = get_id();
         playerMap.set(playerId, { id: playerId, name: playerName });
         console.log(`player created : ${playerName} : ${playerId}`);
+        io.emit("create_player_response", playerId);
         response(playerId);
       }
     );

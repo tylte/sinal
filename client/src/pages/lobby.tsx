@@ -8,11 +8,12 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { addLobbiesEvent, removeLobbiesEvent } from "src/utils/api";
 import { CreateLobbyModal } from "../components/CreateLobbyModal";
 import { CreatePlayerModal } from "../components/CreatePlayerModal";
 import { Layout } from "../components/Layout";
 import { LobbyProfile } from "../components/LobbyProfile";
-import { usePlayer } from "../utils/hooks";
+import { usePlayer, useSocket } from "../utils/hooks";
 import { Lobby } from "../utils/types";
 
 interface PublicLobbyProps {}
@@ -20,6 +21,13 @@ interface PublicLobbyProps {}
 const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [player] = usePlayer();
+  const socket = useSocket();
+  useEffect(() => { 
+    addLobbiesEvent(socket)
+    return() => {
+      removeLobbiesEvent(socket);
+    }
+  }, []);
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
   
   useEffect(() => {
