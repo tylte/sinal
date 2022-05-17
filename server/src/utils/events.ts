@@ -112,41 +112,73 @@ export const leaveLobbyEvent = (
   io: Server,
   socket: Socket,
   { playerId, lobbyId }: ArgLeaveLobbyType
-) =>
-  //   response: EventResponseFn
-  {
-    let lobby = lobbyMap.get(lobbyId); // Lobby where the user is
-    let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
+) => {
+  // let lobby = lobbyMap.get(lobbyId); // Lobby where the user is
+  // let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
 
-    if (playerList !== undefined && lobby !== undefined) {
-      // Remove player from the playerList
-      lobby.playerList = playerList.filter((player) => {
-        return player.id !== playerId;
-      });
+  // if (playerList !== undefined && lobby !== undefined) {
+  //   // Remove player from the playerList
+  //   lobby.playerList = playerList.filter((player) => {
+  //     return player.id !== playerId;
+  //   });
 
-      // If the player was the owner, change it
-      if (
-        lobby !== undefined &&
-        lobby.owner == playerId &&
-        playerList.length > 0
-      ) {
+  //   // If the player was the owner, change it
+  //   if (
+  //     lobby !== undefined &&
+  //     lobby.owner == playerId &&
+  //     playerList.length > 0
+  //   ) {
+  //     lobby.owner = playerList[0].id;
+  //   }
+  //   io.emit("lobbies_update_leave", {
+  //     lobbyId: lobby.id,
+  //     playerId: playerId,
+  //   });
+  // }
+
+  // // Leave the room
+  // socket.leave(lobbyId);
+  // let player = playerMap.get(playerId);
+
+  // if (player !== undefined) {
+  //   player.lobbyId = null;
+  // }
+  // console.log("Joueur retiré");
+  let lobby = lobbyMap.get(lobbyId); // Lobby where the user is
+  let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
+
+  if (playerList !== undefined && lobby !== undefined) {
+    // Remove player from the playerList
+    lobby.playerList = playerList.filter((player) => {
+      return player.id !== playerId;
+    });
+
+    // If the player was the owner, change it
+    if (lobby.owner == playerId) {
+      if (playerList.length > 0) {
         lobby.owner = playerList[0].id;
+      } else {
+        lobbyMap.delete(lobbyId);
       }
-      io.emit("lobbies_update_leave", {
-        lobbyId: lobby.id,
-        playerId: playerId,
-      });
     }
+  }
 
-    // Leave the room
-    socket.leave(lobbyId);
-    let player = playerMap.get(playerId);
+  // Leave the room
+  socket.leave(lobbyId);
 
-    if (player !== undefined) {
-      player.lobbyId = null;
-    }
-    console.log("Joueur retiré");
-  };
+  // Change the lobbyId of the player
+  if (playerMap.get(playerId) !== undefined) {
+    playerMap.get(playerId)!.lobbyId = null;
+  }
+
+  io.emit("lobbies_update_leave", {
+    lobbyId,
+    playerId: playerId,
+  });
+
+  console.log("Joueur retiré");
+  console.log(lobby?.owner);
+};
 
 export const createPlayerEvent = (
   io: Server,

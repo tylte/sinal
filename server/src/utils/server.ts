@@ -21,6 +21,7 @@ import {
   joinLobbyEvent,
   leaveLobbyEvent,
 } from "./events";
+import { table } from "console";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -64,7 +65,7 @@ export const getServer = () => {
   app.post("/guess", (req, res) => {
     let id = req.body.id;
     let word = req.body.word;
-    console.log(io.sockets);
+    // console.log(io.sockets);
     res.send(get_guess(id, word, idToWord));
   });
 
@@ -175,6 +176,19 @@ export const getServer = () => {
         io.to(lobbyId).emit("update_word_broadcast", { word, playerId });
       } else {
         console.log("update_word payload : ", request);
+        console.log("update_word : ", check);
+      }
+    });
+
+    socket.on("guess_word", (req, res) => {
+      let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
+      if (check.success) {
+        let { word, lobbyId, playerId } = check.data;
+        let tab_res = get_guess(lobbyId, word, idToWord);
+        res.send(tab_res);
+        io.to(lobbyId).emit("guess_word_broadcast", { tab_res, playerId });
+      } else {
+        console.log("update_word payload : ", req);
         console.log("update_word : ", check);
       }
     });
