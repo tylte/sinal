@@ -22,7 +22,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
-import { Player } from "src/utils/types";
+import { Packet, Player } from "src/utils/types";
 
 interface CreateLobbyModalProps {
   isOpen: boolean;
@@ -52,9 +52,13 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         owner,
         name: lobbyName,
       },
-      (lobbyId: string) => {
-        console.log(lobbyId);
-        router.push(`/lobby/${lobbyId}`);
+      (response: Packet) => {
+        console.log(response.data);
+        if(response.success) {
+          router.push(`/lobby/${response.data}`);
+        } else {
+          console.log(response.message);
+        }
       }
     );
 

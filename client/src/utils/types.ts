@@ -36,3 +36,9 @@ export type Lobby = {
   isPublic: boolean;
   mode: GameMode;
 };
+
+export type Packet = {
+  success: boolean,
+  message: string,
+  data: any,
+};
