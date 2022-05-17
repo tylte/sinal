@@ -17,7 +17,7 @@ import {
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { usePlayer, useSocket } from "../utils/hooks";
-import { Packet, Player } from "../utils/types";
+import { Packet } from "../utils/types";
 
 interface CreatePlayerModalProps {
   isOpen: boolean;

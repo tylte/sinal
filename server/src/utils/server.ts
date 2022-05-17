@@ -97,6 +97,12 @@ export const getServer = () => {
           let player = playerMap.get(owner.id);
           if (player === undefined) {
             console.log("player doesn't exist");
+            let packet:PacketType = {
+              success:false,
+              message: "Create_lobby à renvoyé une erreur car le joueur n'existe pas",
+              data:null,
+            }
+            response(packet);
             return;
           }
 
@@ -132,7 +138,7 @@ export const getServer = () => {
         }
       }
     );
-    socket.on("join_lobby", (result, response) => {
+    socket.on("join_lobby", (result, response: (payload: PacketType) => void) => {
       if (typeof response !== "function") {
         console.log("join_lobby : player name is supposed to be a funtion");
         return;
@@ -160,6 +166,7 @@ export const getServer = () => {
             response({
               success: true,
               message: "Le lobby à été rejoins !",
+              data: null,
             });
             console.log(lobby);
           } else {
@@ -187,7 +194,7 @@ export const getServer = () => {
       }
     });
 
-    socket.on("leave_lobby", (request) => {
+    socket.on("leave_lobby", (request, response: (payload: PacketType) => void) => {
       /**
        * @param request.roomId - Room of the player
        * @param request.playerId - ID of the player who have to be removed
@@ -225,6 +232,11 @@ export const getServer = () => {
         }
         io.emit("lobbies_update_leave", request);
         console.log("Joueur retiré");
+        response({
+          success: true,
+          message: "leave_lobby : le joueur à été retiré ! ",
+          data:null,
+        });
       } else if (
         typeof request.roomId === "string" &&
         typeof request.playerId === "string"
@@ -235,9 +247,20 @@ export const getServer = () => {
           "playerId :",
           typeof request.playerId
         );
+        response({
+          success: false,
+          message: "leave_lobby : Les type donné ne sont pas les bons : ",
+          data:null,
+        });
       } else {
+        response({
+          success: false,
+          message: "leave_lobby : Les type donné ne sont pas les bons : ",
+          data:null,
+        });
         console.log("Request undefined");
       }
+
     });
 
     socket.on(
@@ -245,6 +268,11 @@ export const getServer = () => {
       (playerName, response: (payload: PacketType) => void) => {
         if (typeof playerName !== "string") {
           console.log("create_player : player name is supposed to be a string");
+          response({
+            success: true,
+            message: "Le joueur n'a pas été créé",
+            data: null,
+          });
           return;
         }
         if (typeof response !== "function") {
