@@ -13,6 +13,7 @@ import {
   ArgUpdateWord,
   lobbyMap,
   LobbyType,
+  PacketType,
   Player,
   playerMap,
 } from "./type";
@@ -69,7 +70,7 @@ export const getServer = () => {
 
     socket.on(
       "create_lobby",
-      (request, response: (payload: string) => void) => {
+      (request, response: (payload: PacketType) => void) => {
         if (typeof response !== "function") {
           console.log("create_lobby : response is supposed to be a function");
           return;
@@ -115,8 +116,19 @@ export const getServer = () => {
           if (lobby.isPublic) {
             io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
           }
-          response(lobbyId);
+          let packet:PacketType = {
+            success:true,
+            message: "Create_lobby à été effectué sans errreur",
+            data:lobbyId,
+          }
+          response(packet);
         } else {
+          let packet:PacketType = {
+            success:false,
+            message: "Create_lobby à renvoyé une erreur",
+            data:null,
+          }
+          response(packet);
           console.log("create_lobby payload : ", request);
           console.log("create_lobby : ", check);
         }
@@ -156,15 +168,22 @@ export const getServer = () => {
             response({
               success: false,
               message: "Le lobby est déja plein !",
+              data:null,
             });
           }
         } else {
           response({
             success: false,
-            message: "Le lobby donné n'existe pas !",
+            message: "Le lobby est déja plein !",
+            data:null,
           });
         }
       } else {
+        response({
+          success: false,
+          message: "join_lobby : Les type donné ne sont pas les bons : " + check.error,
+          data:null,
+        });
         console.log("join_lobby payload : ", result);
         console.log("join_lobby : ", check.error);
       }
@@ -225,7 +244,7 @@ export const getServer = () => {
 
     socket.on(
       "create_player",
-      (playerName, response: (payload: Player) => void) => {
+      (playerName, response: (payload: PacketType) => void) => {
         if (typeof playerName !== "string") {
           console.log("create_player : player name is supposed to be a string");
           return;
@@ -240,7 +259,11 @@ export const getServer = () => {
         playerMap.set(playerId, player);
         console.log(`player created : ${playerName} : ${playerId}`);
         io.emit("create_player_response", playerId);
-        response(player);
+        response({
+          success: true,
+          message: "Le joueur à bien été créé",
+          data: player,
+        });
       }
     );
 

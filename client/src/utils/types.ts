@@ -36,6 +36,11 @@ export type Lobby = {
   mode: GameMode;
 };
 
+export type Packet = {
+  success: boolean,
+  message: string,
+  data: any,
+};
 export type UpdateLobbyJoinPayload = {
   lobbyId: string;
   playerId: string;

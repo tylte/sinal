@@ -69,3 +69,11 @@ export type JoinLobbyResponse = (payload: {
   success: boolean;
   message: string;
 }) => void;
+
+export const Packet = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  data: z.any(),
+});
+
+export type PacketType = z.infer<typeof Packet>;
