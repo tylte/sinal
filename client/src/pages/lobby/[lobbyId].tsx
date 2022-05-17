@@ -2,6 +2,7 @@ import { useDisclosure, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { Layout } from "../../components/Layout";
@@ -59,14 +60,16 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
           }
         }
       });
+
     return () => {
-      leaveLobby();
+      console.log("Leave lobby");
+      leaveLobby(socket);
     };
   }, []);
 
-  function leaveLobby() {
+  const leaveLobby = (socket: Socket | null) => {
     socket?.emit("leave_lobby", { roomId: lobbyId, playerId: player?.id });
-  }
+  };
 
   if (!player) {
     return (

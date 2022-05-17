@@ -25,9 +25,6 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
 
   useEffect(() => {
-    // Update event lobbies
-    addLobbiesEvent(socket, setLobbies);
-
     axios
       .get<Lobby[]>("http://localhost:4000/list_lobbies")
       .then(({ data }) => {
@@ -38,6 +35,14 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
       removeLobbiesEvent(socket);
     };
   }, []);
+
+  useEffect(() => {
+    if (socket) {
+      // Update event lobbies
+      console.log("YEP!");
+      addLobbiesEvent(socket, setLobbies);
+    }
+  }, [socket]);
 
   return (
     <Layout variant="large">

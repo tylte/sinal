@@ -15,6 +15,7 @@ import {
   Player,
   playerMap,
 } from "./type";
+import { createLobbyEvent } from "./events";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -75,51 +76,67 @@ export const getServer = () => {
 
         let check = ArgCreateLobby.safeParse(request);
         if (check.success) {
-          let { isPublic, mode, name, owner, place: totalPlace } = check.data;
-          let lobbyId = get_id();
-          let lobby: LobbyType = {
-            id: lobbyId,
-            state: "pre-game",
-            name,
-            totalPlace,
-            playerList: new Array<Player>(),
-            owner: owner.id,
-            isPublic,
-            mode,
-          };
-          // if (result.mode == "1vs1") {
-          //   lobby.totalPlace = 2;
-          // } else {
-          //   lobby.totalPlace = result.place;
-          // }
+          createLobbyEvent(io, socket, check.data, response);
+          // socket.on("disconnect", () => {
+          //   let request = {
+          //     roomId: lobbyId,
+          //     playerId: player?.id,
+          //   };
+          //   if (
+          //     request !== undefined &&
+          //     typeof request.roomId === "string" &&
+          //     typeof request.playerId === "string"
+          //   ) {
+          //     let lobby = lobbyMap.get(request.roomId); // Lobby where the user is
+          //     let playerList = lobbyMap.get(request.roomId)?.playerList; // playerList of this lobby
 
-          let player = playerMap.get(owner.id);
-          if (player === undefined) {
-            console.log("player doesn't exist");
-            return;
-          }
+          //     if (playerList !== undefined && lobby !== undefined) {
+          //       // Remove player from the playerList
+          //       lobby.playerList = playerList.filter((player) => {
+          //         return player.id !== request.playerId;
+          //       });
 
-          lobby.playerList.push(player);
-          // if (player !== undefined) {
-          // } else {
-          //   playerMap.set(result.owner.id, result.owner);
-          //   lobby.playerList.push(result.owner);
-          // }
+          //       // If the player was the owner, change it
+          //       if (
+          //         lobby !== undefined &&
+          //         lobby.owner == request.playerId &&
+          //         playerList.length > 0
+          //       ) {
+          //         lobby.owner = playerList[0].id;
+          //       }
+          //       io.emit("lobbies_update_leave", {
+          //         lobbyId: lobby.id,
+          //         playerId: request.playerId,
+          //       });
+          //     }
 
-          lobbyMap.set(lobbyId, lobby);
-          console.log("Lobby created : ", lobby);
-          socket.join(lobbyId);
-          player.lobbyId = lobbyId;
-          if (lobby.isPublic) {
-            io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
-          }
-          response(lobbyId);
+          //     // Leave the room
+          //     socket.leave(request.roomId);
+          //     if (playerMap.get(request.playerId) !== undefined) {
+          //       playerMap.get(request.playerId)!.lobbyId = null;
+          //     }
+          //     console.log("Joueur retiré");
+          //   } else if (
+          //     typeof request.roomId === "string" &&
+          //     typeof request.playerId === "string"
+          //   ) {
+          //     console.log(
+          //       "Mauvais type des paramètres d'un paramètre. roomId :",
+          //       typeof request.roomId,
+          //       "playerId :",
+          //       typeof request.playerId
+          //     );
+          //   } else {
+          //     console.log("Request undefined");
+          //   }
+          // });
         } else {
           console.log("create_lobby payload : ", request);
           console.log("create_lobby : ", check);
         }
       }
     );
+
     socket.on("join_lobby", (result, response) => {
       if (typeof response !== "function") {
         console.log("join_lobby : player name is supposed to be a funtion");
@@ -174,7 +191,7 @@ export const getServer = () => {
        * @param request.playerId - ID of the player who have to be removed
        *
        */
-
+      console.log("Leave request : ", request);
       if (
         request !== undefined &&
         typeof request.roomId === "string" &&
@@ -197,6 +214,10 @@ export const getServer = () => {
           ) {
             lobby.owner = playerList[0].id;
           }
+          io.emit("lobbies_update_leave", {
+            lobbyId: lobby.id,
+            playerId: request.playerId,
+          });
         }
 
         // Leave the room
@@ -204,7 +225,6 @@ export const getServer = () => {
         if (playerMap.get(request.playerId) !== undefined) {
           playerMap.get(request.playerId)!.lobbyId = null;
         }
-        io.emit("lobbies_update_leave", request);
         console.log("Joueur retiré");
       } else if (
         typeof request.roomId === "string" &&
