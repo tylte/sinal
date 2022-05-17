@@ -7,6 +7,7 @@ import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { Layout } from "../../components/Layout";
 import { PreGameLobby } from "../../components/PreGameLobby";
+import { addPreGameEvent } from "../../utils/api";
 import { Lobby, Packet } from "../../utils/types";
 
 interface LobbyProps {}
@@ -66,6 +67,12 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
       leaveLobby(socket);
     };
   }, []);
+
+  useEffect(() => {
+    if (socket) {
+      addPreGameEvent(socket);
+    }
+  }, [socket]);
 
   const leaveLobby = (socket: Socket | null) => {
     socket?.emit("leave_lobby", { roomId: lobbyId, playerId: player?.id });

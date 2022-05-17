@@ -31,7 +31,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
 
   const currentPlace = playerList.length;
 
-  function startGame() {
+  const startGame = () => {
     socket?.emit("start_game", { lobbyId : id, playerId : player?.id });
   }
 

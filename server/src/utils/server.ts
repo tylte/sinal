@@ -158,6 +158,10 @@ export const getServer = () => {
     });
 
     socket.on("leave_lobby", (request, response: (payload: PacketType) => void) => {
+      if (typeof response !== "function") {
+        console.log("join_lobby : player name is supposed to be a funtion");
+        return;
+      }
       /**
        * @param request.roomId - Room of the player
        * @param request.playerId - ID of the player who have to be removed
@@ -228,10 +232,6 @@ export const getServer = () => {
     });
 
     socket.on("start_game", (request, response) => {
-      if (typeof response !== "function") {
-        console.log("start_game : response is supposed to be a funtion");
-        return;
-      }
 
       let check = ArgStartGame.safeParse(request);
       if (check.success) {

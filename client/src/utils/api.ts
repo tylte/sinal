@@ -32,6 +32,7 @@ export const addSocketConnectionEvent = (
     setIsConnected(false);
   });
 };
+
 export const addLobbiesEvent = (
   socket: Socket | null,
   setLobbies: Dispatch<SetStateAction<Lobby[]>>
@@ -85,6 +86,14 @@ export const addLobbiesEvent = (
     }
   );
 };
+
+export const addPreGameEvent = (socket : Socket | null) => {
+  socket?.on(
+    "starting_game", (gameId : number) => {
+      console.log("starting game : " + gameId);
+    }
+  )
+}
 
 export const removeLobbiesEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_create");
