@@ -1,4 +1,4 @@
-import { useDisclosure, useToast } from "@chakra-ui/react";
+import { Spinner, useDisclosure, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
@@ -7,6 +7,11 @@ import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { Layout } from "../../components/Layout";
 import { PreGameLobby } from "../../components/PreGameLobby";
+import {
+  addPreGameEvent,
+  addSpecificLobbiesEvent,
+  removeSpecificLobbyEvent,
+} from "../../utils/api";
 import { Lobby, Packet } from "../../utils/types";
 
 interface LobbyProps {}
@@ -22,6 +27,13 @@ interface LobbyProps {}
 //   isPublic: true,
 //   mode: "1vs1",
 // };
+const leaveLobby = (
+  socket: Socket | null,
+  lobbyId: string,
+  playerId: string | undefined
+) => {
+  socket?.emit("leave_lobby", { roomId: lobbyId, playerId });
+};
 
 const LobbyPage: React.FC<LobbyProps> = ({}) => {
   // const { state } = lobby;
@@ -63,13 +75,18 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
 
     return () => {
       console.log("Leave lobby");
-      leaveLobby(socket);
+      leaveLobby(socket, lobbyId as string, player?.id);
+      removeSpecificLobbyEvent(socket);
     };
   }, []);
 
-  const leaveLobby = (socket: Socket | null) => {
-    socket?.emit("leave_lobby", { roomId: lobbyId, playerId: player?.id });
-  };
+  useEffect(() => {
+    if (socket) {
+      // Update event lobbies
+      addSpecificLobbiesEvent(socket, lobbyId as string, setLobby);
+      addPreGameEvent(socket);
+    }
+  }, [socket]);
 
   if (!player) {
     return (
@@ -94,7 +111,11 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
     return <Layout></Layout>;
   } else {
     // Its supposed to have a state
-    return <Layout>?!</Layout>;
+    return (
+      <Layout>
+        <Spinner />
+      </Layout>
+    );
   }
 };
 

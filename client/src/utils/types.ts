@@ -37,11 +37,14 @@ export type Lobby = {
 };
 
 export type Packet = {
-  success: boolean,
-  message: string,
-  data: any,
+  success: boolean;
+  message: string;
+  data: any;
 };
 export type UpdateLobbyJoinPayload = {
+  lobby: Lobby;
+};
+export type UpdateLobbyLeavePayload = {
   lobbyId: string;
-  playerId: string;
+  lobby: Lobby | null;
 };
