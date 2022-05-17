@@ -189,7 +189,6 @@ export const willLeaveLobbyOnDisconnect = (
   socket.on("disconnect", () => {
     leaveLobbyEvent(io, socket, { lobbyId, playerId });
   });
-  // rer
 };
 
 export const willNoLongerLeaveLobbyOnDisconnect = (
