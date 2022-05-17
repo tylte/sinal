@@ -9,10 +9,13 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import {
   ArgCreateLobby,
   ArgJoinLobby,
+  ArgStartGame,
   ArgUpdateWord,
+  Game1vs1,
+  Game1vs1Map,
   EventResponseFn,
-  lobbyMap,
   PacketType,
+  lobbyMap,
   playerMap,
 } from "./type";
 import {
@@ -21,7 +24,6 @@ import {
   joinLobbyEvent,
   leaveLobbyEvent,
 } from "./events";
-import { table } from "console";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -223,7 +225,47 @@ export const getServer = () => {
       let check = ArgUpdateWord.safeParse(request);
       if (check.success) {
         let { word, lobbyId, playerId } = check.data;
-        io.to(lobbyId).emit("update_word_broadcast", { word, playerId });
+        let array = new Array<boolean>();
+        let regex = /[A-Z]/i
+        for ( let i = 0; i < word.length; i++ ) {
+          array.push( regex.test( word.charAt(i).toUpperCase() ) );
+        }
+
+        io.to(lobbyId).emit("update_word_broadcast", { array, playerId });
+      } else {
+        console.log("update_word payload : ", request);
+        console.log("update_word : ", check);
+      }
+    });
+
+    socket.on("start_game", (request, response) => {
+
+      let check = ArgStartGame.safeParse(request);
+      if (check.success) {
+        let { lobbyId, playerId } = check.data;
+        let lobby = lobbyMap.get(lobbyId);
+        if ( lobby?.owner !== playerId ) {
+          console.log("start_game : only the owner can start the game");
+          return;
+        }
+
+        if ( lobby?.mode == "1vs1" ) {
+          let word = get_word();
+          idToWord.set(lobbyId, word);            //the ID of the word is the same as the lobby
+          let gameId = get_id();
+          let game: Game1vs1 = {
+            id : gameId,
+          }
+
+          Game1vs1Map.set(gameId, game);
+          io.to(lobbyId).emit("starting_game", gameId);
+        }
+        else if ( lobby?.mode == "battle-royale" ) {
+          //TODO
+        }
+          
+          
+
       } else {
         console.log("update_word payload : ", request);
         console.log("update_word : ", check);

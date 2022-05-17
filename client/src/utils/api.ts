@@ -1,7 +1,12 @@
 import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
-import { LetterResult, Lobby, UpdateLobbyJoinPayload } from "./types";
+import {
+  LetterResult,
+  Lobby,
+  UpdateLobbyJoinPayload,
+  UpdateLobbyLeavePayload,
+} from "./types";
 
 export const guessWord = async (
   word: string,
@@ -32,6 +37,7 @@ export const addSocketConnectionEvent = (
     setIsConnected(false);
   });
 };
+
 export const addLobbiesEvent = (
   socket: Socket | null,
   setLobbies: Dispatch<SetStateAction<Lobby[]>>
@@ -43,18 +49,16 @@ export const addLobbiesEvent = (
 
   socket?.on(
     "lobbies_update_join",
-    ({ lobbyId, playerId }: UpdateLobbyJoinPayload) => {
+    ({ lobby: lobbyChanged }: UpdateLobbyJoinPayload) => {
+      if (!lobbyChanged) {
+        return;
+      }
+
       console.log("lobbies_update_join notif");
       setLobbies((lobbies) => {
         let newLobbies = lobbies.map((lobby) => {
-          if (lobby.id === lobbyId) {
-            lobby.playerList.push({
-              id: playerId,
-              name: "?",
-              lobbyId,
-            });
-            let newLobby = { ...lobby };
-            return newLobby;
+          if (lobby.id === lobbyChanged.id) {
+            return lobbyChanged;
           } else {
             return lobby;
           }
@@ -66,28 +70,80 @@ export const addLobbiesEvent = (
 
   socket?.on(
     "lobbies_update_leave",
-    ({ lobbyId, playerId }: UpdateLobbyJoinPayload) => {
-      console.log("leave lobby ping", { lobbyId, playerId });
+    ({ lobbyId, lobby: changedLobby }: UpdateLobbyLeavePayload) => {
+      if (!lobbyId) {
+        return;
+      }
+
+      console.log("leave lobby ping", { lobbyId, changedLobby });
       setLobbies((lobbies) => {
-        let newLobbies = lobbies.map((lobby) => {
-          if (lobby.id === lobbyId) {
-            let playerList = lobby.playerList.filter(
-              (player) => player.id !== playerId
-            );
-            let newLobby = { ...lobby, playerList };
-            return newLobby;
-          } else {
-            return lobby;
-          }
-        });
-        return newLobbies.filter((v) => v.playerList.length > 0);
+        let newLobbies = lobbies.slice();
+        if (!changedLobby) {
+          newLobbies.filter((v) => v.playerList.length > 0);
+        } else {
+          newLobbies = lobbies.map((lobby) => {
+            if (lobby.id === lobbyId) {
+              return changedLobby;
+            } else {
+              return lobby;
+            }
+          });
+        }
+        return newLobbies;
       });
     }
   );
 };
 
+export const addPreGameEvent = (socket : Socket | null) => {
+  socket?.on(
+    "starting_game", (gameId : number) => {
+      console.log("starting game : " + gameId);
+    }
+  )
+}
+
 export const removeLobbiesEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_create");
+  socket?.removeListener("lobbies_update_join");
+  socket?.removeListener("lobbies_update_leave");
+};
+
+export const addSpecificLobbiesEvent = (
+  socket: Socket | null,
+  lobbyId: string,
+  setLobby: Dispatch<SetStateAction<Lobby | null>>
+) => {
+  socket?.on(
+    "lobbies_update_join",
+    ({ lobby: changedLobby }: UpdateLobbyJoinPayload) => {
+      if (!changedLobby) {
+        return;
+      }
+      console.log("lobbies_update_join notif", lobbyId, changedLobby);
+      if (changedLobby.id !== lobbyId) {
+        return;
+      }
+      setLobby(changedLobby);
+    }
+  );
+
+  socket?.on(
+    "lobbies_update_leave",
+    ({
+      lobby: changedLobby,
+      lobbyId: changedLobbyId,
+    }: UpdateLobbyLeavePayload) => {
+      if (!changedLobby) {
+        return;
+      }
+      console.log("leave lobby ping", { changedLobbyId, changedLobby });
+      setLobby(changedLobby);
+    }
+  );
+};
+
+export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
 };

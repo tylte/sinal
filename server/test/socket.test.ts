@@ -42,7 +42,6 @@ describe("Web socket testing", () => {
     clientSocket.close();
     otherClientSocket.close();
   });
-  /*
   test("Create lobby + create player success case", (done) => {
     let playerId: string = "";
     clientSocket.emit("create_player", "bob", (res: PacketType) => {
@@ -226,7 +225,6 @@ describe("Web socket testing", () => {
       });
     });
   });
-  */
   test("Leave lobby with a false lobbyId", (done) => {
     let createLobbyArg = {
       mode: "1vs1",
@@ -265,38 +263,4 @@ describe("Web socket testing", () => {
       });
     });
   });
-  /*
-  test("Join lobby of player success case", (done) => {
-    let id: string = "";
-    clientSocket.emit("create_player", "bob", (res: string) => {
-      createLobbyArg.owner.id = res;
-    });
-    let createLobbyArg = {
-      mode: "1vs1",
-      place: 2,
-      isPublic: true,
-      owner: {
-        name: "bob",
-        id: "",
-      },
-      name: "lobby test",
-    };
-    clientSocket.emit("create_lobby", createLobbyArg, (res: string) => {
-      id = res;
-    });
-    clientSocket.emit("leave_lobby", "bob");
-    clientSocket.emit("create_player", "john");
-    clientSocket.emit(
-      "join_lobby",
-      { lobbyId: id, playerId: "john" },
-      () => {}
-    );
-    clientSocket.emit("update_word", "tes", (res: boolean[]) => {
-      for (let i = 0; i < 3; ++i) {
-        expect(res[i]).toBeTruthy();
-      }
-      done();
-    });
-  });
-  */
 });
