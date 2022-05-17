@@ -24,6 +24,7 @@ import {
   joinLobbyEvent,
   leaveLobbyEvent,
 } from "./events";
+import { PUBLIC_LOBBIES } from "./utils";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -123,7 +124,7 @@ export const getServer = () => {
 
             lobby.playerList.push(player);
 
-            io.emit("lobbies_update_join", { lobbyId, playerId });
+            io.to(PUBLIC_LOBBIES).emit("lobbies_update_join", { lobbyId, playerId });
             response({
               success: true,
               message: "Le lobby à été rejoins !",
@@ -284,6 +285,14 @@ export const getServer = () => {
         console.log("update_word : ", check);
       }
     });
+
+    socket.on("join_public_lobbies", () => {
+      socket.join(PUBLIC_LOBBIES);
+    });
+
+    socket.on("leav_public_lobbies", () => {
+      socket.leave(PUBLIC_LOBBIES);
+    })
   });
 
   // TODO : Disconnect ?

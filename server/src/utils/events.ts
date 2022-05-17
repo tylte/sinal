@@ -12,6 +12,7 @@ import {
   Player,
   playerMap,
 } from "./type";
+import { PUBLIC_LOBBIES } from "./utils";
 
 export const createLobbyEvent = (
   io: Server,
@@ -60,7 +61,7 @@ export const createLobbyEvent = (
   socket.join(lobbyId);
   player.lobbyId = lobbyId;
   if (lobby.isPublic) {
-    io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
+    io.to(PUBLIC_LOBBIES).emit("lobbies_update_create", lobbyMap.get(lobbyId));
   }
 
   let packet: PacketType = {
@@ -114,7 +115,7 @@ export const joinLobbyEvent = (
 
   lobby.playerList.push(player);
 
-  io.emit("lobbies_update_join", { lobby });
+  io.to(PUBLIC_LOBBIES).emit("lobbies_update_join", { lobby });
 
   // If the user joined a lobby, he will leave it when deconnecting
   willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
@@ -166,7 +167,7 @@ export const leaveLobbyEvent = (
 
   willNoLongerLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
 
-  io.emit("lobbies_update_leave", {
+  io.to(PUBLIC_LOBBIES).emit("lobbies_update_leave", {
     lobby: lobby === undefined ? null : lobby,
     lobbyId: lobby,
   });
@@ -187,7 +188,6 @@ export const createPlayerEvent = (
   let player = { id: playerId, name: playerName, lobbyId: null };
   playerMap.set(playerId, player);
   console.log(`player created : ${playerName} : ${playerId}`);
-  io.emit("create_player_response", playerId);
   response({
     success: true,
     message: "Le joueur à bien été créé",
