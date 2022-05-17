@@ -42,6 +42,11 @@ export const createLobbyEvent = (
   let player = playerMap.get(owner.id);
   if (player === undefined) {
     console.log("player doesn't exist");
+    response({
+      success: false,
+      message: "Create_lobby n'a pas été effectué",
+      data: null,
+    });
     return;
   }
 
@@ -147,6 +152,8 @@ export const leaveLobbyEvent = (
         lobbyMap.delete(lobbyId);
       }
     }
+  } else {
+    return false;
   }
   console.log("Lobby map after delete", lobbyMap);
   // Leave the room
@@ -156,7 +163,7 @@ export const leaveLobbyEvent = (
   let player = playerMap.get(playerId);
   if (player === undefined) {
     console.log("Player doesn't exist");
-    return;
+    return false;
   }
 
   willNoLongerLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
@@ -170,6 +177,7 @@ export const leaveLobbyEvent = (
 
   console.log("Joueur retiré");
   console.log(lobby?.owner);
+  return true;
 };
 
 export const createPlayerEvent = (

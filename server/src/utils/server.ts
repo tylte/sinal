@@ -15,6 +15,8 @@ import {
   Game1vs1Map,
   EventResponseFn,
   PacketType,
+  lobbyMap,
+  playerMap,
 } from "./type";
 import {
   createLobbyEvent,
@@ -90,9 +92,10 @@ export const getServer = () => {
             message: "Create_lobby mauvais parametre envoye",
             data: null,
           };
-          response(packet);
+
           console.log("create_lobby payload : ", request);
           console.log("create_lobby : ", check);
+          response(packet);
         }
       }
     );
@@ -122,7 +125,7 @@ export const getServer = () => {
       "leave_lobby",
       (request, response: (payload: PacketType) => void) => {
         if (typeof response !== "function") {
-          console.log("join_lobby : player name is supposed to be a funtion");
+          console.log("join_lobby : player name is supposed to be a function");
           return;
         }
         /**
@@ -136,15 +139,24 @@ export const getServer = () => {
           typeof request.roomId === "string" &&
           typeof request.playerId === "string"
         ) {
-          leaveLobbyEvent(io, socket, {
-            lobbyId: request.roomId,
-            playerId: request.playerId,
-          });
-          response({
-            success: true,
-            message: "leave_lobby : le joueur à été retiré ! ",
-            data: null,
-          });
+          if (
+            !leaveLobbyEvent(io, socket, {
+              lobbyId: request.roomId,
+              playerId: request.playerId,
+            })
+          ) {
+            response({
+              success: false,
+              message: "leave_lobby : le lobby n'existe pas ! ",
+              data: null,
+            });
+          } else {
+            response({
+              success: true,
+              message: "leave_lobby : le joueur à été retiré ! ",
+              data: null,
+            });
+          }
         } else {
           console.log("leave_lobby : bad request : ", request);
           response({
