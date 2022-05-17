@@ -109,46 +109,6 @@ export const getServer = () => {
 
       let check = ArgJoinLobby.safeParse(result);
       if (check.success) {
-<<<<<<< HEAD
-        const { playerId, lobbyId } = check.data;
-        let lobby = lobbyMap.get(lobbyId);
-        let player = playerMap.get(playerId);
-        if (
-          lobby !== undefined &&
-          player !== undefined &&
-          player.lobbyId === null
-        ) {
-          if (lobby.playerList.length < lobby.totalPlace) {
-            console.log("join");
-            socket.join(result.lobbyId);
-
-            player.lobbyId = lobbyId;
-
-            lobby.playerList.push(player);
-
-            io.to(PUBLIC_LOBBIES).emit("lobbies_update_join", { lobbyId, playerId });
-            response({
-              success: true,
-              message: "Le lobby à été rejoins !",
-              data: null,
-            });
-            console.log(lobby);
-          } else {
-            response({
-              success: false,
-              message: "Le lobby est déja plein !",
-              data: null,
-            });
-          }
-        } else {
-          response({
-            success: false,
-            message: "Le lobby est déja plein !",
-            data: null,
-          });
-        }
-=======
->>>>>>> 1e35b145c0f81f7ea3628c5cb1780e2727abad31
         joinLobbyEvent(io, socket, check.data, response);
       } else {
         response({
