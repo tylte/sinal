@@ -38,33 +38,46 @@ describe("Web socket testing", () => {
   afterAll(() => {
     httpServer.close();
     clientSocket.close();
+    otherClientSocket.close();
   });
-  test("Create player success case", (done) => {
-    let playerId: string = "";
-    clientSocket.emit("create_player", "bob", (res: Player) => {
-      playerId = res.id;
-      createLobbyArg.owner.id = res.id;
-      expect(uuidValidateV4(res.id)).toBeTruthy();
-      expect(Player.safeParse(res).success).toBeTruthy();
-      expect(res.name).toBe("bob");
-    });
-    let createLobbyArg = {
-      mode: "1vs1",
-      place: 2,
-      isPublic: true,
-      owner: {
-        name: "bob",
-        id: playerId,
-        lobbyId: null,
-      },
-      name: "lobby test",
-    };
-    clientSocket.emit("create_lobby", createLobbyArg, (res: PacketType) => {
-      expect(uuidValidateV4(res.data)).toBeTruthy();
+  // test("Create player success case", (done) => {
+  //   let playerId: string = "";
+  //   clientSocket.emit("create_player", "bob", (res: Player) => {
+  //     playerId = res.id;
+  //     createLobbyArg.owner.id = res.id;
+  //     expect(uuidValidateV4(res.id)).toBeTruthy();
+  //     expect(Player.safeParse(res).success).toBeTruthy();
+  //     expect(res.name).toBe("bob");
+  //   });
+  //   let createLobbyArg = {
+  //     mode: "1vs1",
+  //     place: 2,
+  //     isPublic: true,
+  //     owner: {
+  //       name: "bob",
+  //       id: playerId,
+  //       lobbyId: null,
+  //     },
+  //     name: "lobby test",
+  //   };
+  //   clientSocket.emit("create_lobby", createLobbyArg, (res: PacketType) => {
+  //     expect(uuidValidateV4(res.data)).toBeTruthy();
+  //     done();
+  //   });
+  //   clientSocket.emit("leave_lobby", "bob");
+  // });
+
+  test("Create player wrong function sent", (done) => {
+    clientSocket.emit("create_player", "bob", (qweqwe: string) => {
+      // expect(uuidValidateV4(res.data.id)).toBeTruthy();
+      // console.log(yep);
       done();
     });
-    clientSocket.emit("leave_lobby", "bob");
+    setTimeout(() => {
+      done();
+    }, 1000);
   });
+
   /*
   test("Join lobby of player success case", (done) => {
     let id: string = "";

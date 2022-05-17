@@ -10,13 +10,17 @@ import {
   ArgCreateLobby,
   ArgJoinLobby,
   ArgUpdateWord,
+  EventResponseFn,
   lobbyMap,
-  LobbyType,
   PacketType,
-  Player,
   playerMap,
 } from "./type";
-import { createLobbyEvent } from "./events";
+import {
+  createLobbyEvent,
+  createPlayerEvent,
+  joinLobbyEvent,
+  leaveLobbyEvent,
+} from "./events";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -78,42 +82,10 @@ export const getServer = () => {
         let check = ArgCreateLobby.safeParse(request);
         if (check.success) {
           createLobbyEvent(io, socket, check.data, response);
-          // socket.on("disconnect", () => {
-          //   let request = {
-          //     roomId: lobbyId,
-          //     playerId: player?.id,
-          //   };
-          //   if (
-          //     request !== undefined &&
-          //     typeof request.roomId === "string" &&
-          //     typeof request.playerId === "string"
-          //   ) {
-          //     let lobby = lobbyMap.get(request.roomId); // Lobby where the user is
-          //     let playerList = lobbyMap.get(request.roomId)?.playerList; // playerList of this lobby
-
-          //     if (playerList !== undefined && lobby !== undefined) {
-          //       // Remove player from the playerList
-          //       lobby.playerList = playerList.filter((player) => {
-          //         return player.id !== request.playerId;
-          //       });
-
-          //       // If the player was the owner, change it
-          //       if (
-          //         lobby !== undefined &&
-          //         lobby.owner == request.playerId &&
-          //         playerList.length > 0
-          //       ) {
-          //         lobby.owner = playerList[0].id;
-          //       }
-          //       io.emit("lobbies_update_leave", {
-          //         lobbyId: lobby.id,
-          //         playerId: request.playerId,
-          //       });
-          //     }
         } else {
           let packet: PacketType = {
             success: false,
-            message: "Create_lobby à renvoyé une erreur",
+            message: "Create_lobby mauvais parametre envoye",
             data: null,
           };
           response(packet);
@@ -123,7 +95,7 @@ export const getServer = () => {
       }
     );
 
-    socket.on("join_lobby", (result, response) => {
+    socket.on("join_lobby", (result, response: EventResponseFn) => {
       if (typeof response !== "function") {
         console.log("join_lobby : player name is supposed to be a funtion");
         return;
@@ -131,42 +103,7 @@ export const getServer = () => {
 
       let check = ArgJoinLobby.safeParse(result);
       if (check.success) {
-        const { playerId, lobbyId } = check.data;
-        let lobby = lobbyMap.get(lobbyId);
-        let player = playerMap.get(playerId);
-        if (
-          lobby !== undefined &&
-          player !== undefined &&
-          player.lobbyId === null
-        ) {
-          if (lobby.playerList.length < lobby.totalPlace) {
-            console.log("join");
-            socket.join(result.lobbyId);
-
-            player.lobbyId = lobbyId;
-
-            lobby.playerList.push(player);
-
-            io.emit("lobbies_update_join", { lobbyId, playerId });
-            response({
-              success: true,
-              message: "Le lobby à été rejoins !",
-            });
-            console.log(lobby);
-          } else {
-            response({
-              success: false,
-              message: "Le lobby est déja plein !",
-              data: null,
-            });
-          }
-        } else {
-          response({
-            success: false,
-            message: "Le lobby est déja plein !",
-            data: null,
-          });
-        }
+        joinLobbyEvent(io, socket, check.data, response);
       } else {
         response({
           success: false,
@@ -191,35 +128,10 @@ export const getServer = () => {
         typeof request.roomId === "string" &&
         typeof request.playerId === "string"
       ) {
-        let lobby = lobbyMap.get(request.roomId); // Lobby where the user is
-        let playerList = lobbyMap.get(request.roomId)?.playerList; // playerList of this lobby
-
-        if (playerList !== undefined && lobby !== undefined) {
-          // Remove player from the playerList
-          lobby.playerList = playerList.filter((player) => {
-            return player.id !== request.playerId;
-          });
-
-          // If the player was the owner, change it
-          if (
-            lobby !== undefined &&
-            lobby.owner == request.playerId &&
-            playerList.length > 0
-          ) {
-            lobby.owner = playerList[0].id;
-          }
-          io.emit("lobbies_update_leave", {
-            lobbyId: lobby.id,
-            playerId: request.playerId,
-          });
-        }
-
-        // Leave the room
-        socket.leave(request.roomId);
-        if (playerMap.get(request.playerId) !== undefined) {
-          playerMap.get(request.playerId)!.lobbyId = null;
-        }
-        console.log("Joueur retiré");
+        leaveLobbyEvent(io, socket, {
+          lobbyId: request.roomId,
+          playerId: request.playerId,
+        });
       } else if (
         typeof request.roomId === "string" &&
         typeof request.playerId === "string"
@@ -238,25 +150,21 @@ export const getServer = () => {
     socket.on(
       "create_player",
       (playerName, response: (payload: PacketType) => void) => {
-        if (typeof playerName !== "string") {
-          console.log("create_player : player name is supposed to be a string");
-          return;
-        }
         if (typeof response !== "function") {
           console.log("create_player : response is supposed to be function");
           return;
         }
 
-        let playerId = get_id();
-        let player = { id: playerId, name: playerName, lobbyId: null };
-        playerMap.set(playerId, player);
-        console.log(`player created : ${playerName} : ${playerId}`);
-        io.emit("create_player_response", playerId);
-        response({
-          success: true,
-          message: "Le joueur à bien été créé",
-          data: player,
-        });
+        if (typeof playerName !== "string") {
+          console.log("create_player : player name is supposed to be a string");
+          response({
+            success: false,
+            message: "Veillez donner le nom du joueur",
+            data: null,
+          });
+          return;
+        }
+        createPlayerEvent(io, playerName, response);
       }
     );
 

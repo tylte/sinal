@@ -48,6 +48,11 @@ export const ArgJoinLobby = z.object({
   playerId: z.string(),
 });
 
+export const ArgLeaveLobby = z.object({
+  lobbyId: z.string(),
+  playerId: z.string(),
+});
+
 export const ArgUpdateWord = z.object({
   word: z.string(),
   lobbyId: z.string(),
@@ -56,6 +61,8 @@ export const ArgUpdateWord = z.object({
 
 export type LobbyType = z.infer<typeof Lobby>;
 export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
+export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
+export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
 
 export let lobbyMap: Map<string, LobbyType> = new Map();
 
@@ -73,3 +80,5 @@ export const Packet = z.object({
 });
 
 export type PacketType = z.infer<typeof Packet>;
+
+export type EventResponseFn = (payload: PacketType) => void;
