@@ -74,6 +74,7 @@ export type LobbyType = z.infer<typeof Lobby>;
 export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
 export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
 export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
+export type ArgStartGameType = z.infer<typeof ArgStartGame>;
 
 export let lobbyMap: Map<string, LobbyType> = new Map();
 
