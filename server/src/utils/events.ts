@@ -63,9 +63,7 @@ export const createLobbyEvent = (
   };
 
   // If the user created a lobby, he will leave it when deconnecting
-  socket.on("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId: player!.id });
-  });
+  willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId: player!.id });
 
   response(packet);
 };
@@ -112,9 +110,7 @@ export const joinLobbyEvent = (
   io.emit("lobbies_update_join", { lobbyId, playerId });
 
   // If the user joined a lobby, he will leave it when deconnecting
-  socket.on("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId: player!.id });
-  });
+  willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
 
   response({
     success: true,
@@ -128,36 +124,6 @@ export const leaveLobbyEvent = (
   socket: Socket,
   { playerId, lobbyId }: ArgLeaveLobbyType
 ) => {
-  // let lobby = lobbyMap.get(lobbyId); // Lobby where the user is
-  // let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
-
-  // if (playerList !== undefined && lobby !== undefined) {
-  //   // Remove player from the playerList
-  //   lobby.playerList = playerList.filter((player) => {
-  //     return player.id !== playerId;
-  //   });
-
-  //   // If the player was the owner, change it
-  //   if (
-  //     lobby !== undefined &&
-  //     lobby.owner == playerId &&
-  //     playerList.length > 0
-  //   ) {
-  //     lobby.owner = playerList[0].id;
-  //   }
-  //   io.emit("lobbies_update_leave", {
-  //     lobbyId: lobby.id,
-  //     playerId: playerId,
-  //   });
-  // }
-
-  // // Leave the room
-  // socket.leave(lobbyId);
-  // let player = playerMap.get(playerId);
-
-  // if (player !== undefined) {
-  //   player.lobbyId = null;
-  // }
   // console.log("Joueur retiré");
   let lobby = lobbyMap.get(lobbyId); // Lobby where the user is
   //   let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
@@ -187,6 +153,8 @@ export const leaveLobbyEvent = (
     playerMap.get(playerId)!.lobbyId = null;
   }
 
+  willNoLongerLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
+
   io.emit("lobbies_update_leave", {
     lobbyId,
     playerId: playerId,
@@ -210,5 +178,25 @@ export const createPlayerEvent = (
     success: true,
     message: "Le joueur à bien été créé",
     data: player,
+  });
+};
+
+export const willLeaveLobbyOnDisconnect = (
+  io: Server,
+  socket: Socket,
+  { playerId, lobbyId }: ArgLeaveLobbyType
+) => {
+  socket.on("disconnect", () => {
+    leaveLobbyEvent(io, socket, { lobbyId, playerId });
+  });
+};
+
+export const willNoLongerLeaveLobbyOnDisconnect = (
+  io: Server,
+  socket: Socket,
+  { playerId, lobbyId }: ArgLeaveLobbyType
+) => {
+  socket.removeListener("disconnect", () => {
+    leaveLobbyEvent(io, socket, { lobbyId, playerId });
   });
 };

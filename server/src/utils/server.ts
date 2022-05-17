@@ -11,9 +11,7 @@ import {
   ArgJoinLobby,
   ArgUpdateWord,
   EventResponseFn,
-  lobbyMap,
   PacketType,
-  playerMap,
 } from "./type";
 import {
   createLobbyEvent,
@@ -21,7 +19,6 @@ import {
   joinLobbyEvent,
   leaveLobbyEvent,
 } from "./events";
-import { table } from "console";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
