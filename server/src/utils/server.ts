@@ -89,9 +89,10 @@ export const getServer = () => {
             message: "Create_lobby mauvais parametre envoye",
             data: null,
           };
-          response(packet);
+
           console.log("create_lobby payload : ", request);
           console.log("create_lobby : ", check);
+          response(packet);
         }
       }
     );
@@ -131,14 +132,14 @@ export const getServer = () => {
             response({
               success: false,
               message: "Le lobby est déja plein !",
-              data:null,
+              data: null,
             });
           }
         } else {
           response({
             success: false,
             message: "Le lobby est déja plein !",
-            data:null,
+            data: null,
           });
         }
         joinLobbyEvent(io, socket, check.data, response);
@@ -154,37 +155,48 @@ export const getServer = () => {
       }
     });
 
-    socket.on("leave_lobby", (request, response: (payload: PacketType) => void) => {
-      /**
-       * @param request.roomId - Room of the player
-       * @param request.playerId - ID of the player who have to be removed
-       *
-       */
-      console.log("Leave request : ", request);
-      if (
-        request !== undefined &&
-        typeof request.roomId === "string" &&
-        typeof request.playerId === "string"
-      ) {
-        leaveLobbyEvent(io, socket, {
-          lobbyId: request.roomId,
-          playerId: request.playerId,
-        });
-        response({
-          success: true,
-          message: "leave_lobby : le joueur à été retiré ! ",
-          data:null,
-        });
-      } else {
-        console.log("leave_lobby : bad request : ", request);
-        response({
-          success: false,
-          message: "leave_lobby : le type ne correspond pas ! ",
-          data:null,
-        });
+    socket.on(
+      "leave_lobby",
+      (request, response: (payload: PacketType) => void) => {
+        /**
+         * @param request.roomId - Room of the player
+         * @param request.playerId - ID of the player who have to be removed
+         *
+         */
+        console.log("Leave request : ", request);
+        if (
+          request !== undefined &&
+          typeof request.roomId === "string" &&
+          typeof request.playerId === "string"
+        ) {
+          if (
+            !leaveLobbyEvent(io, socket, {
+              lobbyId: request.roomId,
+              playerId: request.playerId,
+            })
+          ) {
+            response({
+              success: false,
+              message: "leave_lobby : le lobby n'existe pas ! ",
+              data: null,
+            });
+          } else {
+            response({
+              success: true,
+              message: "leave_lobby : le joueur à été retiré ! ",
+              data: null,
+            });
+          }
+        } else {
+          console.log("leave_lobby : bad request : ", request);
+          response({
+            success: false,
+            message: "leave_lobby : le type ne correspond pas ! ",
+            data: null,
+          });
+        }
       }
-
-    });
+    );
 
     socket.on(
       "create_player",

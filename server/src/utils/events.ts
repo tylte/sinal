@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import { boolean } from "zod";
 import { get_id } from "../Endpoint/start_game";
 import {
   ArgCreateLobbyType,
@@ -34,10 +35,16 @@ export const createLobbyEvent = (
   // } else {
   //   lobby.totalPlace = result.place;
   // }
+  
 
   let player = playerMap.get(owner.id);
   if (player === undefined) {
     console.log("player doesn't exist");
+    response({
+      success: false,
+      message: "Create_lobby n'a pas été effectué",
+      data: null,
+    });
     return;
   }
 
@@ -177,6 +184,8 @@ export const leaveLobbyEvent = (
         lobbyMap.delete(lobbyId);
       }
     }
+  } else {
+    return false;
   }
   console.log("Lobby map after delete", lobbyMap);
   // Leave the room
@@ -194,6 +203,7 @@ export const leaveLobbyEvent = (
 
   console.log("Joueur retiré");
   console.log(lobby?.owner);
+  return true;
 };
 
 export const createPlayerEvent = (
