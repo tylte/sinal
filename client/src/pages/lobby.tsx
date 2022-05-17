@@ -40,7 +40,6 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   useEffect(() => {
     if (socket) {
       // Update event lobbies
-      console.log("YEP!");
       addLobbiesEvent(socket, setLobbies);
     }
   }, [socket]);

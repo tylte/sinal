@@ -107,7 +107,7 @@ export const joinLobbyEvent = (
 
   lobby.playerList.push(player);
 
-  io.emit("lobbies_update_join", { lobbyId, playerId });
+  io.emit("lobbies_update_join", { lobby });
 
   // If the user joined a lobby, he will leave it when deconnecting
   willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
@@ -129,17 +129,17 @@ export const leaveLobbyEvent = (
   //   let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
 
   if (lobby !== undefined) {
-    let playerList = lobby.playerList;
     // Remove player from the playerList
-    lobby.playerList = playerList.filter((player) => {
+    lobby.playerList = lobby.playerList.filter((player) => {
       return player.id !== playerId;
     });
 
     // If the player was the owner, change it
     if (lobby.owner === playerId) {
       if (lobby.playerList.length > 0) {
-        lobby.owner = playerList[0].id;
+        lobby.owner = lobby.playerList[0].id;
       } else {
+        lobby = undefined;
         lobbyMap.delete(lobbyId);
       }
     }
@@ -149,16 +149,20 @@ export const leaveLobbyEvent = (
   socket.leave(lobbyId);
 
   // Change the lobbyId of the player
-  if (playerMap.get(playerId) !== undefined) {
-    playerMap.get(playerId)!.lobbyId = null;
+  let player = playerMap.get(playerId);
+  if (player === undefined) {
+    console.log("Player doesn't exist");
+    return;
   }
 
   willNoLongerLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
 
   io.emit("lobbies_update_leave", {
-    lobbyId,
-    playerId: playerId,
+    lobby: lobby === undefined ? null : lobby,
+    lobbyId: lobby,
   });
+
+  player.lobbyId = null;
 
   console.log("Joueur retiré");
   console.log(lobby?.owner);

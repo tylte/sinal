@@ -64,7 +64,10 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           icon={<ArrowBackIcon />}
           onClick={() => router.push("/lobby")}
         />
-        <Button isDisabled={player?.id !== owner} colorScheme={"green"}>
+        <Button
+          isDisabled={player?.id !== owner || playerList.length < totalPlace}
+          colorScheme={"green"}
+        >
           Commencer
         </Button>
       </HStack>
