@@ -103,7 +103,7 @@ export const getServer = () => {
 
     socket.on("join_lobby", (result, response: EventResponseFn) => {
       if (typeof response !== "function") {
-        console.log("join_lobby : player name is supposed to be a funtion");
+        console.log("join_lobby : response is supposed to be a function");
         return;
       }
 
@@ -126,7 +126,7 @@ export const getServer = () => {
       "leave_lobby",
       (request, response: (payload: PacketType) => void) => {
         if (typeof response !== "function") {
-          console.log("join_lobby : player name is supposed to be a function");
+          console.log("leave_lobby : response is supposed to be a function");
           return;
         }
         /**

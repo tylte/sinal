@@ -32,7 +32,7 @@ const leaveLobby = (
   lobbyId: string,
   playerId: string | undefined
 ) => {
-  socket?.emit("leave_lobby", { roomId: lobbyId, playerId });
+  socket?.emit("leave_lobby", { roomId: lobbyId, playerId }, () => {});
 };
 
 const LobbyPage: React.FC<LobbyProps> = ({}) => {
