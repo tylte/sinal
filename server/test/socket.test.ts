@@ -99,6 +99,39 @@ describe("Web socket testing", () => {
     });
   });
   */
+
+  test("Guess Word of a player in a multiplayer game", (done) => {
+    let createLobbyArg = {
+      mode: "1vs1",
+      place: 2,
+      isPublic: true,
+      owner: {
+        name: "bob",
+        id: "",
+        lobbyId: null,
+      },
+      name: "lobby test",
+    };
+    clientSocket.emit("create_player", "Joueur 1", (player1: PacketType) => {
+      clientSocket.emit("create_lobby", createLobbyArg, (lobby: PacketType) => {
+        otherClientSocket.emit(
+          "create_player",
+          "Joueur 2",
+          (player2: PacketType) => {
+            otherClientSocket.emit("join_lobby", {
+              lobbyId: lobby.data.id,
+              playerId: player2.data.id,
+            });
+            clientSocket.emit("guess_word", {
+              word: "Coucou",
+              lobbyId: lobby.data.id,
+              playerId: player1.data.id,
+            });
+          }
+        );
+      });
+    });
+  });
   test("Leave lobby of player success case", (done) => {
     let createLobbyArg = {
       mode: "1vs1",
@@ -123,14 +156,13 @@ describe("Web socket testing", () => {
                 "leave_lobby",
                 { roomId: lobby.data, playerId: res.data.id },
                 (leave: PacketType) => {
-                  try{
+                  try {
                     expect(leave.success).toBeTruthy();
                     done();
-                  }catch(error) {
+                  } catch (error) {
                     console.log(error);
                     done();
                   }
-                  
                 }
               );
             }
