@@ -1,10 +1,14 @@
 import { Server, Socket } from "socket.io";
-import { get_id } from "../Endpoint/start_game";
+import { get_id, get_word } from "../Endpoint/start_game";
+import { idToWord } from "./server";
 import {
   ArgCreateLobbyType,
   ArgJoinLobbyType,
   ArgLeaveLobbyType,
+  ArgStartGameType,
   EventResponseFn,
+  Game1vs1,
+  Game1vs1Map,
   lobbyMap,
   LobbyType,
   PacketType,
@@ -183,6 +187,31 @@ export const createPlayerEvent = (
     message: "Le joueur à bien été créé",
     data: player,
   });
+};
+
+export const startGameEvent = (
+  io: Server,
+  { lobbyId, playerId }: ArgStartGameType
+) => {
+  let lobby = lobbyMap.get(lobbyId);
+  if (lobby?.owner !== playerId) {
+    console.log("start_game : only the owner can start the game");
+    return;
+  }
+
+  if (lobby?.mode == "1vs1") {
+    let word = get_word();
+    idToWord.set(lobbyId, word); //the ID of the word is the same as the lobby
+    let gameId = get_id();
+    let game: Game1vs1 = {
+      id: gameId,
+    };
+
+    Game1vs1Map.set(gameId, game);
+    io.to(lobbyId).emit("starting_game", gameId);
+  } else if (lobby?.mode == "battle-royale") {
+    //TODO
+  }
 };
 
 export const willLeaveLobbyOnDisconnect = (
