@@ -132,53 +132,69 @@ export const joinLobbyEvent = (
 export const leaveLobbyEvent = (
   io: Server,
   socket: Socket,
-  { playerId, lobbyId }: ArgLeaveLobbyType
+  { playerId, lobbyId }: ArgLeaveLobbyType,
+  response: EventResponseFn
 ) => {
   // console.log("Joueur retiré");
   let lobby = lobbyMap.get(lobbyId); // Lobby where the user is
   //   let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
 
-  if (lobby !== undefined) {
-    // Remove player from the playerList
-    lobby.playerList = lobby.playerList.filter((player) => {
-      return player.id !== playerId;
+  if (lobby === undefined) {
+    response({
+      success: false,
+      message: "leave_lobby : le lobby n'existe pas ! ",
+      data: null,
     });
-
-    // If the player was the owner, change it
-    if (lobby.owner === playerId) {
-      if (lobby.playerList.length > 0) {
-        lobby.owner = lobby.playerList[0].id;
-      } else {
-        lobby = undefined;
-        lobbyMap.delete(lobbyId);
-      }
-    }
-  } else {
-    return false;
+    return;
   }
+
+  // Remove player from the playerList
+  lobby.playerList = lobby.playerList.filter(
+    (player) => player.id !== playerId
+  );
+
+  // If the player was the owner, change it
+  if (lobby.owner === playerId) {
+    if (lobby.playerList.length > 0) {
+      lobby.owner = lobby.playerList[0].id;
+    } else {
+      lobby = undefined;
+      lobbyMap.delete(lobbyId);
+    }
+  }
+
   console.log("Lobby map after delete", lobbyMap);
-  // Leave the room
-  socket.leave(lobbyId);
 
   // Change the lobbyId of the player
   let player = playerMap.get(playerId);
   if (player === undefined) {
     console.log("Player doesn't exist");
-    return false;
+    response({
+      success: false,
+      message: "leave_lobby : player doesn't exist ! ",
+      data: null,
+    });
+    return;
   }
 
   willNoLongerLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
 
   io.to(PUBLIC_LOBBIES).emit("lobbies_update_leave", {
     lobby: lobby === undefined ? null : lobby,
-    lobbyId: lobby,
+    lobbyId,
   });
 
   player.lobbyId = null;
+  // Leave the room
+  socket.leave(lobbyId);
 
   console.log("Joueur retiré");
-  console.log(lobby?.owner);
-  return true;
+  console.log("owner :", lobby?.owner);
+  response({
+    success: true,
+    message: "leave_lobby : le joueur à été retiré ! ",
+    data: null,
+  });
 };
 
 export const createPlayerEvent = (
@@ -228,7 +244,7 @@ export const willLeaveLobbyOnDisconnect = (
   { playerId, lobbyId }: ArgLeaveLobbyType
 ) => {
   socket.on("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId });
+    leaveLobbyEvent(io, socket, { lobbyId, playerId }, () => {});
   });
 };
 
@@ -238,6 +254,6 @@ export const willNoLongerLeaveLobbyOnDisconnect = (
   { playerId, lobbyId }: ArgLeaveLobbyType
 ) => {
   socket.removeListener("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId });
+    leaveLobbyEvent(io, socket, { lobbyId, playerId }, () => {});
   });
 };
