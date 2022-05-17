@@ -8,6 +8,7 @@ import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { Layout } from "../../components/Layout";
 import { PreGameLobby } from "../../components/PreGameLobby";
 import {
+  addPreGameEvent,
   addSpecificLobbiesEvent,
   removeSpecificLobbyEvent,
 } from "../../utils/api";
@@ -83,6 +84,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
     if (socket) {
       // Update event lobbies
       addSpecificLobbiesEvent(socket, lobbyId as string, setLobby);
+      addPreGameEvent(socket);
     }
   }, [socket]);
 

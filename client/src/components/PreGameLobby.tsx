@@ -16,7 +16,7 @@ import React from "react";
 import { Lobby } from "../utils/types";
 import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
-import { usePlayer } from "../utils/hooks";
+import { usePlayer, useSocket } from "../utils/hooks";
 
 interface PreGameLobbyProps {
   lobby: Lobby;
@@ -26,9 +26,14 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   lobby: { name, totalPlace, state, playerList, id, owner, mode },
 }) => {
   const [player] = usePlayer();
+  const socket = useSocket();
   const router = useRouter();
 
   const currentPlace = playerList.length;
+
+  const startGame = () => {
+    socket?.emit("start_game", { lobbyId: id, playerId: player?.id });
+  };
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
     ? `En attente de joueur ${currentPlace}/${totalPlace}`
@@ -67,6 +72,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
         <Button
           isDisabled={player?.id !== owner || playerList.length < totalPlace}
           colorScheme={"green"}
+          onClick={startGame}
         >
           Commencer
         </Button>

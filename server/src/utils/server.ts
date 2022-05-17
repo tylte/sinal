@@ -9,7 +9,10 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import {
   ArgCreateLobby,
   ArgJoinLobby,
+  ArgStartGame,
   ArgUpdateWord,
+  Game1vs1,
+  Game1vs1Map,
   EventResponseFn,
   PacketType,
 } from "./type";
@@ -101,6 +104,43 @@ export const getServer = () => {
 
       let check = ArgJoinLobby.safeParse(result);
       if (check.success) {
+        const { playerId, lobbyId } = check.data;
+        let lobby = lobbyMap.get(lobbyId);
+        let player = playerMap.get(playerId);
+        if (
+          lobby !== undefined &&
+          player !== undefined &&
+          player.lobbyId === null
+        ) {
+          if (lobby.playerList.length < lobby.totalPlace) {
+            console.log("join");
+            socket.join(result.lobbyId);
+
+            player.lobbyId = lobbyId;
+
+            lobby.playerList.push(player);
+
+            io.emit("lobbies_update_join", { lobbyId, playerId });
+            response({
+              success: true,
+              message: "Le lobby à été rejoins !",
+              data: null,
+            });
+            console.log(lobby);
+          } else {
+            response({
+              success: false,
+              message: "Le lobby est déja plein !",
+              data:null,
+            });
+          }
+        } else {
+          response({
+            success: false,
+            message: "Le lobby est déja plein !",
+            data:null,
+          });
+        }
         joinLobbyEvent(io, socket, check.data, response);
       } else {
         response({
@@ -114,7 +154,11 @@ export const getServer = () => {
       }
     });
 
-    socket.on("leave_lobby", (request) => {
+    socket.on("leave_lobby", (request, response: (payload: PacketType) => void) => {
+      if (typeof response !== "function") {
+        console.log("join_lobby : player name is supposed to be a funtion");
+        return;
+      }
       /**
        * @param request.roomId - Room of the player
        * @param request.playerId - ID of the player who have to be removed
@@ -130,9 +174,20 @@ export const getServer = () => {
           lobbyId: request.roomId,
           playerId: request.playerId,
         });
+        response({
+          success: true,
+          message: "leave_lobby : le joueur à été retiré ! ",
+          data:null,
+        });
       } else {
         console.log("leave_lobby : bad request : ", request);
+        response({
+          success: false,
+          message: "leave_lobby : le type ne correspond pas ! ",
+          data:null,
+        });
       }
+
     });
 
     socket.on(
@@ -160,7 +215,47 @@ export const getServer = () => {
       let check = ArgUpdateWord.safeParse(request);
       if (check.success) {
         let { word, lobbyId, playerId } = check.data;
-        io.to(lobbyId).emit("update_word_broadcast", { word, playerId });
+        let array = new Array<boolean>();
+        let regex = /[A-Z]/i
+        for ( let i = 0; i < word.length; i++ ) {
+          array.push( regex.test( word.charAt(i).toUpperCase() ) );
+        }
+
+        io.to(lobbyId).emit("update_word_broadcast", { array, playerId });
+      } else {
+        console.log("update_word payload : ", request);
+        console.log("update_word : ", check);
+      }
+    });
+
+    socket.on("start_game", (request, response) => {
+
+      let check = ArgStartGame.safeParse(request);
+      if (check.success) {
+        let { lobbyId, playerId } = check.data;
+        let lobby = lobbyMap.get(lobbyId);
+        if ( lobby?.owner !== playerId ) {
+          console.log("start_game : only the owner can start the game");
+          return;
+        }
+
+        if ( lobby?.mode == "1vs1" ) {
+          let word = get_word();
+          idToWord.set(lobbyId, word);            //the ID of the word is the same as the lobby
+          let gameId = get_id();
+          let game: Game1vs1 = {
+            id : gameId,
+          }
+
+          Game1vs1Map.set(gameId, game);
+          io.to(lobbyId).emit("starting_game", gameId);
+        }
+        else if ( lobby?.mode == "battle-royale" ) {
+          //TODO
+        }
+          
+          
+
       } else {
         console.log("update_word payload : ", request);
         console.log("update_word : ", check);
