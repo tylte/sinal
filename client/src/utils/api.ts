@@ -80,7 +80,7 @@ export const addLobbiesEvent = (
             return lobby;
           }
         });
-        return newLobbies;
+        return newLobbies.filter((v) => v.playerList.length > 0);
       });
     }
   );

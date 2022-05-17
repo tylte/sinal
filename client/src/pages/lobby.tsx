@@ -20,6 +20,7 @@ interface PublicLobbyProps {}
 
 const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { onClose: createPlayerOnClose } = useDisclosure();
   const [player] = usePlayer();
   const socket = useSocket();
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
@@ -59,7 +60,9 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
           ))}
         </SimpleGrid>
       </Flex>
-      {!player && <CreatePlayerModal isOpen={true} onClose={onClose} />}
+      {/* {!player && ( */}
+      <CreatePlayerModal isOpen={!player} onClose={createPlayerOnClose} />
+      {/* )} */}
       <CreateLobbyModal isOpen={isOpen} onClose={onClose} />
     </Layout>
   );

@@ -133,18 +133,8 @@ export const getServer = () => {
           lobbyId: request.roomId,
           playerId: request.playerId,
         });
-      } else if (
-        typeof request.roomId === "string" &&
-        typeof request.playerId === "string"
-      ) {
-        console.log(
-          "Mauvais type des paramètres d'un paramètre. roomId :",
-          typeof request.roomId,
-          "playerId :",
-          typeof request.playerId
-        );
       } else {
-        console.log("Request undefined");
+        console.log("leave_lobby : bad request : ", request);
       }
     });
 
