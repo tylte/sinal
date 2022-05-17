@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { number, z } from "zod";
 
 export const Player = z.object({
   id: z.string(),
@@ -34,6 +34,12 @@ export const Lobby = z.object({
   mode: GameMode,
 });
 
+export const Game1vs1 = z.object({
+  id: z.string(),
+});
+
+export type Game1vs1 = z.infer<typeof Game1vs1>;
+
 //use in create_lobby
 export const ArgCreateLobby = z.object({
   mode: GameMode,
@@ -64,6 +70,8 @@ export type LobbyType = z.infer<typeof Lobby>;
 export let lobbyMap: Map<string, LobbyType> = new Map();
 
 export let playerMap: Map<string, Player> = new Map();
+
+export let Game1vs1Map: Map<string, Game1vs1> = new Map();
 
 export type JoinLobbyResponse = (payload: {
   success: boolean;
