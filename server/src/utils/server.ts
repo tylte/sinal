@@ -9,6 +9,7 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import {
   ArgCreateLobby,
   ArgJoinLobby,
+  ArgUpdateWord,
   lobbyMap,
   LobbyType,
   PacketType,
@@ -65,57 +66,73 @@ export const getServer = () => {
   io.on("connection", (socket) => {
     console.log("connected");
 
-    socket.on("create_lobby", (result, response: (payload: PacketType) => void) => {
-      if (typeof response !== "function") {
-        console.log("create_lobby : response is supposed to be a function");
-        return;
-      }
-
-      let check = ArgCreateLobby.safeParse(result);
-      if (check.success) {
-        let lobbyId = get_id();
-        let lobby: LobbyType = {
-          id: lobbyId,
-          state: "pre-game",
-          name: result.name,
-          totalPlace: 0,
-          currentPlace: 1,
-          playerList: new Array<Player>(),
-          owner: result.owner.id,
-          isPublic: result.isPublic,
-          mode: result.mode,
-        };
-        if (result.mode == "1vs1") lobby.totalPlace = 2;
-        else lobby.totalPlace = result.place;
-        let player = playerMap.get(result.owner.id);
-        if (player !== undefined) lobby.playerList.push(result.owner);
-        else {
-          playerMap.set(result.owner.id, result.owner);
-          lobby.playerList.push(result.owner);
+    socket.on(
+      "create_lobby",
+      (request, response: (payload: PacketType) => void) => {
+        if (typeof response !== "function") {
+          console.log("create_lobby : response is supposed to be a function");
+          return;
         }
 
-        lobbyMap.set(lobbyId, lobby);
-        console.log("Lobby created : ", lobby);
-        socket.join(lobbyId);
-        io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
-        let packet:PacketType = {
-          success:true,
-          message: "Create_lobby à été effectué sans errreur",
-          data:lobbyId,
+        let check = ArgCreateLobby.safeParse(request);
+        if (check.success) {
+          let { isPublic, mode, name, owner, place: totalPlace } = check.data;
+          let lobbyId = get_id();
+          let lobby: LobbyType = {
+            id: lobbyId,
+            state: "pre-game",
+            name,
+            totalPlace,
+            playerList: new Array<Player>(),
+            owner: owner.id,
+            isPublic,
+            mode,
+          };
+          // if (result.mode == "1vs1") {
+          //   lobby.totalPlace = 2;
+          // } else {
+          //   lobby.totalPlace = result.place;
+          // }
+
+          let player = playerMap.get(owner.id);
+          if (player === undefined) {
+            console.log("player doesn't exist");
+            return;
+          }
+
+          lobby.playerList.push(player);
+          // if (player !== undefined) {
+          // } else {
+          //   playerMap.set(result.owner.id, result.owner);
+          //   lobby.playerList.push(result.owner);
+          // }
+
+          lobbyMap.set(lobbyId, lobby);
+          console.log("Lobby created : ", lobby);
+          socket.join(lobbyId);
+          player.lobbyId = lobbyId;
+          if (lobby.isPublic) {
+            io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
+          }
+          let packet:PacketType = {
+            success:true,
+            message: "Create_lobby à été effectué sans errreur",
+            data:lobbyId,
+          }
+          response(packet);
+        } else {
+          let packet:PacketType = {
+            success:false,
+            message: "Create_lobby à renvoyé une erreur",
+            data:null,
+          }
+          response(packet);
+          console.log("create_lobby payload : ", request);
+          console.log("create_lobby : ", check);
         }
-        response(packet);
-      } else {
-        let packet:PacketType = {
-          success:false,
-          message: "Create_lobby à renvoyé une erreur",
-          data:null,
-        }
-        response(packet);
-        console.log("create_lobby payload : ", result);
-        console.log("create_lobby : ", check);
       }
-    });
-    socket.on("join_lobby", (result, response: (payload: PacketType) => void) => {
+    );
+    socket.on("join_lobby", (result, response) => {
       if (typeof response !== "function") {
         console.log("join_lobby : player name is supposed to be a funtion");
         return;
@@ -131,17 +148,13 @@ export const getServer = () => {
           player !== undefined &&
           player.lobbyId === null
         ) {
-          if (lobby.currentPlace < lobby.totalPlace) {
+          if (lobby.playerList.length < lobby.totalPlace) {
             console.log("join");
             socket.join(result.lobbyId);
 
-            lobby.playerList.push({
-              id: player.id,
-              name: player.name,
-              lobbyId: lobby.id,
-            });
-            lobby.currentPlace++;
             player.lobbyId = lobbyId;
+
+            lobby.playerList.push(player);
 
             io.emit("lobbies_update_join", { lobbyId, playerId });
             response({
@@ -192,7 +205,7 @@ export const getServer = () => {
         if (playerList !== undefined && lobby !== undefined) {
           // Remove player from the playerList
           lobby.playerList = playerList.filter((player) => {
-            player.id !== request.playerId;
+            return player.id !== request.playerId;
           });
 
           // If the player was the owner, change it
@@ -251,6 +264,17 @@ export const getServer = () => {
         });
       }
     );
+
+    socket.on("update_word", (request, response) => {
+      let check = ArgUpdateWord.safeParse(request);
+      if (check.success) {
+        let { word, lobbyId, playerId } = check.data;
+        io.to(lobbyId).emit("update_word_broadcast", { word, playerId });
+      } else {
+        console.log("update_word payload : ", request);
+        console.log("update_word : ", check);
+      }
+    });
   });
 
   // TODO : Disconnect ?

@@ -23,10 +23,12 @@ interface PreGameLobbyProps {
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
-  lobby: { name, currentPlace, totalPlace, state, playerList, id, owner, mode },
+  lobby: { name, totalPlace, state, playerList, id, owner, mode },
 }) => {
   const [player] = usePlayer();
   const router = useRouter();
+
+  const currentPlace = playerList.length;
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
     ? `En attente de joueur ${currentPlace}/${totalPlace}`

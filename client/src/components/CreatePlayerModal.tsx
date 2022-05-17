@@ -56,6 +56,12 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
     });
   };
 
+  const handleKeyDownCreatePlayer = (e: any) => {
+    if (e.which === 13) {
+      createPlayer();
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -79,6 +85,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
         <ModalCloseButton />
         <ModalBody>
           <Input
+            onKeyDown={handleKeyDownCreatePlayer}
             value={pseudo}
             onChange={handlePseudoChange}
             placeholder="Pseudonyme"

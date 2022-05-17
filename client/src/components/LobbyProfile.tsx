@@ -16,8 +16,9 @@ interface LobbyProfileProps {
 }
 
 export const LobbyProfile: React.FC<LobbyProfileProps> = ({
-  lobby: { name, id, mode, state, currentPlace, totalPlace, owner, playerList },
+  lobby: { name, id, mode, state, totalPlace, owner, playerList },
 }) => {
+  const currentPlace = playerList.length;
   let playerOwner = playerList.find(({ id }) => owner === id);
   let isJoinable = isLobbyJoinable(currentPlace, totalPlace, state);
   return (

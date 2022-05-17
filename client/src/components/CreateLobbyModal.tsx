@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Input,
   Modal,
@@ -34,8 +35,8 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   onClose,
 }) => {
   const [gameMode, setGameMode] = React.useState("1vs1");
-  const [isPublic, setIsPublic] = React.useState(false);
-  const [lobbyName, setLobbyName] = React.useState("nouveau lobby");
+  const [isPublic, setIsPublic] = React.useState(true);
+  const [lobbyName, setLobbyName] = React.useState("Nouveau Lobby");
   const [nbPlaces, setNbPlaces] = React.useState(2);
   const [maxPlaces, setmaxPlaces] = React.useState(2);
   const socket = useSocket();
@@ -65,6 +66,12 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     onClose();
   };
 
+  const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      createLobby(socket, owner);
+    }
+  };
+
   const handleLobbyName = (event: any) => {
     setLobbyName(event.target.value);
   };
@@ -91,44 +98,46 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         <ModalHeader>Création de lobby</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Input value={lobbyName} onChange={handleLobbyName} />
-          {/* GAME MODE */}
-          <Text my={2}>mode de jeu</Text>
-          <RadioGroup onChange={handleGameMode} value={gameMode}>
-            <Stack direction="row">
-              <Radio value="1vs1">1 vs 1</Radio>
-              <Radio isDisabled={false} value="battle-royale">
-                battle royale
-              </Radio>
-              <Radio isDisabled={true} value="2vs2">
-                2 vs 2
-              </Radio>
-            </Stack>
-          </RadioGroup>
-          {/* PLACE */}
-          <Text my={2}>place</Text>
-          <NumberInput
-            onChange={(valueString: string) =>
-              setNbPlaces(parseInt(valueString))
-            }
-            value={nbPlaces}
-            min={2}
-            max={maxPlaces}
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-          {/* PUBLIC/PRIVE */}
-          <Text my={2}>Visibilité</Text>
-          <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>
-            <Stack direction="row">
-              <Radio value="true">Public</Radio>
-              <Radio value="false">Privée</Radio>
-            </Stack>
-          </RadioGroup>
+          <Box onKeyDown={handleKeyPressed}>
+            <Input value={lobbyName} onChange={handleLobbyName} />
+            {/* GAME MODE */}
+            <Text my={2}>Mode de jeu</Text>
+            <RadioGroup onChange={handleGameMode} value={gameMode}>
+              <Stack direction="row">
+                <Radio value="1vs1">1 vs 1</Radio>
+                <Radio isDisabled={false} value="battle-royale">
+                  Battle Royale
+                </Radio>
+                <Radio isDisabled={true} value="2vs2">
+                  2 vs 2
+                </Radio>
+              </Stack>
+            </RadioGroup>
+            {/* PLACE */}
+            <Text my={2}>Places</Text>
+            <NumberInput
+              onChange={(valueString: string) =>
+                setNbPlaces(parseInt(valueString))
+              }
+              value={nbPlaces}
+              min={2}
+              max={maxPlaces}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+            {/* PUBLIC/PRIVE */}
+            <Text my={2}>Visibilité</Text>
+            <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>
+              <Stack direction="row">
+                <Radio value="true">Public</Radio>
+                <Radio value="false">Privée</Radio>
+              </Stack>
+            </RadioGroup>
+          </Box>
         </ModalBody>
 
         <ModalFooter>
@@ -137,7 +146,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
             mr={3}
             onClick={() => createLobby(socket, owner)}
           >
-            creer lobby
+            Créer lobby
           </Button>
         </ModalFooter>
       </ModalContent>
