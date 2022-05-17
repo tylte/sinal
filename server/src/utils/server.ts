@@ -10,12 +10,18 @@ import {
   ArgCreateLobby,
   ArgJoinLobby,
   ArgUpdateWord,
+  EventResponseFn,
   lobbyMap,
-  LobbyType,
   PacketType,
-  Player,
   playerMap,
 } from "./type";
+import {
+  createLobbyEvent,
+  createPlayerEvent,
+  joinLobbyEvent,
+  leaveLobbyEvent,
+} from "./events";
+import { table } from "console";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -59,7 +65,7 @@ export const getServer = () => {
   app.post("/guess", (req, res) => {
     let id = req.body.id;
     let word = req.body.word;
-    console.log(io.sockets);
+    // console.log(io.sockets);
     res.send(get_guess(id, word, idToWord));
   });
 
@@ -76,69 +82,21 @@ export const getServer = () => {
 
         let check = ArgCreateLobby.safeParse(request);
         if (check.success) {
-          let { isPublic, mode, name, owner, place: totalPlace } = check.data;
-          let lobbyId = get_id();
-          let lobby: LobbyType = {
-            id: lobbyId,
-            state: "pre-game",
-            name,
-            totalPlace,
-            playerList: new Array<Player>(),
-            owner: owner.id,
-            isPublic,
-            mode,
-          };
-          // if (result.mode == "1vs1") {
-          //   lobby.totalPlace = 2;
-          // } else {
-          //   lobby.totalPlace = result.place;
-          // }
-
-          let player = playerMap.get(owner.id);
-          if (player === undefined) {
-            console.log("player doesn't exist");
-            let packet:PacketType = {
-              success:false,
-              message: "Create_lobby à renvoyé une erreur car le joueur n'existe pas",
-              data:null,
-            }
-            response(packet);
-            return;
-          }
-
-          lobby.playerList.push(player);
-          // if (player !== undefined) {
-          // } else {
-          //   playerMap.set(result.owner.id, result.owner);
-          //   lobby.playerList.push(result.owner);
-          // }
-
-          lobbyMap.set(lobbyId, lobby);
-          console.log("Lobby created : ", lobby);
-          socket.join(lobbyId);
-          player.lobbyId = lobbyId;
-          if (lobby.isPublic) {
-            io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
-          }
-          let packet:PacketType = {
-            success:true,
-            message: "Create_lobby à été effectué sans errreur",
-            data:lobbyId,
-          }
-          response(packet);
+          createLobbyEvent(io, socket, check.data, response);
         } else {
-          let packet:PacketType = {
-            success:false,
-            message: "Create_lobby à renvoyé une erreur",
-            data:null,
-          }
+          let packet: PacketType = {
+            success: false,
+            message: "Create_lobby mauvais parametre envoye",
+            data: null,
+          };
           response(packet);
           console.log("create_lobby payload : ", request);
           console.log("create_lobby : ", check);
         }
       }
     );
-    socket.on("join_lobby", (result, response: (payload: PacketType) => void) => {
+
+    socket.on("join_lobby", (result, response: EventResponseFn) => {
       if (typeof response !== "function") {
         console.log("join_lobby : player name is supposed to be a funtion");
         return;
@@ -183,11 +141,13 @@ export const getServer = () => {
             data:null,
           });
         }
+        joinLobbyEvent(io, socket, check.data, response);
       } else {
         response({
           success: false,
-          message: "join_lobby : Les type donné ne sont pas les bons : " + check.error,
-          data:null,
+          message:
+            "join_lobby : Les type donné ne sont pas les bons : " + check.error,
+          data: null,
         });
         console.log("join_lobby payload : ", result);
         console.log("join_lobby : ", check.error);
@@ -200,65 +160,28 @@ export const getServer = () => {
        * @param request.playerId - ID of the player who have to be removed
        *
        */
-
+      console.log("Leave request : ", request);
       if (
         request !== undefined &&
         typeof request.roomId === "string" &&
         typeof request.playerId === "string"
       ) {
-        let lobby = lobbyMap.get(request.roomId); // Lobby where the user is
-        let playerList = lobbyMap.get(request.roomId)?.playerList; // playerList of this lobby
-
-        if (playerList !== undefined && lobby !== undefined) {
-          // Remove player from the playerList
-          lobby.playerList = playerList.filter((player) => {
-            return player.id !== request.playerId;
-          });
-
-          // If the player was the owner, change it
-          if (
-            lobby !== undefined &&
-            lobby.owner == request.playerId &&
-            playerList.length > 0
-          ) {
-            lobby.owner = playerList[0].id;
-          }
-        }
-
-        // Leave the room
-        socket.leave(request.roomId);
-        if (playerMap.get(request.playerId) !== undefined) {
-          playerMap.get(request.playerId)!.lobbyId = null;
-        }
-        io.emit("lobbies_update_leave", request);
-        console.log("Joueur retiré");
+        leaveLobbyEvent(io, socket, {
+          lobbyId: request.roomId,
+          playerId: request.playerId,
+        });
         response({
           success: true,
           message: "leave_lobby : le joueur à été retiré ! ",
           data:null,
         });
-      } else if (
-        typeof request.roomId === "string" &&
-        typeof request.playerId === "string"
-      ) {
-        console.log(
-          "Mauvais type des paramètres d'un paramètre. roomId :",
-          typeof request.roomId,
-          "playerId :",
-          typeof request.playerId
-        );
-        response({
-          success: false,
-          message: "leave_lobby : Les type donné ne sont pas les bons : ",
-          data:null,
-        });
       } else {
+        console.log("leave_lobby : bad request : ", request);
         response({
           success: false,
-          message: "leave_lobby : Les type donné ne sont pas les bons : ",
+          message: "leave_lobby : le type ne correspond pas ! ",
           data:null,
         });
-        console.log("Request undefined");
       }
 
     });
@@ -266,30 +189,21 @@ export const getServer = () => {
     socket.on(
       "create_player",
       (playerName, response: (payload: PacketType) => void) => {
-        if (typeof playerName !== "string") {
-          console.log("create_player : player name is supposed to be a string");
-          response({
-            success: true,
-            message: "Le joueur n'a pas été créé",
-            data: null,
-          });
-          return;
-        }
         if (typeof response !== "function") {
           console.log("create_player : response is supposed to be function");
           return;
         }
 
-        let playerId = get_id();
-        let player = { id: playerId, name: playerName, lobbyId: null };
-        playerMap.set(playerId, player);
-        console.log(`player created : ${playerName} : ${playerId}`);
-        io.emit("create_player_response", playerId);
-        response({
-          success: true,
-          message: "Le joueur à bien été créé",
-          data: player,
-        });
+        if (typeof playerName !== "string") {
+          console.log("create_player : player name is supposed to be a string");
+          response({
+            success: false,
+            message: "Veillez donner le nom du joueur",
+            data: null,
+          });
+          return;
+        }
+        createPlayerEvent(io, playerName, response);
       }
     );
 
@@ -300,6 +214,19 @@ export const getServer = () => {
         io.to(lobbyId).emit("update_word_broadcast", { word, playerId });
       } else {
         console.log("update_word payload : ", request);
+        console.log("update_word : ", check);
+      }
+    });
+
+    socket.on("guess_word", (req, res) => {
+      let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
+      if (check.success) {
+        let { word, lobbyId, playerId } = check.data;
+        let tab_res = get_guess(lobbyId, word, idToWord);
+        res.send(tab_res);
+        io.to(lobbyId).emit("guess_word_broadcast", { tab_res, playerId });
+      } else {
+        console.log("update_word payload : ", req);
         console.log("update_word : ", check);
       }
     });

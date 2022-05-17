@@ -44,7 +44,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
   const createPlayer = () => {
     socket?.emit("create_player", pseudo, (player: Packet) => {
       if (setPlayer) {
-        if(player.success) {
+        if (player.success) {
           setPlayer(player.data);
           router.push("/lobby");
         } else {

@@ -37,12 +37,14 @@ export const addLobbiesEvent = (
   setLobbies: Dispatch<SetStateAction<Lobby[]>>
 ) => {
   socket?.on("lobbies_update_create", (lobby: Lobby) => {
+    console.log("Lobby created notif");
     setLobbies((lobbies) => [...lobbies, lobby]);
   });
 
   socket?.on(
     "lobbies_update_join",
     ({ lobbyId, playerId }: UpdateLobbyJoinPayload) => {
+      console.log("lobbies_update_join notif");
       setLobbies((lobbies) => {
         let newLobbies = lobbies.map((lobby) => {
           if (lobby.id === lobbyId) {
@@ -65,6 +67,7 @@ export const addLobbiesEvent = (
   socket?.on(
     "lobbies_update_leave",
     ({ lobbyId, playerId }: UpdateLobbyJoinPayload) => {
+      console.log("leave lobby ping", { lobbyId, playerId });
       setLobbies((lobbies) => {
         let newLobbies = lobbies.map((lobby) => {
           if (lobby.id === lobbyId) {
@@ -77,7 +80,7 @@ export const addLobbiesEvent = (
             return lobby;
           }
         });
-        return newLobbies;
+        return newLobbies.filter((v) => v.playerList.length > 0);
       });
     }
   );

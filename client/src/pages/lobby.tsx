@@ -20,14 +20,12 @@ interface PublicLobbyProps {}
 
 const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { onClose: createPlayerOnClose } = useDisclosure();
   const [player] = usePlayer();
   const socket = useSocket();
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
 
   useEffect(() => {
-    // Update event lobbies
-    addLobbiesEvent(socket, setLobbies);
-
     axios
       .get<Lobby[]>("http://localhost:4000/list_lobbies")
       .then(({ data }) => {
@@ -38,6 +36,14 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
       removeLobbiesEvent(socket);
     };
   }, []);
+
+  useEffect(() => {
+    if (socket) {
+      // Update event lobbies
+      console.log("YEP!");
+      addLobbiesEvent(socket, setLobbies);
+    }
+  }, [socket]);
 
   return (
     <Layout variant="large">
@@ -54,7 +60,9 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
           ))}
         </SimpleGrid>
       </Flex>
-      {!player && <CreatePlayerModal isOpen={true} onClose={onClose} />}
+      {/* {!player && ( */}
+      <CreatePlayerModal isOpen={!player} onClose={createPlayerOnClose} />
+      {/* )} */}
       <CreateLobbyModal isOpen={isOpen} onClose={onClose} />
     </Layout>
   );

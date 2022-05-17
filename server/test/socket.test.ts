@@ -40,6 +40,7 @@ describe("Web socket testing", () => {
   afterAll(() => {
     httpServer.close();
     clientSocket.close();
+    otherClientSocket.close();
   });
   /*
   test("Create player success case", (done) => {
