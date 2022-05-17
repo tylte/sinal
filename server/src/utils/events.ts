@@ -5,6 +5,7 @@ import {
   ArgCreateLobbyType,
   lobbyMap,
   LobbyType,
+  PacketType,
   Player,
   playerMap,
 } from "./type";
@@ -13,7 +14,7 @@ export const createLobbyEvent = (
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   socket: Socket,
   { isPublic, mode, name, owner, place: totalPlace }: ArgCreateLobbyType,
-  response: (payload: string) => void
+  response: (payload: PacketType) => void
 ) => {
   let lobbyId = get_id();
   let lobby: LobbyType = {
@@ -53,5 +54,10 @@ export const createLobbyEvent = (
     io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
   }
 
-  response(lobbyId);
+  let packet: PacketType = {
+    success: true,
+    message: "Create_lobby à été effectué sans errreur",
+    data: lobbyId,
+  };
+  response(packet);
 };

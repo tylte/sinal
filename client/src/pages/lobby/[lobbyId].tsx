@@ -7,7 +7,7 @@ import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { Layout } from "../../components/Layout";
 import { PreGameLobby } from "../../components/PreGameLobby";
-import { Lobby } from "../../utils/types";
+import { Lobby, Packet } from "../../utils/types";
 
 interface LobbyProps {}
 
@@ -48,7 +48,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
                 lobbyId: lobbyId,
                 playerId: player?.id,
               },
-              (response: { message: string; success: boolean }) => {
+              (response: Packet) => {
                 toast({
                   description: response.message,
                   status: response.success ? "success" : "error",

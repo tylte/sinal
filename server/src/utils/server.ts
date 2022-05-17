@@ -12,6 +12,7 @@ import {
   ArgUpdateWord,
   lobbyMap,
   LobbyType,
+  PacketType,
   Player,
   playerMap,
 } from "./type";
@@ -68,7 +69,7 @@ export const getServer = () => {
 
     socket.on(
       "create_lobby",
-      (request, response: (payload: string) => void) => {
+      (request, response: (payload: PacketType) => void) => {
         if (typeof response !== "function") {
           console.log("create_lobby : response is supposed to be a function");
           return;
@@ -109,28 +110,13 @@ export const getServer = () => {
           //         playerId: request.playerId,
           //       });
           //     }
-
-          //     // Leave the room
-          //     socket.leave(request.roomId);
-          //     if (playerMap.get(request.playerId) !== undefined) {
-          //       playerMap.get(request.playerId)!.lobbyId = null;
-          //     }
-          //     console.log("Joueur retiré");
-          //   } else if (
-          //     typeof request.roomId === "string" &&
-          //     typeof request.playerId === "string"
-          //   ) {
-          //     console.log(
-          //       "Mauvais type des paramètres d'un paramètre. roomId :",
-          //       typeof request.roomId,
-          //       "playerId :",
-          //       typeof request.playerId
-          //     );
-          //   } else {
-          //     console.log("Request undefined");
-          //   }
-          // });
         } else {
+          let packet: PacketType = {
+            success: false,
+            message: "Create_lobby à renvoyé une erreur",
+            data: null,
+          };
+          response(packet);
           console.log("create_lobby payload : ", request);
           console.log("create_lobby : ", check);
         }
@@ -171,15 +157,23 @@ export const getServer = () => {
             response({
               success: false,
               message: "Le lobby est déja plein !",
+              data: null,
             });
           }
         } else {
           response({
             success: false,
-            message: "Le lobby donné n'existe pas !",
+            message: "Le lobby est déja plein !",
+            data: null,
           });
         }
       } else {
+        response({
+          success: false,
+          message:
+            "join_lobby : Les type donné ne sont pas les bons : " + check.error,
+          data: null,
+        });
         console.log("join_lobby payload : ", result);
         console.log("join_lobby : ", check.error);
       }
@@ -243,7 +237,7 @@ export const getServer = () => {
 
     socket.on(
       "create_player",
-      (playerName, response: (payload: Player) => void) => {
+      (playerName, response: (payload: PacketType) => void) => {
         if (typeof playerName !== "string") {
           console.log("create_player : player name is supposed to be a string");
           return;
@@ -258,7 +252,11 @@ export const getServer = () => {
         playerMap.set(playerId, player);
         console.log(`player created : ${playerName} : ${playerId}`);
         io.emit("create_player_response", playerId);
-        response(player);
+        response({
+          success: true,
+          message: "Le joueur à bien été créé",
+          data: player,
+        });
       }
     );
 
