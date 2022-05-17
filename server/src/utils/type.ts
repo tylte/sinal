@@ -52,7 +52,12 @@ export const ArgUpdateWord = z.object({
   word: z.string(),
   lobbyId: z.string(),
   playerId: z.string(),
-})
+});
+
+export const ArgStartGame = z.object({
+  lobbyId: z.string(),
+  playerId: z.string(),
+});
 
 export type LobbyType = z.infer<typeof Lobby>;
 

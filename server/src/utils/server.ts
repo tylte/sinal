@@ -9,12 +9,14 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import {
   ArgCreateLobby,
   ArgJoinLobby,
+  ArgStartGame,
   ArgUpdateWord,
   lobbyMap,
   LobbyType,
   Player,
   playerMap,
 } from "./type";
+import { checkPrime } from "crypto";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -247,6 +249,31 @@ export const getServer = () => {
       if (check.success) {
         let { word, lobbyId, playerId } = check.data;
         io.to(lobbyId).emit("update_word_broadcast", { word, playerId });
+      } else {
+        console.log("update_word payload : ", request);
+        console.log("update_word : ", check);
+      }
+    });
+
+    socket.on("start_game", (request, response) => {
+      if (typeof response !== "function") {
+        console.log("start_game : response is supposed to be a funtion");
+        return;
+      }
+
+      let check = ArgStartGame.safeParse(request);
+      if (check.success) {
+        let { lobbyId, playerId } = check.data;
+        let lobby = lobbyMap.get(lobbyId);
+        if ( lobby?.owner !== playerId ) {
+          console.log("start_game : only the owner can start the game");
+          return;
+        }
+        let word = get_word();
+        idToWord.set(lobbyId, word);            //the ID of the word is the same as the lobby
+
+
+
       } else {
         console.log("update_word payload : ", request);
         console.log("update_word : ", check);
