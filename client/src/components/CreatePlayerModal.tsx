@@ -17,7 +17,7 @@ import {
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { usePlayer, useSocket } from "../utils/hooks";
-import { Packet, Player } from "../utils/types";
+import { Packet } from "../utils/types";
 
 interface CreatePlayerModalProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
   const createPlayer = () => {
     socket?.emit("create_player", pseudo, (player: Packet) => {
       if (setPlayer) {
-        if(player.success) {
+        if (player.success) {
           setPlayer(player.data);
           router.push("/lobby");
         } else {

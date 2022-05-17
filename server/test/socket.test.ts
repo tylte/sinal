@@ -5,8 +5,15 @@ import { validate as uuidValidate } from "uuid";
 import { Server as HTTPServer } from "http";
 import request from "supertest";
 import { sleep } from "../src/utils/utils";
-import { ArgCreateLobby, LobbyType, PacketType, Player } from "../src/utils/type";
+import {
+  ArgCreateLobby,
+  LobbyType,
+  Packet,
+  PacketType,
+  Player,
+} from "../src/utils/type";
 import { assert } from "console";
+import { fail } from "assert";
 
 const uuidValidateV4 = (uuid: string) => {
   return uuidValidate(uuid) && uuidVersion(uuid) === 4;
@@ -33,15 +40,23 @@ describe("Web socket testing", () => {
   afterAll(() => {
     httpServer.close();
     clientSocket.close();
+    otherClientSocket.close();
   });
+  /*
   test("Create player success case", (done) => {
     let playerId: string = "";
-    clientSocket.emit("create_player", "bob", (res: Player) => {
-      playerId = res.id;
-      createLobbyArg.owner.id = res.id;
-      expect(uuidValidateV4(res.id)).toBeTruthy();
-      expect(Player.safeParse(res).success).toBeTruthy();
-      expect(res.name).toBe("bob");
+    clientSocket.emit("create_player", "bob", (res: PacketType) => {
+      playerId = res.data.id;
+      createLobbyArg.owner.id = res.data.id;
+      expect(uuidValidateV4(res.data.id)).toBeTruthy();
+      expect(Packet.safeParse(res).success).toBeTruthy();
+      expect(res.data.name).toBe("bob");
+      console.log(res);
+      clientSocket.emit("create_lobby", createLobbyArg, (res: PacketType) => {
+        expect(res.success).toBeTruthy();
+        expect(uuidValidateV4(res.data)).toBeTruthy();
+        done();
+      });
     });
     let createLobbyArg = {
       mode: "1vs1",
@@ -54,18 +69,8 @@ describe("Web socket testing", () => {
       },
       name: "lobby test",
     };
-    clientSocket.emit("create_lobby", createLobbyArg, (res: PacketType) => {
-      expect(uuidValidateV4(res.data)).toBeTruthy();
-      done();
-    });
-    clientSocket.emit("leave_lobby", "bob");
   });
-  /*
   test("Join lobby of player success case", (done) => {
-    let id: string = "";
-    clientSocket.emit("create_player", "bob", (res: string) => {
-      createLobbyArg.owner.id = res;
-    });
     let createLobbyArg = {
       mode: "1vs1",
       place: 2,
@@ -73,31 +78,28 @@ describe("Web socket testing", () => {
       owner: {
         name: "bob",
         id: "",
+        lobbyId: null,
       },
       name: "lobby test",
     };
-    clientSocket.emit("create_lobby", createLobbyArg, (res: string) => {
-      id = res;
+    clientSocket.emit("create_player", "bob", (player:PacketType ) => {
+      createLobbyArg.owner.id = player.data.id;
+      clientSocket.emit("create_lobby", createLobbyArg, (lobby: PacketType) => {
+        clientSocket.emit("create_player", "john", (res: PacketType) => {
+          clientSocket.emit(
+            "join_lobby",
+            { lobbyId: lobby.data, playerId: res.data.id },
+            (join: PacketType) => {
+              expect(join.success).toBeTruthy();
+              done();
+            }
+          );
+        });
+      });
     });
-    clientSocket.emit("leave_lobby", "bob");
-    clientSocket.emit("create_player", "john");
-    clientSocket.emit(
-      "join_lobby",
-      { lobbyId: id, playerId: "john" },
-      (success: boolean, message: string) => {
-        expect(success).toBeTruthy();
-        done();
-      }
-    );
-    clientSocket.emit("leave_lobby", "john");
   });
   */
-  /*
-  test("Join lobby of player success case", (done) => {
-    let id: string = "";
-    clientSocket.emit("create_player", "bob", (res: string) => {
-      createLobbyArg.owner.id = res;
-    });
+  test("Leave lobby of player success case", (done) => {
     let createLobbyArg = {
       mode: "1vs1",
       place: 2,
@@ -105,29 +107,38 @@ describe("Web socket testing", () => {
       owner: {
         name: "bob",
         id: "",
+        lobbyId: null,
       },
       name: "lobby test",
     };
-    clientSocket.emit("create_lobby", createLobbyArg, (res: string) => {
-      id = res;
+    clientSocket.emit("create_player", "bob", (player: PacketType) => {
+      createLobbyArg.owner.id = player.data.id;
+      clientSocket.emit("create_lobby", createLobbyArg, (lobby: PacketType) => {
+        clientSocket.emit("create_player", "john", (res: PacketType) => {
+          clientSocket.emit(
+            "join_lobby",
+            { lobbyId: lobby.data, playerId: res.data.id },
+            () => {
+              clientSocket.emit(
+                "leave_lobby",
+                { roomId: lobby.data, playerId: res.data.id },
+                (leave: PacketType) => {
+                  try{
+                    expect(leave.success).toBeTruthy();
+                    done();
+                  }catch(error) {
+                    console.log(error);
+                    done();
+                  }
+                  
+                }
+              );
+            }
+          );
+        });
+      });
     });
-    clientSocket.emit("leave_lobby", "bob");
-    clientSocket.emit("create_player", "john");
-    clientSocket.emit(
-      "join_lobby",
-      { lobbyId: id, playerId: "john" },
-      (success: boolean, message: string) => {}
-    );
-    clientSocket.emit("leave_lobby", "john");
-    request(httpServer)
-      .get("/list_lobbies")
-      .expect(function(res:LobbyType[]) {
-        res[0].playerList.forEach(function (value) {
-          assert(value.name !== "john");
-        })
-      })
   });
-  */
   /*
   test("Join lobby of player success case", (done) => {
     let id: string = "";
