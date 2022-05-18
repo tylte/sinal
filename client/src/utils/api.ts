@@ -147,4 +147,5 @@ export const addSpecificLobbiesEvent = (
 export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
+  socket?.removeListener("starting_game");
 };

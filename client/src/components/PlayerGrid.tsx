@@ -4,6 +4,7 @@ import {
   PinInput,
   PinInputField,
   Stack,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
@@ -12,6 +13,7 @@ import { guessWord } from "../utils/api";
 import { useDictionary } from "../utils/hooks";
 import { TriesHistory } from "../utils/types";
 import { getColorFromResult, isWordCorrect } from "../utils/utils";
+import { NewGameModal } from "../components/NewGameModal";
 
 const toast_length_id = "toast_length";
 const toast_not_dictionary_id = "toast_not_dictionary_id";
@@ -36,6 +38,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
+  const { onClose: newGameOnClose } = useDisclosure();
 
   const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -76,12 +79,12 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     } else {
       let guessResult = await guessWord(word_lowercase, id);
       if (isWordCorrect(guessResult)) {
-        toast({
-          title: "Vous avez trouvé le mot !",
-          status: "success",
-          duration: 1500,
-          isClosable: true,
-        });
+        // toast({
+        //   title: "Vous avez trouvé le mot en " + (tryCount+1) + " essaie !",
+        //   status: "success",
+        //   duration: 1500,
+        //   isClosable: true,
+        // });
         setHasWon(true);
       }
       setTryCount((v) => (v = v + 1));
@@ -138,6 +141,12 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     <Stack spacing={5} align={"center"}>
       {hasWon && <Confetti />}
       {inputArray}
+      <NewGameModal isOpen={nbLife < (tryCount+1)} status={"error"} onClose={newGameOnClose} title={"PERDU"}description={
+        "Vous avez perdu votre partie voulez vous en refaire une."
+      } />
+      <NewGameModal isOpen={hasWon} status={"success"} onClose={newGameOnClose} title={"GAGNER"} description={
+        "Vous avez gagné en "+ tryCount + " essaie."
+      } />
       <Button onClick={handleTryWord} mt={4}>
         Tenter le mot !
       </Button>
