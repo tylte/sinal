@@ -71,15 +71,15 @@ export const addLobbiesEvent = (
   socket?.on(
     "lobbies_update_leave",
     ({ lobbyId, lobby: changedLobby }: UpdateLobbyLeavePayload) => {
+      console.log("leave event ", lobbyId, changedLobby);
       if (!lobbyId) {
         return;
       }
 
-      console.log("leave lobby ping", { lobbyId, changedLobby });
       setLobbies((lobbies) => {
         let newLobbies = lobbies.slice();
         if (!changedLobby) {
-          newLobbies.filter((v) => v.playerList.length > 0);
+          newLobbies = newLobbies.filter((lobby) => lobby.id !== lobbyId);
         } else {
           newLobbies = lobbies.map((lobby) => {
             if (lobby.id === lobbyId) {
@@ -93,20 +93,21 @@ export const addLobbiesEvent = (
       });
     }
   );
+
+  socket?.emit("join_public_lobbies");
 };
 
-export const addPreGameEvent = (socket : Socket | null) => {
-  socket?.on(
-    "starting_game", (gameId : number) => {
-      console.log("starting game : " + gameId);
-    }
-  )
-}
+export const addPreGameEvent = (socket: Socket | null) => {
+  socket?.on("starting_game", (gameId: number) => {
+    console.log("starting game : " + gameId);
+  });
+};
 
 export const removeLobbiesEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_create");
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
+  socket?.emit("leave_public_lobbies");
 };
 
 export const addSpecificLobbiesEvent = (
