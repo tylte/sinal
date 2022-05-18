@@ -41,3 +41,11 @@ export const isLobbyJoinable = (
 
   return true;
 };
+
+export const getIdFromPage = (id: string | string[] | undefined) => {
+  if (typeof id === "string") {
+    return id;
+  } else {
+    return null;
+  }
+};

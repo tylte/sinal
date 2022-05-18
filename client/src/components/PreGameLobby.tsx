@@ -13,26 +13,27 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
-import { Lobby } from "../utils/types";
+import { Lobby, Player } from "../utils/types";
 import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
-import { usePlayer, useSocket } from "../utils/hooks";
+import { useSocket } from "../utils/hooks";
 
 interface PreGameLobbyProps {
   lobby: Lobby;
+  player: Player;
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   lobby: { name, totalPlace, state, playerList, id, owner, mode },
+  player: { id: playerId },
 }) => {
-  const [player] = usePlayer();
   const socket = useSocket();
   const router = useRouter();
 
   const currentPlace = playerList.length;
 
   const startGame = () => {
-    socket?.emit("start_game", { lobbyId: id, playerId: player?.id });
+    socket?.emit("start_game", { lobbyId: id, playerId });
   };
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
@@ -57,7 +58,9 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
                 {player.id === owner && (
                   <ListIcon as={GiLaurelCrown} color="green.500" />
                 )}
-                <Text fontSize={"xl"}>{player.name}</Text>
+                <Text fontSize={"xl"}>
+                  {player.name} {player.id === playerId && "(You)"}
+                </Text>
               </HStack>
             </ListItem>
           );
@@ -70,7 +73,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           onClick={() => router.push("/lobby")}
         />
         <Button
-          isDisabled={player?.id !== owner || playerList.length < totalPlace}
+          isDisabled={playerId !== owner || playerList.length < totalPlace}
           colorScheme={"green"}
           onClick={startGame}
         >
