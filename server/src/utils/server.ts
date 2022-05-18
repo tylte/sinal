@@ -25,6 +25,7 @@ import {
   leaveLobbyEvent,
   startGameEvent,
 } from "./events";
+import { PUBLIC_LOBBIES } from "./utils";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -102,7 +103,7 @@ export const getServer = () => {
 
     socket.on("join_lobby", (result, response: EventResponseFn) => {
       if (typeof response !== "function") {
-        console.log("join_lobby : player name is supposed to be a funtion");
+        console.log("join_lobby : response is supposed to be a function");
         return;
       }
 
@@ -125,7 +126,7 @@ export const getServer = () => {
       "leave_lobby",
       (request, response: (payload: PacketType) => void) => {
         if (typeof response !== "function") {
-          console.log("join_lobby : player name is supposed to be a function");
+          console.log("leave_lobby : response is supposed to be a function");
           return;
         }
         /**
@@ -228,6 +229,14 @@ export const getServer = () => {
         console.log("update_word : ", check);
       }
     });
+
+    socket.on("join_public_lobbies", () => {
+      socket.join(PUBLIC_LOBBIES);
+    });
+
+    socket.on("leav_public_lobbies", () => {
+      socket.leave(PUBLIC_LOBBIES);
+    })
   });
 
   // TODO : Disconnect ?

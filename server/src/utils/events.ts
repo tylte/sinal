@@ -15,6 +15,7 @@ import {
   Player,
   playerMap,
 } from "./type";
+import { PUBLIC_LOBBIES } from "./utils";
 
 export const createLobbyEvent = (
   io: Server,
@@ -62,7 +63,7 @@ export const createLobbyEvent = (
   socket.join(lobbyId);
   player.lobbyId = lobbyId;
   if (lobby.isPublic) {
-    io.emit("lobbies_update_create", lobbyMap.get(lobbyId));
+    io.to(PUBLIC_LOBBIES).emit("lobbies_update_create", lobbyMap.get(lobbyId));
   }
 
   let packet: PacketType = {
@@ -118,7 +119,7 @@ export const joinLobbyEvent = (
 
   lobby.playerList.push(player);
 
-  io.emit("lobbies_update_join", { lobbyId, playerId });
+  io.to(PUBLIC_LOBBIES).emit("lobbies_update_join", { lobby });
 
   // If the user joined a lobby, he will leave it when deconnecting
   socket.on("disconnect", () => {
@@ -200,9 +201,11 @@ export const leaveLobbyEvent = (
     return false;
   }
 
-  io.emit("lobbies_update_leave", {
-    lobbyId,
-    playerId: playerId,
+  willNoLongerLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
+
+  io.to(PUBLIC_LOBBIES).emit("lobbies_update_leave", {
+    lobby: lobby === undefined ? null : lobby,
+    lobbyId: lobby,
   });
 
   console.log("Joueur retiré");
@@ -219,7 +222,6 @@ export const createPlayerEvent = (
   let player = { id: playerId, name: playerName, lobbyId: null };
   playerMap.set(playerId, player);
   console.log(`player created : ${playerName} : ${playerId}`);
-  io.emit("create_player_response", playerId);
   response({
     success: true,
     message: "Le joueur à bien été créé",

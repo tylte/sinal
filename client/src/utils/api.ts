@@ -93,6 +93,8 @@ export const addLobbiesEvent = (
       });
     }
   );
+
+  socket?.emit("join_public_lobbies");
 };
 
 export const addPreGameEvent = (socket : Socket | null) => {
@@ -107,6 +109,7 @@ export const removeLobbiesEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_create");
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
+  socket?.emit("leave_public_lobbies");
 };
 
 export const addSpecificLobbiesEvent = (
