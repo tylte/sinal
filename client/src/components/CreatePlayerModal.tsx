@@ -22,11 +22,13 @@ import { Packet } from "../utils/types";
 interface CreatePlayerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  path?: string;
 }
 
 export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
   isOpen,
   onClose,
+  path,
 }) => {
   const router = useRouter();
   const socket = useSocket();
@@ -46,7 +48,11 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
       if (setPlayer) {
         if (player.success) {
           setPlayer(player.data);
-          router.push("/lobby");
+          if (path) {
+            router.push(path);
+          } else {
+            router.push("/lobby");
+          }
         } else {
           console.error(player.message);
         }

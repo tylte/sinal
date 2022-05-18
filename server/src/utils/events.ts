@@ -117,7 +117,7 @@ export const joinLobbyEvent = (
 
   lobby.playerList.push(player);
 
-  io.to(PUBLIC_LOBBIES).emit("lobbies_update_join", { lobby });
+  io.to(PUBLIC_LOBBIES).to(lobbyId).emit("lobbies_update_join", { lobby });
 
   // If the user joined a lobby, he will leave it when deconnecting
   willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
@@ -179,10 +179,12 @@ export const leaveLobbyEvent = (
 
   willNoLongerLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
 
-  io.to(PUBLIC_LOBBIES).emit("lobbies_update_leave", {
-    lobby: lobby === undefined ? null : lobby,
-    lobbyId,
-  });
+  io.to(PUBLIC_LOBBIES)
+    .to(lobbyId)
+    .emit("lobbies_update_leave", {
+      lobby: lobby === undefined ? null : lobby,
+      lobbyId,
+    });
 
   player.lobbyId = null;
   // Leave the room
@@ -218,22 +220,31 @@ export const startGameEvent = (
   { lobbyId, playerId }: ArgStartGameType
 ) => {
   let lobby = lobbyMap.get(lobbyId);
-  if (lobby?.owner !== playerId) {
+  if (lobby === undefined) {
+    console.log("start_game : lobby doesn't exist");
+    return;
+  }
+  if (lobby.owner !== playerId) {
     console.log("start_game : only the owner can start the game");
     return;
   }
 
-  if (lobby?.mode == "1vs1") {
+  lobby.state = "in-game";
+
+  if (lobby.mode == "1vs1") {
     let word = get_word();
-    idToWord.set(lobbyId, word); //the ID of the word is the same as the lobby
     let gameId = get_id();
+    idToWord.set(gameId, word); //the ID of the word is the same as the lobby
     let game: Game1vs1 = {
       id: gameId,
+      first_letter: word.charAt(0),
+      length: word.length,
+      nb_life: 6,
     };
 
     Game1vs1Map.set(gameId, game);
-    io.to(lobbyId).emit("starting_game", gameId);
-  } else if (lobby?.mode == "battle-royale") {
+    io.to(lobbyId).emit("starting_game", game);
+  } else if (lobby.mode == "battle-royale") {
     //TODO
   }
 };

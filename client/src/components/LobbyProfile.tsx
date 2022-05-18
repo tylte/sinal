@@ -51,7 +51,9 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
             </Text>
             <Text fontStyle={"italic"}>{state}</Text>
           </HStack>
-          {playerOwner !== undefined && <Text>{playerOwner.name} (owner)</Text>}
+          {playerOwner !== undefined && (
+            <Text>{playerOwner.name} (owner) </Text>
+          )}
         </Stack>
       </LinkBox>
     </Tooltip>

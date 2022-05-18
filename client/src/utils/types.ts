@@ -48,3 +48,10 @@ export type UpdateLobbyLeavePayload = {
   lobbyId: string;
   lobby: Lobby | null;
 };
+
+export type Game1vs1 = {
+  id: string;
+  length: number;
+  first_letter: string;
+  nb_life: number;
+};

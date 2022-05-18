@@ -1,18 +1,19 @@
 import { Spinner, useDisclosure, useToast } from "@chakra-ui/react";
-import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
+import { InGameLobby } from "../../components/InGameLobby";
 import { Layout } from "../../components/Layout";
 import { PreGameLobby } from "../../components/PreGameLobby";
 import {
   addPreGameEvent,
   addSpecificLobbiesEvent,
+  getSpecificLobby,
   removeSpecificLobbyEvent,
 } from "../../utils/api";
-import { Lobby, Packet } from "../../utils/types";
+import { Game1vs1, Lobby } from "../../utils/types";
+import { getIdFromPage } from "../../utils/utils";
 
 interface LobbyProps {}
 
@@ -27,13 +28,6 @@ interface LobbyProps {}
 //   isPublic: true,
 //   mode: "1vs1",
 // };
-const leaveLobby = (
-  socket: Socket | null,
-  lobbyId: string,
-  playerId: string | undefined
-) => {
-  socket?.emit("leave_lobby", { roomId: lobbyId, playerId }, () => {});
-};
 
 const LobbyPage: React.FC<LobbyProps> = ({}) => {
   // const { state } = lobby;
@@ -42,71 +36,74 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   const [player] = usePlayer();
   const { onClose } = useDisclosure();
   const toast = useToast();
+  const [gameState, setGameState] = useState<Game1vs1 | null>(null);
 
-  let lobbyId = router.query.lobbyId;
+  let lobbyId = getIdFromPage(router.query.lobbyId);
   const [lobby, setLobby] = useState<Lobby | null>(null);
 
-  useEffect(() => {
-    axios
-      .get<Lobby>(`http://localhost:4000/list_lobbies/${lobbyId}`)
-      .then(({ data }) => {
-        if (data !== null) {
-          setLobby(data);
-
-          if (player?.id !== data.owner) {
-            socket?.emit(
-              "join_lobby",
-              {
-                lobbyId: lobbyId,
-                playerId: player?.id,
-              },
-              (response: Packet) => {
-                toast({
-                  description: response.message,
-                  status: response.success ? "success" : "error",
-                  duration: 3000,
-                  isClosable: true,
-                });
-              }
-            );
-          }
-        }
-      });
-
-    return () => {
-      console.log("Leave lobby");
-      leaveLobby(socket, lobbyId as string, player?.id);
-      removeSpecificLobbyEvent(socket);
-    };
-  }, []);
+  const leaveLobby = (lobbyId: string | null, playerId: string | undefined) => {
+    if (lobbyId !== null && playerId !== undefined) {
+      socket?.emit("leave_lobby", { roomId: lobbyId, playerId }, () => {});
+    } else {
+      console.log(
+        "Couldn't leave lobby cause lobbyId or playerId null, lobbyId",
+        lobbyId,
+        "playerId",
+        playerId
+      );
+    }
+  };
 
   useEffect(() => {
-    if (socket) {
+    if (player && socket && lobbyId) {
       // Update event lobbies
-      addSpecificLobbiesEvent(socket, lobbyId as string, setLobby);
+      getSpecificLobby(lobbyId, setLobby, socket, toast, player);
+      addSpecificLobbiesEvent(
+        socket,
+        lobbyId as string,
+        setLobby,
+        setGameState
+      );
       addPreGameEvent(socket);
     }
-  }, [socket]);
+    return () => {
+      if (player && socket && lobbyId) {
+        leaveLobby(lobbyId, player.id);
+        removeSpecificLobbyEvent(socket);
+      }
+    };
+  }, [socket, lobbyId, player]);
 
   if (!player) {
     return (
       <Layout>
-        {!player && <CreatePlayerModal isOpen={true} onClose={onClose} />}
+        <CreatePlayerModal
+          isOpen={!player}
+          onClose={onClose}
+          path={`/lobby/${lobbyId}`}
+        />
       </Layout>
     );
   }
+
   if (lobby === null) {
     return <Layout>Lobby n'existe pas</Layout>;
   }
+
   let state = lobby?.state;
+
   if (state === "pre-game") {
     return (
       <Layout>
-        <PreGameLobby lobby={lobby} />
+        <PreGameLobby player={player} lobby={lobby} />
       </Layout>
     );
-  } else if (state === "in-game") {
-    return <Layout variant="large"></Layout>;
+  } else if (state === "in-game" && gameState !== null) {
+    return (
+      <Layout variant="large">
+        <InGameLobby player={player} gameState={gameState} />
+      </Layout>
+    );
   } else if (state === "finished") {
     return <Layout></Layout>;
   } else {

@@ -1,10 +1,13 @@
+import { ToastId, UseToastOptions } from "@chakra-ui/react";
 import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import {
+  Game1vs1,
   LetterResult,
   Lobby,
   Packet,
+  Player,
   UpdateLobbyJoinPayload,
   UpdateLobbyLeavePayload,
 } from "./types";
@@ -128,17 +131,29 @@ export const removeLobbiesEvent = (socket: Socket | null) => {
 };
 
 export const addSpecificLobbiesEvent = (
-  socket: Socket | null,
+  socket: Socket,
   lobbyId: string,
-  setLobby: Dispatch<SetStateAction<Lobby | null>>
+  setLobby: Dispatch<SetStateAction<Lobby | null>>,
+  setGameState: Dispatch<SetStateAction<Game1vs1 | null>>
 ) => {
-  socket?.on(
+  socket.on("starting_game", (game: Game1vs1) => {
+    setGameState(game);
+    //FIXME : Mettre le statut du lobby en "in-game" côté serveur
+    setLobby((lobby) => {
+      if (lobby === null) {
+        return null;
+      } else {
+        return { ...lobby, state: "in-game" };
+      }
+    });
+  });
+  socket.on(
     "lobbies_update_join",
     ({ lobby: changedLobby }: UpdateLobbyJoinPayload) => {
       if (!changedLobby) {
+        console.log("lobbies_update_join notif", lobbyId, changedLobby);
         return;
       }
-      console.log("lobbies_update_join notif", lobbyId, changedLobby);
       if (changedLobby.id !== lobbyId) {
         return;
       }
@@ -146,7 +161,7 @@ export const addSpecificLobbiesEvent = (
     }
   );
 
-  socket?.on(
+  socket.on(
     "lobbies_update_leave",
     ({
       lobby: changedLobby,
@@ -164,4 +179,38 @@ export const addSpecificLobbiesEvent = (
 export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
+};
+
+export const getSpecificLobby = (
+  lobbyId: string,
+  setLobby: Dispatch<SetStateAction<Lobby | null>>,
+  socket: Socket,
+  toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
+  player: Player
+) => {
+  axios
+    .get<Lobby>(`http://localhost:4000/list_lobbies/${lobbyId}`)
+    .then(({ data }) => {
+      if (data !== null) {
+        setLobby(data);
+
+        if (player.id !== data.owner) {
+          socket.emit(
+            "join_lobby",
+            {
+              lobbyId: lobbyId,
+              playerId: player?.id,
+            },
+            (response: Packet) => {
+              toast({
+                description: response.message,
+                status: response.success ? "success" : "error",
+                duration: 3000,
+                isClosable: true,
+              });
+            }
+          );
+        }
+      }
+    });
 };
