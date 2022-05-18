@@ -117,7 +117,7 @@ export const joinLobbyEvent = (
 
   lobby.playerList.push(player);
 
-  io.to(PUBLIC_LOBBIES).emit("lobbies_update_join", { lobby });
+  io.to(PUBLIC_LOBBIES).to(lobbyId).emit("lobbies_update_join", { lobby });
 
   // If the user joined a lobby, he will leave it when deconnecting
   willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
@@ -179,10 +179,12 @@ export const leaveLobbyEvent = (
 
   willNoLongerLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId });
 
-  io.to(PUBLIC_LOBBIES).emit("lobbies_update_leave", {
-    lobby: lobby === undefined ? null : lobby,
-    lobbyId,
-  });
+  io.to(PUBLIC_LOBBIES)
+    .to(lobbyId)
+    .emit("lobbies_update_leave", {
+      lobby: lobby === undefined ? null : lobby,
+      lobbyId,
+    });
 
   player.lobbyId = null;
   // Leave the room
