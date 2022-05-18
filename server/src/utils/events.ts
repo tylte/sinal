@@ -220,22 +220,29 @@ export const startGameEvent = (
   { lobbyId, playerId }: ArgStartGameType
 ) => {
   let lobby = lobbyMap.get(lobbyId);
-  if (lobby?.owner !== playerId) {
+  if (lobby === undefined) {
+    console.log("start_game : lobby doesn't exist");
+    return;
+  }
+  if (lobby.owner !== playerId) {
     console.log("start_game : only the owner can start the game");
     return;
   }
 
-  if (lobby?.mode == "1vs1") {
+  if (lobby.mode == "1vs1") {
     let word = get_word();
-    idToWord.set(lobbyId, word); //the ID of the word is the same as the lobby
     let gameId = get_id();
+    idToWord.set(gameId, word); //the ID of the word is the same as the lobby
     let game: Game1vs1 = {
       id: gameId,
+      first_letter: word.charAt(0),
+      length: word.length,
+      nb_life: 6,
     };
 
     Game1vs1Map.set(gameId, game);
-    io.to(lobbyId).emit("starting_game", gameId);
-  } else if (lobby?.mode == "battle-royale") {
+    io.to(lobbyId).emit("starting_game", game);
+  } else if (lobby.mode == "battle-royale") {
     //TODO
   }
 };
