@@ -229,6 +229,8 @@ export const startGameEvent = (
     return;
   }
 
+  lobby.state = "in-game";
+
   if (lobby.mode == "1vs1") {
     let word = get_word();
     let gameId = get_id();
