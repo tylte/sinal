@@ -2,22 +2,10 @@ import cors from "cors";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { get_lobbies, get_lobby_id } from "../Endpoint/lobbies";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
+import { get_lobbies, get_lobby_id } from "../Endpoint/lobbies";
 import { get_id, get_word } from "../Endpoint/start_game";
-import {
-  ArgCreateLobby,
-  ArgJoinLobby,
-  ArgStartGame,
-  ArgUpdateWord,
-  Game1vs1,
-  Game1vs1Map,
-  EventResponseFn,
-  PacketType,
-  lobbyMap,
-  playerMap,
-} from "./type";
 import {
   createLobbyEvent,
   createPlayerEvent,
@@ -25,6 +13,14 @@ import {
   leaveLobbyEvent,
   startGameEvent,
 } from "./events";
+import {
+  ArgCreateLobby,
+  ArgJoinLobby,
+  ArgStartGame,
+  ArgUpdateWord,
+  EventResponseFn,
+  PacketType,
+} from "./type";
 import { PUBLIC_LOBBIES } from "./utils";
 
 export var idToWord: Map<string, string> = new Map();
@@ -140,31 +136,17 @@ export const getServer = () => {
           typeof request.roomId === "string" &&
           typeof request.playerId === "string"
         ) {
-          if (
-            !leaveLobbyEvent(io, socket, {
+          leaveLobbyEvent(
+            io,
+            socket,
+            {
               lobbyId: request.roomId,
               playerId: request.playerId,
-            })
-          ) {
-            response({
-              success: false,
-              message: "leave_lobby : le lobby n'existe pas ! ",
-              data: null,
-            });
-          } else {
-            response({
-              success: true,
-              message: "leave_lobby : le joueur à été retiré ! ",
-              data: null,
-            });
-          }
+            },
+            response
+          );
         } else {
           console.log("leave_lobby : bad request : ", request);
-          response({
-            success: false,
-            message: "leave_lobby : le type ne correspond pas ! ",
-            data: null,
-          });
         }
       }
     );
@@ -234,13 +216,10 @@ export const getServer = () => {
       socket.join(PUBLIC_LOBBIES);
     });
 
-    socket.on("leav_public_lobbies", () => {
+    socket.on("leave_public_lobbies", () => {
       socket.leave(PUBLIC_LOBBIES);
-    })
+    });
   });
-
-  // TODO : Disconnect ?
-  io.on("disconnect", (socket) => {});
 
   return server;
 };
