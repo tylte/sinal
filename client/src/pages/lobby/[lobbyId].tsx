@@ -12,7 +12,7 @@ import {
   getSpecificLobby,
   removeSpecificLobbyEvent,
 } from "../../utils/api";
-import { Lobby } from "../../utils/types";
+import { Game1vs1, Lobby } from "../../utils/types";
 import { getIdFromPage } from "../../utils/utils";
 
 interface LobbyProps {}
@@ -36,6 +36,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   const [player] = usePlayer();
   const { onClose } = useDisclosure();
   const toast = useToast();
+  const [gameState, setGameState] = useState<Game1vs1 | null>(null);
 
   let lobbyId = getIdFromPage(router.query.lobbyId);
   const [lobby, setLobby] = useState<Lobby | null>(null);
@@ -57,7 +58,12 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
     if (player && socket && lobbyId) {
       // Update event lobbies
       getSpecificLobby(lobbyId, setLobby, socket, toast, player);
-      addSpecificLobbiesEvent(socket, lobbyId as string, setLobby);
+      addSpecificLobbiesEvent(
+        socket,
+        lobbyId as string,
+        setLobby,
+        setGameState
+      );
       addPreGameEvent(socket);
     }
     return () => {
@@ -92,10 +98,10 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
         <PreGameLobby player={player} lobby={lobby} />
       </Layout>
     );
-  } else if (state === "in-game") {
+  } else if (state === "in-game" && gameState !== null) {
     return (
       <Layout variant="large">
-        <InGameLobby player={player} />
+        <InGameLobby player={player} gameState={gameState} />
       </Layout>
     );
   } else if (state === "finished") {

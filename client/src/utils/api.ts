@@ -3,6 +3,7 @@ import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import {
+  Game1vs1,
   LetterResult,
   Lobby,
   Packet,
@@ -116,8 +117,20 @@ export const removeLobbiesEvent = (socket: Socket | null) => {
 export const addSpecificLobbiesEvent = (
   socket: Socket,
   lobbyId: string,
-  setLobby: Dispatch<SetStateAction<Lobby | null>>
+  setLobby: Dispatch<SetStateAction<Lobby | null>>,
+  setGameState: Dispatch<SetStateAction<Game1vs1 | null>>
 ) => {
+  socket.on("starting_game", (game: Game1vs1) => {
+    setGameState(game);
+    //FIXME : Mettre le statut du lobby en "in-game" côté serveur
+    setLobby((lobby) => {
+      if (lobby === null) {
+        return null;
+      } else {
+        return { ...lobby, state: "in-game" };
+      }
+    });
+  });
   socket.on(
     "lobbies_update_join",
     ({ lobby: changedLobby }: UpdateLobbyJoinPayload) => {
