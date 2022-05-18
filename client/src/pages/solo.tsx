@@ -38,6 +38,8 @@ const Solo: React.FC<SoloProps> = ({}) => {
         <></>
       ) : (
         <PlayerGrid
+          isPlayer={true}
+          isSolo={true}
           id={id}
           firstLetter={firstLetter}
           length={length}

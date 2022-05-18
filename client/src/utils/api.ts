@@ -4,6 +4,7 @@ import { Socket } from "socket.io-client";
 import {
   LetterResult,
   Lobby,
+  Packet,
   UpdateLobbyJoinPayload,
   UpdateLobbyLeavePayload,
 } from "./types";
@@ -24,6 +25,22 @@ export const guessWord = async (
   }
   // Error
   return [];
+};
+
+export const guessWordMulti = async (
+  word: string,
+  lobbyId: string,
+  playerId: string,
+  socket: Socket | null,
+  response: (response : Packet) => void
+) => {
+    socket?.emit("guess_word", 
+    { 
+      word, 
+      lobbyId, 
+      playerId 
+    }, 
+      response );
 };
 
 export const addSocketConnectionEvent = (
