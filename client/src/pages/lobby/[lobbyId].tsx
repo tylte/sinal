@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
+import { InGameLobby } from "../../components/InGameLobby";
 import { Layout } from "../../components/Layout";
 import { PreGameLobby } from "../../components/PreGameLobby";
 import {
@@ -106,7 +107,11 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
       </Layout>
     );
   } else if (state === "in-game") {
-    return <Layout variant="large"></Layout>;
+    return (
+      <Layout variant="large">
+        <InGameLobby player={player} />
+      </Layout>
+    );
   } else if (state === "finished") {
     return <Layout></Layout>;
   } else {
