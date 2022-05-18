@@ -33,6 +33,7 @@ export const createLobbyEvent = (
     owner: owner.id,
     isPublic,
     mode,
+    currentGameId: null,
   };
   // if (result.mode == "1vs1") {
   //   lobby.totalPlace = 2;
@@ -229,11 +230,12 @@ export const startGameEvent = (
     return;
   }
 
+  let gameId = get_id();
   lobby.state = "in-game";
+  lobby.currentGameId = gameId;
 
   if (lobby.mode == "1vs1") {
     let word = get_word();
-    let gameId = get_id();
     idToWord.set(gameId, word); //the ID of the word is the same as the lobby
     let game: Game1vs1 = {
       id: gameId,

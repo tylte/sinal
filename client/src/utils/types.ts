@@ -34,6 +34,7 @@ export type Lobby = {
   owner: string; // id du joueur owner
   isPublic: boolean;
   mode: GameMode;
+  currentGameId: string;
 };
 
 export type Packet = {
