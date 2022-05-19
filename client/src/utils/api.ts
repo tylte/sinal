@@ -35,15 +35,17 @@ export const guessWordMulti = async (
   lobbyId: string,
   playerId: string,
   socket: Socket | null,
-  response: (response : Packet) => void
+  response: (response: Packet) => void
 ) => {
-    socket?.emit("guess_word", 
-    { 
-      word, 
-      lobbyId, 
-      playerId 
-    }, 
-      response );
+  socket?.emit(
+    "guess_word",
+    {
+      word,
+      lobbyId,
+      playerId,
+    },
+    response
+  );
 };
 
 export const addSocketConnectionEvent = (
@@ -214,11 +216,8 @@ export const getSpecificLobby = (
       }
     });
 };
-export const addUpdateWordBroadcast = (
-  socket: Socket,
-) => {
+export const addUpdateWordBroadcast = (socket: Socket) => {
   socket.on("update_word_broadcast", (arg) => {
     console.log("update_word_broadcast : " + arg);
   });
 };
-

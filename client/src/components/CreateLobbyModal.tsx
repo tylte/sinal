@@ -54,7 +54,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         name: lobbyName,
       },
       (response: Packet) => {
-        if(response.success) {
+        if (response.success) {
           router.push(`/lobby/${response.data}`);
         } else {
           console.log("createLobby client error : " + response.message);

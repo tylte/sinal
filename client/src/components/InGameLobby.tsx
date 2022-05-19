@@ -6,7 +6,7 @@ import { PlayerGrid } from "./PlayerGrid";
 interface InGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
-  lobbyId:string | null,
+  lobbyId: string | null;
 }
 
 export const InGameLobby: React.FC<InGameLobbyProps> = ({
