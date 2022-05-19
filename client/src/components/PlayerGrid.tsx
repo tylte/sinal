@@ -151,9 +151,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
             color="white"
           />
         );
-        // socket?.on("update_word_broadcast", (arg) => {
-        //   console.log(arg);
-        // });
       }
     }
 

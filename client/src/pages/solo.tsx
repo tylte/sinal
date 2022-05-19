@@ -12,11 +12,6 @@ const Solo: React.FC<SoloProps> = ({}) => {
   const [id, setId] = useState<string | null>(null);
   const [firstLetter, setFirstLetter] = useState<string | null>(null);
   const [nbLife, setNbLife] = useState<null | number>(null);
-  // const [gameStatus, setGameStatus] = useState({isFinished:false,
-  //   isWon:false,
-  // });
-  // const { onClose } = useDisclosure();
-  // const {onClose: newGameOnClose } = useDisclosure();
 
   useEffect(() => {
     axios
