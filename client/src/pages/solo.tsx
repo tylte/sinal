@@ -2,7 +2,7 @@ import { Text } from "@chakra-ui/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Layout } from "../components/Layout";
-import { PlayerGrid } from "../components/PlayerGrid";
+import { PlayerGridOld } from "../components/PlayerGridOld";
 import { StartGameResponse } from "../utils/types";
 
 interface SoloProps {}
@@ -42,7 +42,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
       firstLetter === null ? (
         <></>
       ) : (
-        <PlayerGrid
+        <PlayerGridOld
           isPlayer={true}
           isSolo={true}
           id={id}
