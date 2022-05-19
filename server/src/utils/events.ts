@@ -35,32 +35,21 @@ export const createLobbyEvent = (
     mode,
     currentGameId: null,
   };
-  // if (result.mode == "1vs1") {
-  //   lobby.totalPlace = 2;
-  // } else {
-  //   lobby.totalPlace = result.place;
-  // }
 
   let player = playerMap.get(owner.id);
   if (player === undefined) {
-    console.log("player doesn't exist");
     response({
       success: false,
-      message: "Create_lobby n'a pas été effectué",
+      message: "Create_lobby n'a pas été effectué car le joueur n'existe pas",
       data: null,
     });
     return;
   }
 
   lobby.playerList.push(player);
-  // if (player !== undefined) {
-  // } else {
-  //   playerMap.set(result.owner.id, result.owner);
-  //   lobby.playerList.push(result.owner);
-  // }
 
   lobbyMap.set(lobbyId, lobby);
-  console.log("Lobby created : ", lobby);
+  console.log("Lobby created notif");
   socket.join(lobbyId);
   player.lobbyId = lobbyId;
   if (lobby.isPublic) {
@@ -111,8 +100,6 @@ export const joinLobbyEvent = (
     });
     return;
   }
-
-  console.log("join");
   socket.join(lobbyId);
 
   player.lobbyId = lobbyId;
@@ -130,7 +117,6 @@ export const joinLobbyEvent = (
     success: true,
     message: "Le lobby à été rejoins !",
   });
-  console.log(lobby);
 };
 
 export const leaveLobbyEvent = (
@@ -139,40 +125,7 @@ export const leaveLobbyEvent = (
   { playerId, lobbyId }: ArgLeaveLobbyType,
   response: EventResponseFn
 ) => {
-  // let lobby = lobbyMap.get(lobbyId); // Lobby where the user is
-  // let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
-
-  // if (playerList !== undefined && lobby !== undefined) {
-  //   // Remove player from the playerList
-  //   lobby.playerList = playerList.filter((player) => {
-  //     return player.id !== playerId;
-  //   });
-
-  //   // If the player was the owner, change it
-  //   if (
-  //     lobby !== undefined &&
-  //     lobby.owner == playerId &&
-  //     playerList.length > 0
-  //   ) {
-  //     lobby.owner = playerList[0].id;
-  //   }
-  //   io.emit("lobbies_update_leave", {
-  //     lobbyId: lobby.id,
-  //     playerId: playerId,
-  //   });
-  // }
-
-  // // Leave the room
-  // socket.leave(lobbyId);
-  // let player = playerMap.get(playerId);
-
-  // if (player !== undefined) {
-  //   player.lobbyId = null;
-  // }
-  // console.log("Joueur retiré");
   let lobby = lobbyMap.get(lobbyId); // Lobby where the user is
-  //   let playerList = lobbyMap.get(lobbyId)?.playerList; // playerList of this lobby
-
   if (lobby === undefined) {
     response({
       success: false,
@@ -197,12 +150,9 @@ export const leaveLobbyEvent = (
     }
   }
 
-  console.log("Lobby map after delete", lobbyMap);
-
   // Change the lobbyId of the player
   let player = playerMap.get(playerId);
   if (player === undefined) {
-    console.log("Player doesn't exist");
     response({
       success: false,
       message: "leave_lobby : player doesn't exist ! ",
@@ -224,8 +174,7 @@ export const leaveLobbyEvent = (
   // Leave the room
   socket.leave(lobbyId);
 
-  console.log("Joueur retiré");
-  console.log("owner :", lobby?.owner);
+  console.log("Joueur retiré : ", playerId, " dans le lobby : ", lobbyId, "");
   response({
     success: true,
     message: "leave_lobby : le joueur à été retiré ! ",
