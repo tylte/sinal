@@ -8,26 +8,36 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import Confetti from "react-confetti";
-import { guessWord } from "../utils/api";
-import { useDictionary } from "../utils/hooks";
-import { TriesHistory } from "../utils/types";
+import { guessWord, guessWordMulti } from "../utils/api";
+import { useDictionary, useSocket } from "../utils/hooks";
+import { GameMode, Packet, Player, TriesHistory } from "../utils/types";
 import { getColorFromResult, isWordCorrect } from "../utils/utils";
 
 const toast_length_id = "toast_length";
 const toast_not_dictionary_id = "toast_not_dictionary_id";
 
 interface PlayerGridProps {
+  isPlayer : boolean;
+  isSolo : boolean;
+  mode? : GameMode;
   firstLetter: string;
   length: number;
   nbLife: number;
   id: string;
+  player: Player | undefined;
+  lobbyId: string | null;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
+  isSolo,
+  isPlayer,
+  mode,
   firstLetter,
   length,
   nbLife,
   id,
+  player,
+  lobbyId,
 }) => {
   const firstLetterUpper = firstLetter.toUpperCase();
   const dictionary = useDictionary();
@@ -36,6 +46,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
+  const socket = useSocket();
 
   const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -49,6 +60,11 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     const re = /\d+/g;
     if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
       setWord(str_upper);
+      if (player !== undefined) {
+        console.log(player);
+        let { id} = player;
+        socket?.emit("update_word", { word, playerId: id, lobbyId });
+      }
     }
   };
 
@@ -74,21 +90,43 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
         });
       }
     } else {
-      let guessResult = await guessWord(word_lowercase, id);
-      if (isWordCorrect(guessResult)) {
-        toast({
-          title: "Vous avez trouvé le mot !",
-          status: "success",
-          duration: 1500,
-          isClosable: true,
-        });
-        setHasWon(true);
+      if ( isSolo ) {
+        let guessResult = await guessWord(word_lowercase, id);
+        if (isWordCorrect(guessResult)) {
+          toast({
+            title: "Vous avez trouvé le mot !",
+            status: "success",
+            duration: 1500,
+            isClosable: true,
+          });
+          setHasWon(true);
+        }
+        setTryCount((v) => (v = v + 1));
+        const tries = triesHistory.slice();
+        tries.push({ wordTried: word_lowercase, result: guessResult });
+        setWord(firstLetterUpper);
+        setTriesHistory(tries);
       }
-      setTryCount((v) => (v = v + 1));
-      const tries = triesHistory.slice();
-      tries.push({ wordTried: word_lowercase, result: guessResult });
-      setWord(firstLetterUpper);
-      setTriesHistory(tries);
+      else if ( mode == "1vs1" && player ) {
+        guessWordMulti( word_lowercase, id, player.id, socket, 
+          (response: Packet) => {
+            let guessResult = response.data;
+            if (isWordCorrect(guessResult)) {
+              toast({
+                title: "Vous avez trouvé le mot !",
+            status: "success",
+            duration: 1500,
+            isClosable: true,
+          });
+          setHasWon(true);
+        }
+        setTryCount((v) => (v = v + 1));
+        const tries = triesHistory.slice();
+        tries.push({ wordTried: word_lowercase, result: guessResult });
+        setWord(firstLetterUpper);
+        setTriesHistory(tries);
+      });
+      }
     }
   };
 
@@ -107,8 +145,8 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       );
     } else {
       for (let i = 0; i < length; i++) {
-        // Editable input
         inputArrayField.push(
+          // Editable input
           <PinInputField
             onKeyDown={handleKeyPressed}
             key={i}
@@ -116,17 +154,21 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
             color="white"
           />
         );
+        // socket?.on("update_word_broadcast", (arg) => {
+        //   console.log(arg);
+        // });
       }
     }
 
     inputArray.push(
       <HStack key={i}>
         <PinInput
-          isDisabled={i != tryCount || hasWon}
+          isDisabled={i != tryCount || hasWon || !isPlayer}
           onChange={handleWordChange}
           value={i != tryCount ? value : word}
           type="alphanumeric"
           placeholder="?"
+          mask={!isPlayer}
         >
           {inputArrayField}
         </PinInput>

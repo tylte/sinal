@@ -199,13 +199,21 @@ export const getServer = () => {
       }
     });
 
-    socket.on("guess_word", (req, res) => {
+    socket.on("guess_word", (req, response: (payload: PacketType) => void) => {
+      if (typeof response !== "function") {
+        console.log("guess_word : response is supposed to be function");
+        return;
+      }
+
       let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
       if (check.success) {
         let { word, gameId, lobbyId, playerId } = check.data;
-        console.log("Guess word : ", idToWord, check.data);
         let tab_res = get_guess(gameId, word, idToWord);
-        res.send(tab_res);
+        response({
+          success: true,
+          message: "Le resultat du mot est renvoyé",
+          data: tab_res,
+        });
         io.to(lobbyId).emit("guess_word_broadcast", { tab_res, playerId });
       } else {
         console.log("update_word payload : ", req);

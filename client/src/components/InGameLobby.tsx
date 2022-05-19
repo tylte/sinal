@@ -6,6 +6,7 @@ import { PlayerGrid } from "./PlayerGrid";
 interface InGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
+  lobbyId:string | null,
 }
 
 export const InGameLobby: React.FC<InGameLobbyProps> = ({
@@ -16,6 +17,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
     length: game_length,
     nb_life: game_nb_life,
   },
+  lobbyId,
 }) => {
   return (
     <Box>
@@ -23,18 +25,24 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
         <PlayerGrid
           isPlayer={true}
           isSolo={false}
+          mode={"1vs1"}
           firstLetter={first_letter}
           length={game_length}
           nbLife={game_nb_life}
           id={game_id}
+          player={player}
+          lobbyId={lobbyId}
         ></PlayerGrid>
         <PlayerGrid
           isPlayer={false}
           isSolo={false}
+          mode={"1vs1"}
           firstLetter={first_letter}
           length={game_length}
           nbLife={game_nb_life}
           id={game_id}
+          player={player}
+          lobbyId={lobbyId}
         ></PlayerGrid>
       </HStack>
     </Box>
