@@ -53,6 +53,7 @@ export const getServer = () => {
     let id = get_id();
     let word = get_word();
     idToWord.set(id, word);
+    console.log("word of the game : ", word);
     res.send({
       length: word.length,
       first_letter: word.charAt(0),

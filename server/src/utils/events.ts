@@ -40,7 +40,7 @@ export const createLobbyEvent = (
   if (player === undefined) {
     response({
       success: false,
-      message: "Create_lobby n'a pas été effectué",
+      message: "Create_lobby n'a pas été effectué car le joueur n'existe pas",
       data: null,
     });
     return;
@@ -174,7 +174,7 @@ export const leaveLobbyEvent = (
   // Leave the room
   socket.leave(lobbyId);
 
-  console.log("Joueur retiré");
+  console.log("Joueur retiré : ", playerId, " dans le lobby : ", lobbyId, "");
   response({
     success: true,
     message: "leave_lobby : le joueur à été retiré ! ",

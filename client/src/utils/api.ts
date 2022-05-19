@@ -152,7 +152,7 @@ export const addSpecificLobbiesEvent = (
     "lobbies_update_join",
     ({ lobby: changedLobby }: UpdateLobbyJoinPayload) => {
       if (!changedLobby) {
-        console.log("lobbies_update_join notif");
+        console.log("lobbies_update_join notif, lobbyId: ", lobbyId);
         return;
       }
       if (changedLobby.id !== lobbyId) {
@@ -171,7 +171,7 @@ export const addSpecificLobbiesEvent = (
       if (!changedLobby) {
         return;
       }
-      console.log("leave_lobby_leave notif");
+      console.log("leave lobby ping", { changedLobbyId, changedLobby });
       setLobby(changedLobby);
     }
   );
