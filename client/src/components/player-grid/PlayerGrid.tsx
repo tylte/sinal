@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   HStack,
   PinInput,
@@ -6,12 +7,13 @@ import {
   Stack,
   useToast,
 } from "@chakra-ui/react";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Confetti from "react-confetti";
-import { guessWord, guessWordMulti } from "../utils/api";
-import { useDictionary, useSocket } from "../utils/hooks";
-import { Packet, Player, TriesHistory } from "../utils/types";
-import { getColorFromResult, isWordCorrect } from "../utils/utils";
+import { guessWord, guessWordMulti } from "../../utils/api";
+import { useDictionary, useSocket } from "../../utils/hooks";
+import { Packet, Player, TriesHistory } from "../../utils/types";
+import { getColorFromResult, isWordCorrect } from "../../utils/utils";
+import { PlayerGridRow } from "./PlayerGridRow";
 
 const toast_length_id = "toast_length";
 const toast_not_dictionary_id = "toast_not_dictionary_id";
@@ -23,6 +25,8 @@ interface PlayerGridProps {
   nbLife: number;
   triesHistory: TriesHistory[];
   setTriesHistory: Dispatch<SetStateAction<TriesHistory[]>>;
+  word: string;
+  setWord: Dispatch<SetStateAction<string>>;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
@@ -32,14 +36,16 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   nbLife,
   setTriesHistory,
   triesHistory,
+  word,
+  setWord,
 }) => {
   const firstLetterUpper = firstLetter.toUpperCase();
-  const dictionary = useDictionary();
-  const [word, setWord] = useState(firstLetterUpper);
+  // const [word, setWord] = useState(firstLetterUpper);
   const [tryCount, setTryCount] = useState(0);
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
-  const socket = useSocket();
+
+  useEffect(() => {}, []);
 
   // const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
   //   if (event.key === "Enter") {
@@ -127,56 +133,60 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   //   }
   // };
 
-  const inputArray = [];
+  // const inputArray = [];
+  // for (let i = 0; i < nbLife; i++) {
+  //   let value = firstLetterUpper;
+  //   let inputArrayField = [];
+
+  //   if (i < triesHistory.length) {
+  //     // Word history, not editable
+  //     value = triesHistory[i].wordTried.toUpperCase();
+  //     inputArrayField = getColorFromResult(triesHistory[i].result).map(
+  //       (color, index) => (
+  //         <PinInputField key={index} backgroundColor={color} color="white" />
+  //       )
+  //     );
+  //   } else {
+  //     for (let i = 0; i < length; i++) {
+  //       inputArrayField.push(
+  //         // Editable input
+  //         <PinInputField
+  //           // onKeyDown={handleKeyPressed}
+  //           key={i}
+  //           backgroundColor="grey"
+  //           color="white"
+  //         />
+  //       );
+  //     }
+  //   }
+
+  //   inputArray.push(
+  //     <HStack key={i}>
+  //       <PinInput
+  //         isDisabled={i != tryCount || hasWon || !isPlayer}
+  //         onChange={handleWordChange}
+  //         value={i != tryCount ? value : word}
+  //         type="alphanumeric"
+  //         placeholder="?"
+  //         mask={!isPlayer}
+  //       >
+  //         {inputArrayField}
+  //       </PinInput>
+  //     </HStack>
+  //   );
+  // }
+
+  const rowsArray = [];
+
   for (let i = 0; i < nbLife; i++) {
-    let value = firstLetterUpper;
-    let inputArrayField = [];
-
-    if (i < triesHistory.length) {
-      // Word history, not editable
-      value = triesHistory[i].wordTried.toUpperCase();
-      inputArrayField = getColorFromResult(triesHistory[i].result).map(
-        (color, index) => (
-          <PinInputField key={index} backgroundColor={color} color="white" />
-        )
-      );
-    } else {
-      for (let i = 0; i < length; i++) {
-        inputArrayField.push(
-          // Editable input
-          <PinInputField
-            // onKeyDown={handleKeyPressed}
-            key={i}
-            backgroundColor="grey"
-            color="white"
-          />
-        );
-      }
-    }
-
-    inputArray.push(
-      <HStack key={i}>
-        <PinInput
-          isDisabled={i != tryCount || hasWon || !isPlayer}
-          onChange={handleWordChange}
-          value={i != tryCount ? value : word}
-          type="alphanumeric"
-          placeholder="?"
-          mask={!isPlayer}
-        >
-          {inputArrayField}
-        </PinInput>
-      </HStack>
-    );
+    rowsArray.push(<PlayerGridRow word="B" length={length} />);
   }
 
   return (
-    <Stack spacing={5} align={"center"}>
-      {/* {hasWon && <Confetti />} */}
-      {inputArray}
-      {/* <Button onClick={handleTryWord} mt={4}>
-        Tenter le mot !
-      </Button> */}
+    // <Stack spacing={5} align={"center"}>
+    <Stack align={"center"} spacing={3}>
+      {rowsArray}
     </Stack>
+    // </Stack>
   );
 };

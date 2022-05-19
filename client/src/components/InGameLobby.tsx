@@ -1,7 +1,7 @@
 import { Box, HStack } from "@chakra-ui/react";
 import React from "react";
 import { Game1vs1, Player } from "../utils/types";
-import { PlayerGrid } from "./PlayerGrid";
+import { PlayerGridOld } from "./PlayerGridOld";
 
 interface InGameLobbyProps {
   player: Player;
@@ -22,7 +22,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
   return (
     <Box>
       <HStack>
-        <PlayerGrid
+        <PlayerGridOld
           isPlayer={true}
           isSolo={false}
           mode={"1vs1"}
@@ -32,8 +32,8 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
           id={game_id}
           player={player}
           lobbyId={lobbyId}
-        ></PlayerGrid>
-        <PlayerGrid
+        ></PlayerGridOld>
+        <PlayerGridOld
           isPlayer={false}
           isSolo={false}
           mode={"1vs1"}
@@ -43,7 +43,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
           id={game_id}
           player={player}
           lobbyId={lobbyId}
-        ></PlayerGrid>
+        ></PlayerGridOld>
       </HStack>
     </Box>
   );
