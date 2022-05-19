@@ -66,7 +66,6 @@ export const ArgLeaveLobby = z.object({
 export const ArgUpdateWord = z.object({
   word: z.string(),
   gameId: z.string(),
-  lobbyId: z.string(),
   playerId: z.string(),
 });
 
@@ -80,6 +79,7 @@ export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
 export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
 export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
 export type ArgStartGameType = z.infer<typeof ArgStartGame>;
+export type ArgUpdateWord = z.infer<typeof ArgUpdateWord>;
 
 export let lobbyMap: Map<string, LobbyType> = new Map();
 

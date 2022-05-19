@@ -9,9 +9,11 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import {
   createLobbyEvent,
   createPlayerEvent,
+  guessWordEvent,
   joinLobbyEvent,
   leaveLobbyEvent,
-  startGameEvent,
+  startGame1vs1Event,
+  updateWordEvent,
 } from "./events";
 import {
   ArgCreateLobby,
@@ -172,33 +174,44 @@ export const getServer = () => {
       }
     );
 
+    /**
+     *  start_game_1vs1
+     *  @param { lobbyId, playerId }
+     *  no response,
+     * broadcast "starting_game" on all player in the lobby
+     */
+    socket.on("start_game_1vs1", (request, response) => {
+      let check = ArgStartGame.safeParse(request);
+      if (check.success) {
+        startGame1vs1Event(io, socket, check.data);
+      } else {
+        console.log("start_game payload : ", request);
+        console.log("start_game : ", check);
+      }
+    });
+
+    /**
+     * update_word
+     * @param { word, gameId, playerId }
+     * no response,
+     * broadcast "update_word_broadcast" on all player in the game
+     */
     socket.on("update_word", (request, response) => {
       let check = ArgUpdateWord.safeParse(request);
       if (check.success) {
-        let { word, lobbyId, playerId } = check.data;
-        let array = new Array<boolean>();
-        let regex = /[A-Z]/i;
-        for (let i = 0; i < word.length; i++) {
-          array.push(regex.test(word.charAt(i).toUpperCase()));
-        }
-
-        io.to(lobbyId).emit("update_word_broadcast", { array, playerId });
+        updateWordEvent(io, check.data);
       } else {
         console.log("update_word payload : ", request);
         console.log("update_word : ", check);
       }
     });
 
-    socket.on("start_game", (request, response) => {
-      let check = ArgStartGame.safeParse(request);
-      if (check.success) {
-        startGameEvent(io, check.data);
-      } else {
-        console.log("update_word payload : ", request);
-        console.log("update_word : ", check);
-      }
-    });
-
+    /**
+     * guess_word
+     * @param { word, gameId, playerId }
+     * response : array of LetterResult,
+     * broadcast "guess_word_broadcast" on all player in the game
+     */
     socket.on("guess_word", (req, response: (payload: PacketType) => void) => {
       if (typeof response !== "function") {
         console.log("guess_word : response is supposed to be function");
@@ -207,17 +220,10 @@ export const getServer = () => {
 
       let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
       if (check.success) {
-        let { word, gameId, lobbyId, playerId } = check.data;
-        let tab_res = get_guess(gameId, word, idToWord);
-        response({
-          success: true,
-          message: "Le resultat du mot est renvoyé",
-          data: tab_res,
-        });
-        io.to(lobbyId).emit("guess_word_broadcast", { tab_res, playerId });
+        guessWordEvent(io, response, check.data);
       } else {
-        console.log("update_word payload : ", req);
-        console.log("update_word : ", check);
+        console.log("guess_word payload : ", req);
+        console.log("guess_word : ", check);
       }
     });
 
