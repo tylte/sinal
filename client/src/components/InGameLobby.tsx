@@ -25,6 +25,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
         <PlayerGrid
           isPlayer={true}
           isSolo={false}
+          mode={"1vs1"}
           firstLetter={first_letter}
           length={game_length}
           nbLife={game_nb_life}
@@ -35,6 +36,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
         <PlayerGrid
           isPlayer={false}
           isSolo={false}
+          mode={"1vs1"}
           firstLetter={first_letter}
           length={game_length}
           nbLife={game_nb_life}

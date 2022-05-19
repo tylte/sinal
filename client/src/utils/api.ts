@@ -30,6 +30,22 @@ export const guessWord = async (
   return [];
 };
 
+export const guessWordMulti = async (
+  word: string,
+  lobbyId: string,
+  playerId: string,
+  socket: Socket | null,
+  response: (response : Packet) => void
+) => {
+    socket?.emit("guess_word", 
+    { 
+      word, 
+      lobbyId, 
+      playerId 
+    }, 
+      response );
+};
+
 export const addSocketConnectionEvent = (
   socket: Socket | null,
   setIsConnected: Dispatch<SetStateAction<boolean>>
