@@ -53,7 +53,6 @@ export const getServer = () => {
     let id = get_id();
     let word = get_word();
     idToWord.set(id, word);
-    console.log(word);
     res.send({
       length: word.length,
       first_letter: word.charAt(0),
@@ -65,12 +64,11 @@ export const getServer = () => {
   app.post("/guess", (req, res) => {
     let id = req.body.id;
     let word = req.body.word;
-    // console.log(io.sockets);
     res.send(get_guess(id, word, idToWord));
   });
 
   io.on("connection", (socket) => {
-    console.log("connected");
+    console.log("Le serveur est connecté");
 
     socket.on(
       "create_lobby",
@@ -130,7 +128,6 @@ export const getServer = () => {
          * @param request.playerId - ID of the player who have to be removed
          *
          */
-        console.log("Leave request : ", request);
         if (
           request !== undefined &&
           typeof request.roomId === "string" &&
@@ -160,7 +157,6 @@ export const getServer = () => {
         }
 
         if (typeof playerName !== "string") {
-          console.log("create_player : player name is supposed to be a string");
           response({
             success: false,
             message: "Veillez donner le nom du joueur",
@@ -203,7 +199,6 @@ export const getServer = () => {
       let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
       if (check.success) {
         let { word, gameId, lobbyId, playerId } = check.data;
-        console.log("Guess word : ", idToWord, check.data);
         let tab_res = get_guess(gameId, word, idToWord);
         res.send(tab_res);
         io.to(lobbyId).emit("guess_word_broadcast", { tab_res, playerId });

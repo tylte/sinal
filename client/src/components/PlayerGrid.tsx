@@ -59,7 +59,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
       setWord(str_upper);
       if (player !== undefined) {
-        console.log(player);
         let { id} = player;
         socket?.emit("update_word", { word, playerId: id, lobbyId });
       }
@@ -131,9 +130,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
             color="white"
           />
         );
-        // socket?.on("update_word_broadcast", (arg) => {
-        //   console.log(arg);
-        // });
       }
     }
 
