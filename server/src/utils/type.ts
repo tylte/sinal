@@ -36,10 +36,19 @@ export const Lobby = z.object({
 });
 
 export const Game1vs1 = z.object({
+  player1: z.object({
+    id: z.string(),
+    name: z.string(),
+    nb_life: z.number(),
+  }),
+  player2: z.object({
+    id: z.string(),
+    name: z.string(),
+    nb_life: z.number(),
+  }),
   id: z.string(),
   length: z.number(),
   first_letter: z.string(),
-  nb_life: z.number(),
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;

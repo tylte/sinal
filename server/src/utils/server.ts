@@ -183,10 +183,10 @@ export const getServer = () => {
     socket.on("start_game_1vs1", (request, response) => {
       let check = ArgStartGame.safeParse(request);
       if (check.success) {
-        startGame1vs1Event(io, socket, check.data);
+        startGame1vs1Event(io, check.data);
       } else {
-        console.log("start_game payload : ", request);
-        console.log("start_game : ", check);
+        console.log("start_game_1vs1 payload : ", request);
+        console.log("start_game_1vs1 : ", check);
       }
     });
 
@@ -212,20 +212,23 @@ export const getServer = () => {
      * response : array of LetterResult,
      * broadcast "guess_word_broadcast" on all player in the game
      */
-    socket.on("guess_word", (req, response: (payload: PacketType) => void) => {
-      if (typeof response !== "function") {
-        console.log("guess_word : response is supposed to be function");
-        return;
-      }
+    socket.on(
+      "guess_word_1vs1",
+      (req, response: (payload: PacketType) => void) => {
+        if (typeof response !== "function") {
+          console.log("guess_word_1vs1 : response is supposed to be function");
+          return;
+        }
 
-      let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
-      if (check.success) {
-        guessWordEvent(io, response, check.data);
-      } else {
-        console.log("guess_word payload : ", req);
-        console.log("guess_word : ", check);
+        let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
+        if (check.success) {
+          guessWordEvent(io, response, check.data);
+        } else {
+          console.log("guess_word_1vs1 payload : ", req);
+          console.log("guess_word_1vs1 : ", check);
+        }
       }
-    });
+    );
 
     socket.on("join_public_lobbies", () => {
       socket.join(PUBLIC_LOBBIES);
