@@ -5,6 +5,7 @@ import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { InGameLobby } from "../../components/InGameLobby";
 import { Layout } from "../../components/Layout";
+import { PostGameLobby } from "../../components/PostGameLobby";
 import { PreGameLobby } from "../../components/PreGameLobby";
 import {
   addPreGameEvent,
@@ -105,7 +106,11 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
       </Layout>
     );
   } else if (state === "finished") {
-    return <Layout></Layout>;
+    return (
+      <Layout>
+        <PostGameLobby lobby={lobby} />
+      </Layout>
+    );
   } else {
     // Its supposed to have a state
     return (

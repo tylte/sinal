@@ -202,8 +202,9 @@ export const getServer = () => {
     socket.on("guess_word", (req, res) => {
       let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
       if (check.success) {
-        let { word, lobbyId, playerId } = check.data;
-        let tab_res = get_guess(lobbyId, word, idToWord);
+        let { word, gameId, lobbyId, playerId } = check.data;
+        console.log("Guess word : ", idToWord, check.data);
+        let tab_res = get_guess(gameId, word, idToWord);
         res.send(tab_res);
         io.to(lobbyId).emit("guess_word_broadcast", { tab_res, playerId });
       } else {

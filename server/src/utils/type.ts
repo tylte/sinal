@@ -27,11 +27,12 @@ export const Lobby = z.object({
   id: z.string(),
   state: LobbyState,
   name: z.string(),
-  totalPlace: z.number(), // nombre de place que le lobby peut contenir en tt
+  totalPlace: z.number(),
   playerList: Player.array(),
   owner: z.string(), // id du joueur owner
   isPublic: z.boolean(),
   mode: GameMode,
+  currentGameId: z.nullable(z.string()),
 });
 
 export const Game1vs1 = z.object({
@@ -64,6 +65,7 @@ export const ArgLeaveLobby = z.object({
 
 export const ArgUpdateWord = z.object({
   word: z.string(),
+  gameId: z.string(),
   lobbyId: z.string(),
   playerId: z.string(),
 });
