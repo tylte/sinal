@@ -175,9 +175,9 @@ export const getServer = () => {
     );
 
     /**
-     *  start_game_1vs1
-     *  @param { lobbyId, playerId }
-     *  no response,
+     * start_game_1vs1
+     * @param { lobbyId, playerId }
+     * no response,
      * broadcast "starting_game" on all player in the lobby
      */
     socket.on("start_game_1vs1", (request, response) => {

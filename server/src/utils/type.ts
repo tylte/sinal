@@ -36,12 +36,12 @@ export const Lobby = z.object({
 });
 
 export const Game1vs1 = z.object({
-  player1: z.object({
+  playerOne: z.object({
     id: z.string(),
     name: z.string(),
     nb_life: z.number(),
   }),
-  player2: z.object({
+  playerTwo: z.object({
     id: z.string(),
     name: z.string(),
     nb_life: z.number(),
@@ -94,7 +94,7 @@ export let lobbyMap: Map<string, LobbyType> = new Map();
 
 export let playerMap: Map<string, Player> = new Map();
 
-export let Game1vs1Map: Map<string, Game1vs1> = new Map();
+export let game1vs1Map: Map<string, Game1vs1> = new Map();
 
 export type JoinLobbyResponse = (payload: {
   success: boolean;

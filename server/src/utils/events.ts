@@ -10,7 +10,7 @@ import {
   ArgUpdateWord,
   EventResponseFn,
   Game1vs1,
-  Game1vs1Map,
+  game1vs1Map,
   lobbyMap,
   LobbyType,
   PacketType,
@@ -309,12 +309,12 @@ export const startGame1vs1Event = (
   let word = get_word();
   idToWord.set(gameId, word); //the ID of the word is the same as the lobby
   let game: Game1vs1 = {
-    player1: {
+    playerOne: {
       id: playerOne.id,
       name: playerOne.name,
       nb_life: 6,
     },
-    player2: {
+    playerTwo: {
       id: playerTwo.id,
       name: playerTwo.name,
       nb_life: 6,
@@ -324,7 +324,7 @@ export const startGame1vs1Event = (
     length: word.length,
   };
 
-  Game1vs1Map.set(gameId, game);
+  game1vs1Map.set(gameId, game);
   io.to(lobbyId).emit("starting_game", game);
   io.to(lobbyId).socketsJoin(gameId);
 };
@@ -347,15 +347,15 @@ export const guessWordEvent = (
   response: any,
   { word, gameId, playerId }: ArgUpdateWord
 ) => {
-  let game = Game1vs1Map.get(gameId);
+  let game = game1vs1Map.get(gameId);
   if (game === undefined) {
     console.log("guess_word_1vs1 : there is no game unsing this gameId");
     return;
   }
 
   let player;
-  if (game.player1.id == playerId) player = game.player1;
-  else if (game.player2.id == playerId) player = game.player2;
+  if (game.playerOne.id === playerId) player = game.playerOne;
+  else if (game.playerTwo.id === playerId) player = game.playerTwo;
   else {
     console.log(
       "guess_word_1vs1 : there is no player in the game with this playerId"
@@ -374,7 +374,7 @@ export const guessWordEvent = (
 
   let win = true;
   tab_res.forEach((letter) => {
-    if (letter != LetterResult.RIGHT_POSITION) win = false;
+    if (letter !== LetterResult.RIGHT_POSITION) win = false;
   });
 
   if (win) {
