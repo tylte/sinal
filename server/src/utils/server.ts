@@ -69,7 +69,7 @@ export const getServer = () => {
   });
 
   io.on("connection", (socket) => {
-    console.log("Le serveur est connecté");
+    console.log("le client est connecté au serveur");
 
     socket.on(
       "create_lobby",
