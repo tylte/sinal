@@ -4,32 +4,38 @@ import {
   PinInput,
   PinInputField,
   Stack,
-  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import Confetti from "react-confetti";
 import { guessWord } from "../utils/api";
-import { useDictionary } from "../utils/hooks";
-import { TriesHistory } from "../utils/types";
+import { useDictionary, useSocket } from "../utils/hooks";
+import { Player, TriesHistory } from "../utils/types";
 import { getColorFromResult, isWordCorrect } from "../utils/utils";
-import { NewGameModal } from "../components/NewGameModal";
 
 const toast_length_id = "toast_length";
 const toast_not_dictionary_id = "toast_not_dictionary_id";
 
 interface PlayerGridProps {
+  isPlayer: boolean;
+  isSolo: boolean;
   firstLetter: string;
   length: number;
   nbLife: number;
   id: string;
+  player: Player | undefined;
+  lobbyId: string | null;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
+  isPlayer,
+  isSolo,
   firstLetter,
   length,
   nbLife,
   id,
+  player,
+  lobbyId,
 }) => {
   const firstLetterUpper = firstLetter.toUpperCase();
   const dictionary = useDictionary();
@@ -38,7 +44,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
-  const { onClose: newGameOnClose } = useDisclosure();
+  const socket = useSocket();
 
   const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -52,6 +58,11 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     const re = /\d+/g;
     if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
       setWord(str_upper);
+      if (player !== undefined) {
+        console.log(player);
+        let { id} = player;
+        socket?.emit("update_word", { word, playerId: id, lobbyId });
+      }
     }
   };
 
@@ -79,13 +90,14 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     } else {
       let guessResult = await guessWord(word_lowercase, id);
       if (isWordCorrect(guessResult)) {
-        // toast({
-        //   title: "Vous avez trouvé le mot en " + (tryCount+1) + " essaie !",
-        //   status: "success",
-        //   duration: 1500,
-        //   isClosable: true,
-        // });
+        toast({
+          title: "Vous avez trouvé le mot en " + (tryCount + 1) + " essaie !",
+          status: "success",
+          duration: 1500,
+          isClosable: true,
+        });
         setHasWon(true);
+      } else if (nbLife <= tryCount + 1) {
       }
       setTryCount((v) => (v = v + 1));
       const tries = triesHistory.slice();
@@ -110,8 +122,8 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       );
     } else {
       for (let i = 0; i < length; i++) {
-        // Editable input
         inputArrayField.push(
+          // Editable input
           <PinInputField
             onKeyDown={handleKeyPressed}
             key={i}
@@ -119,6 +131,9 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
             color="white"
           />
         );
+        // socket?.on("update_word_broadcast", (arg) => {
+        //   console.log(arg);
+        // });
       }
     }
 
@@ -141,12 +156,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     <Stack spacing={5} align={"center"}>
       {hasWon && <Confetti />}
       {inputArray}
-      <NewGameModal isOpen={nbLife < (tryCount+1)} status={"error"} onClose={newGameOnClose} title={"PERDU"}description={
-        "Vous avez perdu votre partie voulez vous en refaire une."
-      } />
-      <NewGameModal isOpen={hasWon} status={"success"} onClose={newGameOnClose} title={"GAGNER"} description={
-        "Vous avez gagné en "+ tryCount + " essaie."
-      } />
       <Button onClick={handleTryWord} mt={4}>
         Tenter le mot !
       </Button>

@@ -12,6 +12,11 @@ const Solo: React.FC<SoloProps> = ({}) => {
   const [id, setId] = useState<string | null>(null);
   const [firstLetter, setFirstLetter] = useState<string | null>(null);
   const [nbLife, setNbLife] = useState<null | number>(null);
+  // const [gameStatus, setGameStatus] = useState({isFinished:false,
+  //   isWon:false,
+  // });
+  // const { onClose } = useDisclosure();
+  // const {onClose: newGameOnClose } = useDisclosure();
 
   useEffect(() => {
     axios
@@ -38,12 +43,22 @@ const Solo: React.FC<SoloProps> = ({}) => {
         <></>
       ) : (
         <PlayerGrid
+          isPlayer={true}
+          isSolo={true}
           id={id}
           firstLetter={firstLetter}
           length={length}
           nbLife={nbLife}
+          player={undefined}
+          lobbyId={null}
         />
       )}
+      {/* <NewGameModal isOpen={gameStatus.isFinished && !gameStatus.isWon} status={"error"} onClose={newGameOnClose} title={"PERDU"}description={
+        "Vous avez perdu votre partie voulez vous en refaire une ?"
+      } />
+      <NewGameModal isOpen={gameStatus.isFinished && gameStatus.isWon} status={"success"} onClose={onClose} title={"GAGNER"} description={
+        "Vous avez gagné votre partie voulez vous en refaire une ?"
+      } /> */}
     </Layout>
   );
 };

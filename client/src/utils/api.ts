@@ -199,3 +199,11 @@ export const getSpecificLobby = (
       }
     });
 };
+export const addUpdateWordBroadcast = (
+  socket: Socket,
+) => {
+  socket.on("update_word_broadcast", (arg) => {
+    console.log("update_word_broadcast : " + arg);
+  });
+};
+
