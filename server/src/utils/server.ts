@@ -207,8 +207,8 @@ export const getServer = () => {
 
       let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
       if (check.success) {
-        let { word, lobbyId, playerId } = check.data;
-        let tab_res = get_guess(lobbyId, word, idToWord);
+        let { word, gameId, lobbyId, playerId } = check.data;
+        let tab_res = get_guess(gameId, word, idToWord);
         response({
           success: true,
           message: "Le resultat du mot est renvoyé",

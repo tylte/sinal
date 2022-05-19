@@ -57,6 +57,13 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     const re = /\d+/g;
     if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
       setWord(str_upper);
+      if ( !isSolo && player ) {
+        socket?.emit("update_word", {
+          word: str_upper,
+          lobbyId: player.lobbyId,
+          playerId: player.id
+        })
+      }
     }
   };
 
@@ -144,19 +151,20 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
             key={i}
             backgroundColor="grey"
             color="white"
-          />
-        );
-      }
-    }
-
-    inputArray.push(
-      <HStack key={i}>
+            />
+            );
+          }
+        }
+        
+        inputArray.push(
+          <HStack key={i}>
         <PinInput
-          isDisabled={i != tryCount || hasWon}
+          isDisabled={i != tryCount || hasWon || !isPlayer}
           onChange={handleWordChange}
           value={i != tryCount ? value : word}
           type="alphanumeric"
           placeholder="?"
+          mask={!isPlayer}
         >
           {inputArrayField}
         </PinInput>
