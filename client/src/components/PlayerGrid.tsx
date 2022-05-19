@@ -9,8 +9,8 @@ import {
 import React, { useState } from "react";
 import Confetti from "react-confetti";
 import { guessWord, guessWordMulti } from "../utils/api";
-import { useDictionary, usePlayer, useSocket } from "../utils/hooks";
-import { GameMode, Packet, TriesHistory } from "../utils/types";
+import { useDictionary, useSocket } from "../utils/hooks";
+import { GameMode, Packet, Player, TriesHistory } from "../utils/types";
 import { getColorFromResult, isWordCorrect } from "../utils/utils";
 
 const toast_length_id = "toast_length";
@@ -24,6 +24,8 @@ interface PlayerGridProps {
   length: number;
   nbLife: number;
   id: string;
+  player: Player | undefined;
+  lobbyId: string | null;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
@@ -34,6 +36,8 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   length,
   nbLife,
   id,
+  player,
+  lobbyId,
 }) => {
   const firstLetterUpper = firstLetter.toUpperCase();
   const dictionary = useDictionary();
@@ -42,7 +46,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
-  const [player] = usePlayer();
   const socket = useSocket();
 
   const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -57,12 +60,10 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     const re = /\d+/g;
     if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
       setWord(str_upper);
-      if ( !isSolo && player ) {
-        socket?.emit("update_word", {
-          word: str_upper,
-          lobbyId: player.lobbyId,
-          playerId: player.id
-        })
+      if (player !== undefined) {
+        console.log(player);
+        let { id} = player;
+        socket?.emit("update_word", { word, playerId: id, lobbyId });
       }
     }
   };
@@ -144,20 +145,23 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       );
     } else {
       for (let i = 0; i < length; i++) {
-        // Editable input
         inputArrayField.push(
+          // Editable input
           <PinInputField
             onKeyDown={handleKeyPressed}
             key={i}
             backgroundColor="grey"
             color="white"
-            />
-            );
-          }
-        }
-        
-        inputArray.push(
-          <HStack key={i}>
+          />
+        );
+        // socket?.on("update_word_broadcast", (arg) => {
+        //   console.log(arg);
+        // });
+      }
+    }
+
+    inputArray.push(
+      <HStack key={i}>
         <PinInput
           isDisabled={i != tryCount || hasWon || !isPlayer}
           onChange={handleWordChange}

@@ -179,6 +179,7 @@ export const addSpecificLobbiesEvent = (
 export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
+  socket?.removeListener("starting_game");
 };
 
 export const getSpecificLobby = (
@@ -214,3 +215,11 @@ export const getSpecificLobby = (
       }
     });
 };
+export const addUpdateWordBroadcast = (
+  socket: Socket,
+) => {
+  socket.on("update_word_broadcast", (arg) => {
+    console.log("update_word_broadcast : " + arg);
+  });
+};
+
