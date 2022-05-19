@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useContext } from "react";
+import { Dispatch, SetStateAction, useContext, useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { SinalContext } from "./context";
 import { Player } from "./types";
@@ -24,4 +24,14 @@ export const usePlayer = (): [
 export const useConnected = (): boolean => {
   let { isConnected } = useContext(SinalContext);
   return isConnected;
+};
+
+export const useKeyDown = (keydownHandler: any) => {
+  useEffect(() => {
+    document.addEventListener("keydown", keydownHandler);
+
+    return () => {
+      document.addEventListener("keydown", keydownHandler);
+    };
+  }, []);
 };

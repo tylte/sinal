@@ -7,7 +7,7 @@ interface TestProps {}
 
 const Test: React.FC<TestProps> = ({}) => {
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
-  const [word, setWord] = useState<string>("");
+  const [word, setWord] = useState<string>("W");
 
   return (
     <Layout>
@@ -20,6 +20,7 @@ const Test: React.FC<TestProps> = ({}) => {
         triesHistory={triesHistory}
         word={word}
         setWord={setWord}
+        currentAttempt={0}
       />
     </Layout>
   );

@@ -10,7 +10,7 @@ import {
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import { guessWord, guessWordMulti } from "../../utils/api";
-import { useDictionary, useSocket } from "../../utils/hooks";
+import { useDictionary, useKeyDown, useSocket } from "../../utils/hooks";
 import { Packet, Player, TriesHistory } from "../../utils/types";
 import { getColorFromResult, isWordCorrect } from "../../utils/utils";
 import { PlayerGridRow } from "./PlayerGridRow";
@@ -23,6 +23,7 @@ interface PlayerGridProps {
   firstLetter: string;
   length: number;
   nbLife: number;
+  currentAttempt: number;
   triesHistory: TriesHistory[];
   setTriesHistory: Dispatch<SetStateAction<TriesHistory[]>>;
   word: string;
@@ -34,6 +35,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   firstLetter,
   length,
   nbLife,
+  currentAttempt,
   setTriesHistory,
   triesHistory,
   word,
@@ -44,8 +46,31 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const [tryCount, setTryCount] = useState(0);
   const [hasWon, setHasWon] = useState(false);
   const toast = useToast();
-
-  useEffect(() => {}, []);
+  console.log("word : ", word);
+  useKeyDown((e: KeyboardEvent) => {
+    // Only one alphabetic caracter in the key (more detail https://www.toptal.com/developers/keycode/for/alt)
+    const re = /^([a-zA-Z]{1})$/;
+    if (re.test(e.key)) {
+      setWord((word) => {
+        let newCharacter = e.key.toUpperCase();
+        if (word.length < length) {
+          return word + newCharacter;
+        } else {
+          // let newWord = word.slice(0, word.length - 1) + newCharacter;
+          return word;
+        }
+      });
+    } else if (e.key === "Backspace") {
+      // Remove last character of the word
+      setWord((word) => {
+        if (word.length > 1) {
+          return word.slice(0, word.length - 1);
+        } else {
+          return word;
+        }
+      });
+    }
+  });
 
   // const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
   //   if (event.key === "Enter") {
@@ -179,7 +204,15 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const rowsArray = [];
 
   for (let i = 0; i < nbLife; i++) {
-    rowsArray.push(<PlayerGridRow word="B" length={length} />);
+    rowsArray.push(
+      <PlayerGridRow
+        key={i}
+        word={word}
+        firstLetter={firstLetter}
+        length={length}
+        isCurrentAttempt={currentAttempt === i}
+      />
+    );
   }
 
   return (
