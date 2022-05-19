@@ -17,7 +17,7 @@ const About: React.FC<AboutProps> = ({}) => {
       </Text>
       <Text textAlign={"center"} mt={4} fontSize="l">
         Ce projet consiste à faire un jeu de motus en application web. En
-        particulier la possibilité de joueur en multijoueur à plusieurs mode de
+        particulier la possibilité de jouer en multijoueur à plusieurs mode de
         jeu de type 1vs1 | 2vs2 | battle royale
       </Text>
     </Layout>
