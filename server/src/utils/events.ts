@@ -294,6 +294,10 @@ export const startGame1vs1Event = (
     console.log("start_game_1vs1 : playerList of the lobby is undefined");
     return;
   }
+  if (playerList.length < 2) {
+    console.log("start_game_1vs1 : playerList is too short, lobby : ", lobby);
+    return;
+  }
 
   let playerOne = playerMap.get(playerList[0].id);
   let playerTwo = playerMap.get(playerList[1].id);
@@ -363,6 +367,11 @@ export const guessWordEvent = (
     return;
   }
 
+  if (player.nb_life === 0) {
+    console.log("guess_word_1vs1 : player has no life left 💀");
+    return;
+  }
+
   let tab_res = get_guess(gameId, word, idToWord);
   response({
     success: true,
@@ -370,7 +379,7 @@ export const guessWordEvent = (
     data: tab_res,
   });
   player.nb_life--;
-  io.to(gameId).emit("guess_word_broadcast", { tab_res, playerId });
+  io.to(gameId).emit("guess_word_broadcast", { tab_res, playerId, game });
 
   let win = true;
   tab_res.forEach((letter) => {
@@ -380,7 +389,8 @@ export const guessWordEvent = (
   if (win) {
     io.to(gameId).emit("wining_player_1vs1", { playerId });
     io.to(gameId).socketsLeave(gameId);
-  } else if (player.nb_life == 0) {
-    //TODO perdu
+  } else if (game.playerOne.nb_life === 0 && game.playerTwo.nb_life === 0) {
+    io.to(gameId).emit("draw_1vs1");
+    io.to(gameId).socketsLeave(gameId);
   }
 };
