@@ -1,59 +1,162 @@
-import { Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import Confetti from "react-confetti";
 import { Layout } from "../components/Layout";
-import { PlayerGrid } from "../components/PlayerGrid";
-import { StartGameResponse } from "../utils/types";
+import { PlayerGrid } from "../components/player-grid/PlayerGrid";
+import { guessWord } from "../utils/api";
+import { useClassicWordInput, useDictionary } from "../utils/hooks";
+import { SoloGameState, StartGameResponse } from "../utils/types";
+import { isWordCorrect } from "../utils/utils";
 
 interface SoloProps {}
 
-const Solo: React.FC<SoloProps> = ({}) => {
-  const [length, setLength] = useState<number | null>(null);
-  const [id, setId] = useState<string | null>(null);
-  const [firstLetter, setFirstLetter] = useState<string | null>(null);
-  const [nbLife, setNbLife] = useState<null | number>(null);
+const NOT_ENOUGH_LETTER = "NOLETTER";
+const NOT_IN_DICTIONARY = "NODICTIONARY";
 
-  useEffect(() => {
+const Solo: React.FC<SoloProps> = ({}) => {
+  const [gameState, setGameState] = useState<SoloGameState | null>(null);
+  const [word, setWord] = useState("");
+
+  const dictionary = useDictionary();
+
+  const startGame = () => {
     axios
       .post<StartGameResponse>("http://localhost:4000/start_game", {
         mode: "solo",
       })
       .then(({ data: { first_letter, id, length, nb_life } }) => {
-        setLength(length);
-        setFirstLetter(first_letter);
-        setId(id);
-        setNbLife(nb_life);
+        setGameState({
+          firstLetter: first_letter.toUpperCase(),
+          isFinished: false,
+          nbLife: nb_life,
+          triesHistory: [],
+          wordLength: length,
+          hasWon: false,
+          wordId: id,
+        });
+        setWord(first_letter.toUpperCase());
       });
+  };
+  useEffect(() => {
+    // Request the word when mounted
+    startGame();
   }, []);
+
+  const toast = useToast();
+
+  const onEnter = async () => {
+    if (gameState === null) {
+      return;
+    }
+    const { nbLife, triesHistory, wordId, wordLength } = gameState;
+
+    const lowerCaseWord = word.toLowerCase();
+    if (lowerCaseWord.length !== wordLength) {
+      !toast.isActive(NOT_ENOUGH_LETTER) &&
+        toast({
+          id: NOT_ENOUGH_LETTER,
+          title: "Pas assez de lettres !",
+          status: "error",
+          isClosable: true,
+          duration: 2500,
+        });
+      return;
+    }
+
+    if (!dictionary.has(lowerCaseWord)) {
+      !toast.isActive(NOT_IN_DICTIONARY) &&
+        toast({
+          id: NOT_IN_DICTIONARY,
+          title: "Le mot n'est pas dans le dictionnaire",
+          status: "error",
+          isClosable: true,
+          duration: 2500,
+        });
+      return;
+    }
+
+    const result = await guessWord(lowerCaseWord, wordId);
+
+    let newState = {
+      ...gameState,
+      triesHistory: [
+        ...triesHistory,
+        {
+          result,
+          wordTried: word,
+        },
+      ],
+    };
+    setWord(firstLetter);
+
+    if (isWordCorrect(result)) {
+      setGameState({ ...newState, isFinished: true, hasWon: true });
+      toast({
+        title: "GGEZ 😎",
+        status: "success",
+        isClosable: true,
+        duration: 2500,
+      });
+      return;
+    }
+
+    if (triesHistory.length + 1 === nbLife) {
+      setGameState({ ...newState, isFinished: true, hasWon: false });
+      toast({
+        title: "Perdu ! Sadge",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      return;
+    }
+
+    setGameState(newState);
+  };
+
+  useClassicWordInput(
+    word,
+    setWord,
+    gameState?.wordLength ?? 0,
+    onEnter,
+    gameState?.isFinished
+  );
+
+  if (gameState === null) {
+    return (
+      <Flex>
+        <Spinner mt={6} mx="auto" size="xl" />
+      </Flex>
+    );
+  }
+
+  const { hasWon, triesHistory, firstLetter, nbLife, wordLength, isFinished } =
+    gameState;
 
   return (
     <Layout>
-      <Text mb={5} align="center" fontSize={"larger"}>
-        Partie Solo
-      </Text>
-      {nbLife === null ||
-      id === null ||
-      length === null ||
-      firstLetter === null ? (
-        <></>
-      ) : (
+      {hasWon && <Confetti />}
+      <Flex direction={"column"} alignContent={"center"}>
+        <Text mb={5} align="center" fontSize={"larger"}>
+          Partie Solo
+        </Text>
         <PlayerGrid
-          isPlayer={true}
-          isSolo={true}
-          id={id}
+          isVisible={true}
           firstLetter={firstLetter}
-          length={length}
+          wordLength={wordLength}
           nbLife={nbLife}
-          player={undefined}
-          lobbyId={null}
+          word={word}
+          triesHistory={triesHistory}
         />
-      )}
-      {/* <NewGameModal isOpen={gameStatus.isFinished && !gameStatus.isWon} status={"error"} onClose={newGameOnClose} title={"PERDU"}description={
-        "Vous avez perdu votre partie voulez vous en refaire une ?"
-      } />
-      <NewGameModal isOpen={gameStatus.isFinished && gameStatus.isWon} status={"success"} onClose={onClose} title={"GAGNER"} description={
-        "Vous avez gagné votre partie voulez vous en refaire une ?"
-      } /> */}
+        {isFinished && (
+          <Box mt={6} mx="auto">
+            <Button colorScheme={"green"} onClick={startGame}>
+              Rejouer ?
+            </Button>
+          </Box>
+        )}
+      </Flex>
     </Layout>
   );
 };
