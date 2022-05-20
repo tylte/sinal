@@ -76,7 +76,7 @@ export const useClassicWordInput = (
   setWord: Dispatch<SetStateAction<string>>,
   wordLength: number,
   onEnter: () => void,
-  stopListening: boolean
+  stopListening?: boolean
 ) => {
   const handleInput = (e: KeyboardEvent) => {
     handleWordInput(e, word, setWord, wordLength, onEnter);

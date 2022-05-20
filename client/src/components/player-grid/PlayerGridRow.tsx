@@ -8,6 +8,7 @@ interface PlayerGridRowProps {
   // firstLetter: string;
   wordLength: number;
   letterResults?: LetterResult[];
+  isVisible?: boolean;
 }
 
 export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({

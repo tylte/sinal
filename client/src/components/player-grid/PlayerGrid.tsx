@@ -5,7 +5,7 @@ import { PlayerGridRow } from "./PlayerGridRow";
 
 interface PlayerGridProps {
   firstLetter?: string;
-  isPlayer?: boolean;
+  isVisible?: boolean;
   wordLength: number;
   nbLife: number;
   word: string;
@@ -13,17 +13,15 @@ interface PlayerGridProps {
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
-  isPlayer,
+  isVisible,
   wordLength: length,
   nbLife,
   firstLetter,
   word,
-  // setWord,
   triesHistory,
-  // onWordEnter,
 }) => {
-  if (isPlayer === undefined) {
-    isPlayer = true;
+  if (isVisible === undefined) {
+    isVisible = true;
   }
   if (firstLetter === undefined) {
     firstLetter = "";

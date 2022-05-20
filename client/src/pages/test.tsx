@@ -50,7 +50,7 @@ const Test: React.FC<TestProps> = ({}) => {
   return (
     <Layout>
       <PlayerGrid
-        isPlayer={true}
+        isVisible={true}
         wordLength={wordLength}
         nbLife={nbLife}
         triesHistory={triesHistory}
