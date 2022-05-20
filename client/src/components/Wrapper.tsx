@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/layout";
 import React from "react";
 
-export type WrapperVariant = "small" | "regular" | "large";
+export type WrapperVariant = "small" | "regular" | "large" | "full";
 
 interface WrapperProps {
   variant?: WrapperVariant;
@@ -13,6 +13,8 @@ export const variantSize = (variant: WrapperVariant) => {
     size = "1000";
   } else if (variant === "small") {
     size = "400";
+  } else if (variant === "full") {
+    size = "100%";
   }
   return size;
 };
