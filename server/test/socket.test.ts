@@ -51,7 +51,6 @@ describe("Web socket testing", () => {
         expect(uuidValidateV4(res.data.id)).toBeTruthy();
         expect(Packet.safeParse(res).success).toBeTruthy();
         expect(res.data.name).toBe("bob");
-        console.log(res);
         clientSocket.emit("create_lobby", createLobbyArg, (res: PacketType) => {
           try {
             expect(res.success).toBeTruthy();

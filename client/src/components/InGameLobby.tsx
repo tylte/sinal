@@ -58,13 +58,4 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
     //   </HStack>
     // </Box>
   );
-
-  // return (
-  //   <Box>
-  //     <HStack>
-  //       <PlayerGrid isPlayer={true} isSolo={false}></PlayerGrid>
-  //       <PlayerGrid isPlayer={false} isSolo={false}></PlayerGrid>
-  //     </HStack>
-  //   </Box>
-  // );
 };

@@ -18,20 +18,7 @@ import { getIdFromPage } from "../../utils/utils";
 
 interface LobbyProps {}
 
-// const lobby: Lobby = {
-//   id: "1",
-//   state: "pre-game",
-//   name: "Lobby de bg",
-//   totalPlace: 2,
-//   currentPlace: 1,
-//   playerList: [{ id: "b", name: "bob", lobbyId:"1"}],
-//   owner: "b",
-//   isPublic: true,
-//   mode: "1vs1",
-// };
-
 const LobbyPage: React.FC<LobbyProps> = ({}) => {
-  // const { state } = lobby;
   const socket = useSocket();
   const router = useRouter();
   const [player] = usePlayer();

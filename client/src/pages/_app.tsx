@@ -29,8 +29,6 @@ function MyApp({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
-    // <PlayerContext.Provider value={[player, setPlayer]}>
-    //   <SocketContext.Provider value={socket}>
     <SinalContext.Provider
       value={{
         dictionary,

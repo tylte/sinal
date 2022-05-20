@@ -8,9 +8,9 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import Confetti from "react-confetti";
-import { guessWord } from "../utils/api";
+import { guessWord, guessWordMulti } from "../utils/api";
 import { useDictionary, useSocket } from "../utils/hooks";
-import { Player, TriesHistory } from "../utils/types";
+import { GameMode, Packet, Player, TriesHistory } from "../utils/types";
 import { getColorFromResult, isWordCorrect } from "../utils/utils";
 
 const toast_length_id = "toast_length";
@@ -19,6 +19,7 @@ const toast_not_dictionary_id = "toast_not_dictionary_id";
 interface PlayerGridProps {
   isPlayer: boolean;
   isSolo: boolean;
+  mode?: GameMode;
   firstLetter: string;
   length: number;
   nbLife: number;
@@ -28,8 +29,9 @@ interface PlayerGridProps {
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
-  isPlayer,
   isSolo,
+  isPlayer,
+  mode,
   firstLetter,
   length,
   nbLife,
@@ -59,8 +61,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
     if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
       setWord(str_upper);
       if (player !== undefined) {
-        console.log(player);
-        let { id} = player;
+        let { id } = player;
         socket?.emit("update_word", { word, playerId: id, lobbyId });
       }
     }
@@ -88,22 +89,47 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
         });
       }
     } else {
-      let guessResult = await guessWord(word_lowercase, id);
-      if (isWordCorrect(guessResult)) {
-        toast({
-          title: "Vous avez trouvé le mot en " + (tryCount + 1) + " essaie !",
-          status: "success",
-          duration: 1500,
-          isClosable: true,
-        });
-        setHasWon(true);
-      } else if (nbLife <= tryCount + 1) {
+      if (isSolo) {
+        let guessResult = await guessWord(word_lowercase, id);
+        if (isWordCorrect(guessResult)) {
+          toast({
+            title: "Vous avez trouvé le mot !",
+            status: "success",
+            duration: 1500,
+            isClosable: true,
+          });
+          setHasWon(true);
+        }
+        setTryCount((v) => (v = v + 1));
+        const tries = triesHistory.slice();
+        tries.push({ wordTried: word_lowercase, result: guessResult });
+        setWord(firstLetterUpper);
+        setTriesHistory(tries);
+      } else if (mode == "1vs1" && player) {
+        guessWordMulti(
+          word_lowercase,
+          id,
+          player.id,
+          socket,
+          (response: Packet) => {
+            let guessResult = response.data;
+            if (isWordCorrect(guessResult)) {
+              toast({
+                title: "Vous avez trouvé le mot !",
+                status: "success",
+                duration: 1500,
+                isClosable: true,
+              });
+              setHasWon(true);
+            }
+            setTryCount((v) => (v = v + 1));
+            const tries = triesHistory.slice();
+            tries.push({ wordTried: word_lowercase, result: guessResult });
+            setWord(firstLetterUpper);
+            setTriesHistory(tries);
+          }
+        );
       }
-      setTryCount((v) => (v = v + 1));
-      const tries = triesHistory.slice();
-      tries.push({ wordTried: word_lowercase, result: guessResult });
-      setWord(firstLetterUpper);
-      setTriesHistory(tries);
     }
   };
 
@@ -131,20 +157,18 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
             color="white"
           />
         );
-        // socket?.on("update_word_broadcast", (arg) => {
-        //   console.log(arg);
-        // });
       }
     }
 
     inputArray.push(
       <HStack key={i}>
         <PinInput
-          isDisabled={i != tryCount || hasWon}
+          isDisabled={i != tryCount || hasWon || !isPlayer}
           onChange={handleWordChange}
           value={i != tryCount ? value : word}
           type="alphanumeric"
           placeholder="?"
+          mask={!isPlayer}
         >
           {inputArrayField}
         </PinInput>

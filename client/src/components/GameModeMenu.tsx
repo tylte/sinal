@@ -41,14 +41,6 @@ export const GameModeMenu: React.FC<GameModeMenuProps> = ({}) => {
         >
           Multijoueur
         </Button>
-        {/* <Button
-          onClick={() => router.push("/lobby")}
-          colorScheme="teal"
-          w="100%"
-          variant={"outline"}
-        >
-          aller aux lobbies
-        </Button> */}
       </Stack>
       <CreatePlayerModal isOpen={isOpen} onClose={onClose} />
     </Stack>
