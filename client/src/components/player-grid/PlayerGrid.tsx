@@ -43,6 +43,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
         word={wordToShow}
         letterResults={triesHistory[i]?.result}
         wordLength={length}
+        isVisible={isVisible}
       />
     );
   }

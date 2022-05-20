@@ -151,7 +151,9 @@ const Solo: React.FC<SoloProps> = ({}) => {
         />
         {isFinished && (
           <Box mt={6} mx="auto">
-            <Button onClick={startGame}>Rejouer ?</Button>
+            <Button colorScheme={"green"} onClick={startGame}>
+              Rejouer ?
+            </Button>
           </Box>
         )}
       </Flex>

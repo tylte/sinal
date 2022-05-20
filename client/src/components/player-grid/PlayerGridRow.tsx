@@ -15,19 +15,23 @@ export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
   word,
   wordLength: length,
   letterResults,
+  isVisible,
 }) => {
   let playerRow = [...word.slice(0, word.length)].map((letter, index) => {
     return (
       <PlayerGridCase
         key={index}
         letter={letter}
+        isVisible={isVisible}
         letterResult={letterResults && letterResults[index]}
       />
     );
   });
 
   while (playerRow.length < length) {
-    playerRow.push(<PlayerGridCase key={playerRow.length} />);
+    playerRow.push(
+      <PlayerGridCase isVisible={isVisible} key={playerRow.length} />
+    );
   }
 
   return <HStack spacing={1}>{playerRow}</HStack>;

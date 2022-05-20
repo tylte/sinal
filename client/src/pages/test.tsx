@@ -1,4 +1,4 @@
-import { useToast } from "@chakra-ui/react";
+import { Button, useToast } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { Layout } from "../components/Layout";
 import { PlayerGrid } from "../components/player-grid/PlayerGrid";
@@ -12,6 +12,7 @@ const Test: React.FC<TestProps> = ({}) => {
   const wordLength = 8;
 
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
+  const [isVisible, setIsVisible] = useState(false);
   const [word, setWord] = useState<string>(firstLetter);
   console.log("wordTried : ", triesHistory);
   const toast = useToast();
@@ -50,13 +51,15 @@ const Test: React.FC<TestProps> = ({}) => {
   return (
     <Layout>
       <PlayerGrid
-        isVisible={true}
+        isVisible={isVisible}
         wordLength={wordLength}
         nbLife={nbLife}
         triesHistory={triesHistory}
         word={word}
-        // setWord={setWord}
       />
+      <Button onClick={() => setIsVisible((visible) => !visible)}>
+        Visible ? : {isVisible ? "true" : "false"}
+      </Button>
     </Layout>
   );
 };
