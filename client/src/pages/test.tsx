@@ -17,7 +17,7 @@ const Test: React.FC<TestProps> = ({}) => {
   const toast = useToast();
   const nbLife = 7;
 
-  const onEnter = (word: string) => {
+  const onEnter = () => {
     if (word.length === wordLength) {
       if (triesHistory.length < nbLife) {
         setTriesHistory((triesHistory) => [
@@ -45,7 +45,7 @@ const Test: React.FC<TestProps> = ({}) => {
     }
   };
 
-  useClassicWordInput(word, setWord, wordLength, onEnter);
+  useClassicWordInput(word, setWord, wordLength, onEnter, false);
 
   return (
     <Layout>

@@ -31,7 +31,7 @@ const handleWordInput = (
   word: string,
   setWord: Dispatch<SetStateAction<string>>,
   wordLength: number,
-  onEnter: (word: string, wordLength: number) => void
+  onEnter: () => void
 ) => {
   console.log("word : ", word);
   // Only one alphabetic caracter in the key
@@ -58,7 +58,7 @@ const handleWordInput = (
     });
   } else if (e.key === "Enter") {
     // Function coming from props to let upper components decide what to do
-    onEnter(word, wordLength);
+    onEnter();
   }
 };
 
@@ -75,16 +75,21 @@ export const useClassicWordInput = (
   word: string,
   setWord: Dispatch<SetStateAction<string>>,
   wordLength: number,
-  onEnter: (word: string, wordLength: number) => void
+  onEnter: () => void,
+  stopListening: boolean
 ) => {
   const handleInput = (e: KeyboardEvent) => {
     handleWordInput(e, word, setWord, wordLength, onEnter);
   };
   useEffect(() => {
-    document.addEventListener("keydown", handleInput);
+    if (!stopListening) {
+      document.addEventListener("keydown", handleInput);
+    }
 
     return () => {
-      document.removeEventListener("keydown", handleInput);
+      if (!stopListening) {
+        document.removeEventListener("keydown", handleInput);
+      }
     };
-  }, [word]);
+  }, [word, stopListening]);
 };

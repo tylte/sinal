@@ -1,6 +1,10 @@
 import { LetterResult, LobbyState } from "./types";
 
 export const isWordCorrect = (result: LetterResult[]): boolean => {
+  if (result.length === 0) {
+    return false;
+  }
+
   for (let i = 0; i < result.length; i++) {
     const res = result[i];
     if (res !== LetterResult.RIGHT_POSITION) {
