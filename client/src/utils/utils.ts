@@ -18,9 +18,9 @@ export const getColorFromResults = (result: LetterResult[]): string[] => {
     if (res === LetterResult.RIGHT_POSITION) {
       ret.push("green.300");
     } else if (res === LetterResult.FOUND) {
-      ret.push("orange.400");
+      ret.push("orange.100");
     } else if (res === LetterResult.NOT_FOUND) {
-      ret.push("blackAlpha.900");
+      ret.push("blackAlpha.300");
     }
   }
 

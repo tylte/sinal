@@ -20,32 +20,14 @@ export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
       <PlayerGridCase
         key={index}
         letter={letter}
-        letterResult={
-          letterResults !== undefined ? letterResults[index] : undefined
-        }
+        letterResult={letterResults && letterResults[index]}
       />
     );
   });
-  // if (isCurrentAttempt) {
-  //   playerRow.push(
-  //     ...[...word.slice(1, word.length)].map((letter, index) => {
-  //       return <PlayerGridCase key={index + 1} letter={letter} />;
-  //     })
-  //   );
-  // }
-  //  else {
-  //   for (let i = 0; i < length; i++) {
-  //     if (i === 0) {
-  //       return <PlayerGridCase key={i} letter={firstLetter} />;
-  //     } else {
-  //       return <PlayerGridCase key={i} />;
-  //     }
-  //   }
-  // }
 
   while (playerRow.length < length) {
     playerRow.push(<PlayerGridCase key={playerRow.length} />);
   }
 
-  return <HStack spacing={0}>{playerRow}</HStack>;
+  return <HStack spacing={1}>{playerRow}</HStack>;
 };

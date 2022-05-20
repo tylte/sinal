@@ -34,8 +34,9 @@ const handleWordInput = (
   onEnter: (word: string, wordLength: number) => void
 ) => {
   console.log("word : ", word);
-  // Only one alphabetic caracter in the key (more detail https://www.toptal.com/developers/keycode/for/alt)
+  // Only one alphabetic caracter in the key
   const re = /^([a-zA-Z]{1})$/;
+  // more detail on e.key https://www.toptal.com/developers/keycode/for/alt
   if (re.test(e.key)) {
     setWord((word) => {
       let newCharacter = e.key.toUpperCase();
@@ -61,6 +62,15 @@ const handleWordInput = (
   }
 };
 
+/**
+ *  Allow the listening of what the player is typing
+ *  The word will be of max length wordLength.
+ *
+ *  The player will be able to type lower case or upper case and the output
+ *  will be all upper case and he's able to use backspace to delete characters.
+ *
+ *  In classic word input, the user cannot delete the first letter
+ */
 export const useClassicWordInput = (
   word: string,
   setWord: Dispatch<SetStateAction<string>>,
