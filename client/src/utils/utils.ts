@@ -11,7 +11,7 @@ export const isWordCorrect = (result: LetterResult[]): boolean => {
   return true;
 };
 
-export const getColorFromResult = (result: LetterResult[]): string[] => {
+export const getColorFromResults = (result: LetterResult[]): string[] => {
   const ret = [];
   for (let i = 0; i < result.length; i++) {
     const res = result[i];
@@ -25,6 +25,17 @@ export const getColorFromResult = (result: LetterResult[]): string[] => {
   }
 
   return ret;
+};
+
+export const getColorFromResult = (result?: LetterResult): string => {
+  if (result === LetterResult.RIGHT_POSITION) {
+    return "green.300";
+  } else if (result === LetterResult.FOUND) {
+    return "orange.400";
+  } else if (result === LetterResult.NOT_FOUND) {
+    return "blackAlpha.900";
+  }
+  return "grey";
 };
 
 export const isLobbyJoinable = (

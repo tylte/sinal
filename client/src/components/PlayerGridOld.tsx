@@ -11,7 +11,7 @@ import Confetti from "react-confetti";
 import { guessWord, guessWordMulti } from "../utils/api";
 import { useDictionary, useSocket } from "../utils/hooks";
 import { GameMode, Packet, Player, TriesHistory } from "../utils/types";
-import { getColorFromResult, isWordCorrect } from "../utils/utils";
+import { getColorFromResults, isWordCorrect } from "../utils/utils";
 
 const toast_length_id = "toast_length";
 const toast_not_dictionary_id = "toast_not_dictionary_id";
@@ -142,7 +142,7 @@ export const PlayerGridOld: React.FC<PlayerGridPropsOld> = ({
     if (i < triesHistory.length) {
       // Word history, not editable
       value = triesHistory[i].wordTried.toUpperCase();
-      inputArrayField = getColorFromResult(triesHistory[i].result).map(
+      inputArrayField = getColorFromResults(triesHistory[i].result).map(
         (color, index) => (
           <PinInputField key={index} backgroundColor={color} color="white" />
         )

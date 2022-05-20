@@ -26,12 +26,55 @@ export const useConnected = (): boolean => {
   return isConnected;
 };
 
-export const useKeyDown = (keydownHandler: any) => {
+const handleWordInput = (
+  e: KeyboardEvent,
+  word: string,
+  setWord: Dispatch<SetStateAction<string>>,
+  wordLength: number,
+  onWordEnter: (word: string, wordLength: number) => void
+) => {
+  console.log("word : ", word);
+  // Only one alphabetic caracter in the key (more detail https://www.toptal.com/developers/keycode/for/alt)
+  const re = /^([a-zA-Z]{1})$/;
+  if (re.test(e.key)) {
+    setWord((word) => {
+      let newCharacter = e.key.toUpperCase();
+      if (word.length < wordLength) {
+        return word + newCharacter;
+      } else {
+        return word;
+      }
+    });
+  } else if (e.key === "Backspace") {
+    // Remove last character of the word
+    setWord((word) => {
+      if (word.length > 1) {
+        return word.slice(0, word.length - 1);
+      } else {
+        // Cannot remove first letter
+        return word;
+      }
+    });
+  } else if (e.key === "Enter" && word.length === wordLength) {
+    // Function coming from props to let upper components decide what to do
+    onWordEnter(word, wordLength);
+  }
+};
+
+export const useClassicWordInput = (
+  word: string,
+  setWord: Dispatch<SetStateAction<string>>,
+  wordLength: number,
+  onWordEnter: (word: string, wordLength: number) => void
+) => {
+  const handleInput = (e: KeyboardEvent) => {
+    handleWordInput(e, word, setWord, wordLength, onWordEnter);
+  };
   useEffect(() => {
-    document.addEventListener("keydown", keydownHandler);
+    document.addEventListener("keydown", handleInput);
 
     return () => {
-      document.addEventListener("keydown", keydownHandler);
+      document.removeEventListener("keydown", handleInput);
     };
-  }, []);
+  }, [word]);
 };

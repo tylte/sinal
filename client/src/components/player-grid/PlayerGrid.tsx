@@ -1,76 +1,41 @@
-import {
-  Box,
-  Button,
-  HStack,
-  PinInput,
-  PinInputField,
-  Stack,
-  useToast,
-} from "@chakra-ui/react";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import Confetti from "react-confetti";
-import { guessWord, guessWordMulti } from "../../utils/api";
-import { useDictionary, useKeyDown, useSocket } from "../../utils/hooks";
-import { Packet, Player, TriesHistory } from "../../utils/types";
-import { getColorFromResult, isWordCorrect } from "../../utils/utils";
+import { Stack } from "@chakra-ui/react";
+import React from "react";
+import { TriesHistory } from "../../utils/types";
 import { PlayerGridRow } from "./PlayerGridRow";
 
 const toast_length_id = "toast_length";
 const toast_not_dictionary_id = "toast_not_dictionary_id";
 
 interface PlayerGridProps {
-  isPlayer: boolean;
-  firstLetter: string;
-  length: number;
+  firstLetter?: string;
+  isPlayer?: boolean;
+  wordLength: number;
   nbLife: number;
-  currentAttempt: number;
-  triesHistory: TriesHistory[];
-  setTriesHistory: Dispatch<SetStateAction<TriesHistory[]>>;
   word: string;
-  setWord: Dispatch<SetStateAction<string>>;
+  triesHistory: TriesHistory[];
+  // setWord: Dispatch<SetStateAction<string>>;
+  // Will fire when word is full length and the user press enter
+  // onWordEnter: (word: string) => void;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
   isPlayer,
-  firstLetter,
-  length,
+  wordLength: length,
   nbLife,
-  currentAttempt,
-  setTriesHistory,
-  triesHistory,
+  firstLetter,
   word,
-  setWord,
+  // setWord,
+  triesHistory,
+  // onWordEnter,
 }) => {
-  const firstLetterUpper = firstLetter.toUpperCase();
+  if (isPlayer === undefined) {
+    isPlayer = true;
+  }
+  if (firstLetter === undefined) {
+    firstLetter = "";
+  }
+
   // const [word, setWord] = useState(firstLetterUpper);
-  const [tryCount, setTryCount] = useState(0);
-  const [hasWon, setHasWon] = useState(false);
-  const toast = useToast();
-  console.log("word : ", word);
-  useKeyDown((e: KeyboardEvent) => {
-    // Only one alphabetic caracter in the key (more detail https://www.toptal.com/developers/keycode/for/alt)
-    const re = /^([a-zA-Z]{1})$/;
-    if (re.test(e.key)) {
-      setWord((word) => {
-        let newCharacter = e.key.toUpperCase();
-        if (word.length < length) {
-          return word + newCharacter;
-        } else {
-          // let newWord = word.slice(0, word.length - 1) + newCharacter;
-          return word;
-        }
-      });
-    } else if (e.key === "Backspace") {
-      // Remove last character of the word
-      setWord((word) => {
-        if (word.length > 1) {
-          return word.slice(0, word.length - 1);
-        } else {
-          return word;
-        }
-      });
-    }
-  });
 
   // const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
   //   if (event.key === "Enter") {
@@ -78,19 +43,19 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   //   }
   // };
 
-  const handleWordChange = (str: string) => {
-    // Check that first letter doesn't change and word will not contain digits
-    let str_upper = str.toUpperCase();
-    const re = /\d+/g;
-    if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
-      setWord(str_upper);
-      // if (player !== undefined) {
-      //   console.log(player);
-      //   let { id } = player;
-      //   socket?.emit("update_word", { word, playerId: id, lobbyId });
-      // }
-    }
-  };
+  // const handleWordChange = (str: string) => {
+  //   // Check that first letter doesn't change and word will not contain digits
+  //   let str_upper = str.toUpperCase();
+  //   const re = /\d+/g;
+  //   if (str_upper.charAt(0) === firstLetterUpper && !re.test(str_upper)) {
+  //     setWord(str_upper);
+  //     // if (player !== undefined) {
+  //     //   console.log(player);
+  //     //   let { id } = player;
+  //     //   socket?.emit("update_word", { word, playerId: id, lobbyId });
+  //     // }
+  //   }
+  // };
 
   // const handleTryWord = async () => {
   //   let word_lowercase = word.toLowerCase();
@@ -204,13 +169,20 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const rowsArray = [];
 
   for (let i = 0; i < nbLife; i++) {
+    let wordToShow = firstLetter;
+    if (triesHistory.length > i) {
+      wordToShow = triesHistory[i].wordTried;
+    } else if (i === triesHistory.length) {
+      wordToShow = word;
+    }
+
     rowsArray.push(
       <PlayerGridRow
         key={i}
-        word={word}
-        firstLetter={firstLetter}
-        length={length}
-        isCurrentAttempt={currentAttempt === i}
+        word={wordToShow}
+        // firstLetter={firstLetter}
+        wordLength={length}
+        isCurrentAttempt={triesHistory.length === i}
       />
     );
   }
