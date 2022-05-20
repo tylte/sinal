@@ -17,7 +17,7 @@ export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
   letterResults,
   isVisible,
 }) => {
-  let playerRow = [...word.slice(0, word.length)].map((letter, index) => {
+  let playerRow = [...word].map((letter, index) => {
     return (
       <PlayerGridCase
         key={index}
