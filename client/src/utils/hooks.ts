@@ -28,12 +28,10 @@ export const useConnected = (): boolean => {
 
 const handleWordInput = (
   e: KeyboardEvent,
-  word: string,
   setWord: Dispatch<SetStateAction<string>>,
   wordLength: number,
   onEnter: () => void
 ) => {
-  console.log("word : ", word);
   // Only one alphabetic caracter in the key
   const re = /^([a-zA-Z]{1})$/;
   // more detail on e.key https://www.toptal.com/developers/keycode/for/alt
@@ -79,7 +77,7 @@ export const useClassicWordInput = (
   stopListening?: boolean
 ) => {
   const handleInput = (e: KeyboardEvent) => {
-    handleWordInput(e, word, setWord, wordLength, onEnter);
+    handleWordInput(e, setWord, wordLength, onEnter);
   };
   useEffect(() => {
     if (!stopListening) {
