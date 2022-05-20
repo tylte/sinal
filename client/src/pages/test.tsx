@@ -1,3 +1,4 @@
+import { useToast } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { Layout } from "../components/Layout";
 import { PlayerGrid } from "../components/player-grid/PlayerGrid";
@@ -13,16 +14,27 @@ const Test: React.FC<TestProps> = ({}) => {
   const [triesHistory, setTriesHistory] = useState<TriesHistory[]>([]);
   const [word, setWord] = useState<string>(firstLetter);
   console.log("wordTried : ", triesHistory);
+  const toast = useToast();
+  const nbLife = 7;
 
-  const onWordEnter = (word: string) => {
-    setWord((word) => firstLetter);
-    setTriesHistory((triesHistory) => [
-      ...triesHistory,
-      { result: [LetterResult.FOUND], wordTried: word },
-    ]);
+  const onEnter = (word: string) => {
+    // Number of word tried + current attempt
+    if (word.length === wordLength) {
+      if (triesHistory.length + 1 < nbLife) {
+        setTriesHistory((triesHistory) => [
+          ...triesHistory,
+          { result: [LetterResult.FOUND], wordTried: word },
+        ]);
+        setWord(firstLetter);
+      } else {
+        toast({ title: "Vous n'avez plus d'essais !", status: "error" });
+      }
+    } else {
+      toast({ title: "Pas assez de lettres !", status: "error" });
+    }
   };
 
-  useClassicWordInput(word, setWord, wordLength, onWordEnter);
+  useClassicWordInput(word, setWord, wordLength, onEnter);
   // useWordInput(word, wordLength, onWordEnter, (e: KeyboardEvent) => {
   //   console.log("word : ", word);
   //   // Only one alphabetic caracter in the key (more detail https://www.toptal.com/developers/keycode/for/alt)
@@ -57,7 +69,7 @@ const Test: React.FC<TestProps> = ({}) => {
       <PlayerGrid
         isPlayer={true}
         wordLength={wordLength}
-        nbLife={7}
+        nbLife={nbLife}
         triesHistory={triesHistory}
         word={word}
         // setWord={setWord}

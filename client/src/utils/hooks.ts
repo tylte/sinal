@@ -31,7 +31,7 @@ const handleWordInput = (
   word: string,
   setWord: Dispatch<SetStateAction<string>>,
   wordLength: number,
-  onWordEnter: (word: string, wordLength: number) => void
+  onEnter: (word: string, wordLength: number) => void
 ) => {
   console.log("word : ", word);
   // Only one alphabetic caracter in the key (more detail https://www.toptal.com/developers/keycode/for/alt)
@@ -55,9 +55,9 @@ const handleWordInput = (
         return word;
       }
     });
-  } else if (e.key === "Enter" && word.length === wordLength) {
+  } else if (e.key === "Enter") {
     // Function coming from props to let upper components decide what to do
-    onWordEnter(word, wordLength);
+    onEnter(word, wordLength);
   }
 };
 
@@ -65,10 +65,10 @@ export const useClassicWordInput = (
   word: string,
   setWord: Dispatch<SetStateAction<string>>,
   wordLength: number,
-  onWordEnter: (word: string, wordLength: number) => void
+  onEnter: (word: string, wordLength: number) => void
 ) => {
   const handleInput = (e: KeyboardEvent) => {
-    handleWordInput(e, word, setWord, wordLength, onWordEnter);
+    handleWordInput(e, word, setWord, wordLength, onEnter);
   };
   useEffect(() => {
     document.addEventListener("keydown", handleInput);

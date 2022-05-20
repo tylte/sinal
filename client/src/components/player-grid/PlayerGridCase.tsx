@@ -16,7 +16,7 @@ export const PlayerGridCase: React.FC<PlayerGridCaseProps> = ({
 
   return (
     <Flex w={14} height={14} borderWidth="1px" backgroundColor={color}>
-      <Text fontFamily={"revert"} fontWeight={"bold"} m="auto">
+      <Text fontFamily={"revert"} fontWeight={"bold"} fontSize="2xl" m="auto">
         {letter}
       </Text>
     </Flex>

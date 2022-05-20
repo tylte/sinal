@@ -7,7 +7,6 @@ interface PlayerGridRowProps {
   word: string;
   // firstLetter: string;
   wordLength: number;
-  isCurrentAttempt: boolean;
   letterResults?: LetterResult[];
 }
 
@@ -15,22 +14,18 @@ export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
   word,
   wordLength: length,
   letterResults,
-  // firstLetter,
-  isCurrentAttempt,
 }) => {
-  let playerRow: JSX.Element[] = [...word.slice(0, word.length)].map(
-    (letter, index) => {
-      return (
-        <PlayerGridCase
-          key={index}
-          letter={letter}
-          letterResult={
-            letterResults !== undefined ? letterResults[index] : undefined
-          }
-        />
-      );
-    }
-  );
+  let playerRow = [...word.slice(0, word.length)].map((letter, index) => {
+    return (
+      <PlayerGridCase
+        key={index}
+        letter={letter}
+        letterResult={
+          letterResults !== undefined ? letterResults[index] : undefined
+        }
+      />
+    );
+  });
   // if (isCurrentAttempt) {
   //   playerRow.push(
   //     ...[...word.slice(1, word.length)].map((letter, index) => {

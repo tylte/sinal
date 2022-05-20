@@ -13,9 +13,6 @@ interface PlayerGridProps {
   nbLife: number;
   word: string;
   triesHistory: TriesHistory[];
-  // setWord: Dispatch<SetStateAction<string>>;
-  // Will fire when word is full length and the user press enter
-  // onWordEnter: (word: string) => void;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
@@ -182,7 +179,6 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
         word={wordToShow}
         // firstLetter={firstLetter}
         wordLength={length}
-        isCurrentAttempt={triesHistory.length === i}
       />
     );
   }
