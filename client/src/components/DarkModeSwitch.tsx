@@ -6,7 +6,6 @@ export const DarkModeSwitch = () => {
   const isDark = colorMode === "dark";
   return (
     <IconButton
-      // position="fixed"
       my={2}
       mr={4}
       icon={isDark ? <SunIcon /> : <MoonIcon />}
