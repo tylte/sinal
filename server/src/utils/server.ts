@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { date } from "zod";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
 import { get_lobbies, get_lobby_id } from "../Endpoint/lobbies";
@@ -207,7 +208,7 @@ export const getServer = () => {
     });
 
     /**
-     * guess_word
+     * guess_word_1vs1
      * @param { word, gameId, playerId }
      * response : array of LetterResult,
      * broadcast "guess_word_broadcast" on all player in the game
@@ -227,6 +228,30 @@ export const getServer = () => {
           console.log("guess_word_1vs1 payload : ", req);
           console.log("guess_word_1vs1 : ", check);
         }
+      }
+    );
+
+    /**
+     * only use for tests
+     * get_word
+     * @param gameId
+     * resopnse : the word soluce
+     */
+    socket.on(
+      "get_word",
+      (request, response: (payload: PacketType) => void) => {
+        if (typeof response !== "function" || typeof request !== "string") {
+          console.log(
+            "get_word usage : request: {string} response: {function}"
+          );
+          return;
+        }
+
+        response({
+          success: true,
+          message: "here is the soluce",
+          data: idToWord.get(request),
+        });
       }
     );
 

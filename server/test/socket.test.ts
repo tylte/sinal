@@ -51,7 +51,6 @@ describe("Web socket testing", () => {
         expect(uuidValidateV4(res.data.id)).toBeTruthy();
         expect(Packet.safeParse(res).success).toBeTruthy();
         expect(res.data.name).toBe("bob");
-        console.log(res);
         clientSocket.emit("create_lobby", createLobbyArg, (res: PacketType) => {
           try {
             expect(res.success).toBeTruthy();
@@ -186,7 +185,7 @@ describe("Web socket testing", () => {
     });
   });
 
-  test("Guess Word of a player in a multiplayer game", (done) => {
+  test("Guess Word of a player in a 1vs1 game", (done) => {
     let createLobbyArg = {
       mode: "1vs1",
       place: 2,
@@ -199,20 +198,26 @@ describe("Web socket testing", () => {
       name: "lobby test",
     };
     clientSocket.emit("create_player", "Joueur 1", (player1: PacketType) => {
+      createLobbyArg.owner.id = player1.data.id;
       clientSocket.emit("create_lobby", createLobbyArg, (lobby: PacketType) => {
         otherClientSocket.emit(
           "create_player",
           "Joueur 2",
           (player2: PacketType) => {
             otherClientSocket.emit("join_lobby", {
-              lobbyId: lobby.data.id,
+              lobbyId: lobby.data,
               playerId: player2.data.id,
             });
-            clientSocket.emit("guess_word", {
-              word: "Coucou",
-              lobbyId: lobby.data.id,
+            clientSocket.emit("start_game_1vs1", {
+              lobbyId: lobby.data,
               playerId: player1.data.id,
             });
+            clientSocket.emit("guess_word_1vs1", {
+              word: "Coucou",
+              lobbyId: lobby.data,
+              playerId: player1.data.id,
+            });
+            done();
           }
         );
       });
@@ -291,6 +296,61 @@ describe("Web socket testing", () => {
             }
           );
         });
+      });
+    });
+  });
+  test("Normal game of 1vs1", (done) => {
+    clientSocket.emit("create_player", "Bob", (playerOne: PacketType) => {
+      clientSocket.on("wining_player_1vs1", (playerId) => {
+        try {
+          expect(playerId).toBe(playerOne.data.id);
+        } catch (e) {
+          done(e);
+        }
+      });
+
+      clientSocket.on("starting_game", (game) => {
+        clientSocket.emit("get_word", game.id, (soluce: PacketType) => {
+          clientSocket.emit(
+            "guess_word_1vs1",
+            {
+              word: soluce.data,
+              gameId: game.id,
+              playerId: playerOne.data.id,
+            },
+            () => {}
+          );
+        });
+      });
+
+      let createLobbyArg = {
+        mode: "1vs1",
+        place: 2,
+        isPublic: true,
+        owner: {
+          name: "bob",
+          id: playerOne.data.id,
+          lobbyId: null,
+        },
+        name: "lobby test",
+      };
+      clientSocket.emit("create_lobby", createLobbyArg, (lobby: PacketType) => {
+        otherClientSocket.emit(
+          "create_player",
+          "John",
+          (playerTwo: PacketType) => {
+            otherClientSocket.emit(
+              "join_lobby",
+              { lobbyId: lobby.data, playerId: playerTwo.data.id },
+              () => {
+                clientSocket.emit("start_game_1vs1", {
+                  lobbyId: lobby.data,
+                  playerId: playerOne.data.id,
+                });
+              }
+            );
+          }
+        );
       });
     });
   });
