@@ -279,13 +279,7 @@ export const startGame1vs1Event = (
 
   game1vs1Map.set(gameId, game);
   io.to(lobbyId).emit("starting_game", game);
-  io.to(lobbyId)
-    .allSockets()
-    .then((set) => {
-      set.forEach((s) => {
-        io.sockets.sockets.get(s)?.join(gameId);
-      });
-    });
+  io.to(lobbyId).socketsJoin(gameId);
 };
 
 export const updateWordEvent = (
@@ -343,21 +337,9 @@ export const guessWordEvent = (
 
   if (win) {
     io.to(gameId).emit("wining_player_1vs1", playerId);
-    io.to(gameId)
-      .allSockets()
-      .then((set) => {
-        set.forEach((s) => {
-          io.sockets.sockets.get(s)?.leave(gameId);
-        });
-      });
+    io.to(gameId).socketsLeave(gameId);
   } else if (game.playerOne.nb_life === 0 && game.playerTwo.nb_life === 0) {
     io.to(gameId).emit("draw_1vs1");
-    io.to(gameId)
-      .allSockets()
-      .then((set) => {
-        set.forEach((s) => {
-          io.sockets.sockets.get(s)?.leave(gameId);
-        });
-      });
+    io.to(gameId).socketsLeave(gameId);
   }
 };
