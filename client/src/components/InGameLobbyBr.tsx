@@ -78,7 +78,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     }
     grid.push(
       <Flex direction={"column"} alignContent={"center"}>
-        {" "}
         {items.slice(i - j, i)}
       </Flex>
     );
