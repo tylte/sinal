@@ -9,7 +9,6 @@ import {
   KeyboardSettings,
 } from "../utils/types";
 import { getClassicKeyboardSettings } from "../utils/utils";
-import { Keyboard } from "./keyboard/Keyboard";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 
 interface OneVsOneGameLobbyProps {
