@@ -12,24 +12,14 @@ interface InGameLobbyProps {
 
 export const InGameLobby: React.FC<InGameLobbyProps> = ({
   player,
-  gameState: {
-    first_letter,
-    id: game_id,
-    length: game_length,
-    nb_life: game_nb_life,
-  },
+  gameState,
   lobbyId,
 }) => {
   return (
     <Layout variant="full">
       <OneVsOneGameLobby
         player={player}
-        gameState={{
-          first_letter,
-          id: game_id,
-          length: game_length,
-          nb_life: game_nb_life,
-        }}
+        gameState={gameState}
       ></OneVsOneGameLobby>
     </Layout>
     // <Box>
