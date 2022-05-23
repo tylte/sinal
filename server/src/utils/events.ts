@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
 import { idToWord } from "./server";
@@ -6,15 +7,19 @@ import {
   ArgCreateLobbyType,
   ArgJoinLobbyType,
   ArgLeaveLobbyType,
-  ArgStartGameType,
+  ArgStartGame1vs1Type,
+  ArgStartGameBrType,
   ArgUpdateWord,
   EventResponseFn,
   Game1vs1,
   game1vs1Map,
+  GameBr,
+  gameBrMap,
   lobbyMap,
   LobbyType,
   PacketType,
   Player,
+  PlayerBr,
   playerMap,
 } from "./type";
 import { PUBLIC_LOBBIES } from "./utils";
@@ -222,7 +227,7 @@ export const willNoLongerLeaveLobbyOnDisconnect = (
 
 export const startGame1vs1Event = (
   io: Server,
-  { lobbyId, playerId }: ArgStartGameType
+  { lobbyId, playerId }: ArgStartGame1vs1Type
 ) => {
   let lobby = lobbyMap.get(lobbyId);
   if (lobby === undefined) {
@@ -248,8 +253,8 @@ export const startGame1vs1Event = (
     return;
   }
 
-  let playerOne = playerMap.get(playerList[0].id);
-  let playerTwo = playerMap.get(playerList[1].id);
+  let playerOne = playerList[0];
+  let playerTwo = playerList[1];
   if (playerOne === undefined || playerTwo === undefined) {
     console.log("start_game_1vs1 : there isn't two players in the lobby");
     return;
@@ -260,20 +265,20 @@ export const startGame1vs1Event = (
   lobby.currentGameId = gameId;
 
   let word = get_word();
-  idToWord.set(gameId, word); //the ID of the word is the same as the lobby
+  idToWord.set(gameId, word); //the ID of the word is the same as the game
   let game: Game1vs1 = {
     playerOne: {
       id: playerOne.id,
       name: playerOne.name,
-      nb_life: 6,
+      nbLife: 6,
     },
     playerTwo: {
       id: playerTwo.id,
       name: playerTwo.name,
-      nb_life: 6,
+      nbLife: 6,
     },
     id: gameId,
-    first_letter: word.charAt(0),
+    firstLetter: word.charAt(0),
     length: word.length,
   };
 
@@ -295,7 +300,7 @@ export const updateWordEvent = (
   io.to(gameId).emit("update_word_broadcast", { array, playerId });
 };
 
-export const guessWordEvent = (
+export const guessWord1vs1Event = (
   io: Server,
   response: any,
   { word, gameId, playerId }: ArgUpdateWord
@@ -316,7 +321,7 @@ export const guessWordEvent = (
     return;
   }
 
-  if (player.nb_life === 0) {
+  if (player.nbLife === 0) {
     console.log("guess_word_1vs1 : player has no life left 💀");
     return;
   }
@@ -327,7 +332,7 @@ export const guessWordEvent = (
     message: "Le resultat du mot est renvoyé",
     data: tab_res,
   });
-  player.nb_life--;
+  player.nbLife--;
   io.to(gameId).emit("guess_word_broadcast", { tab_res, playerId, game });
 
   let win = true;
@@ -338,8 +343,181 @@ export const guessWordEvent = (
   if (win) {
     io.to(gameId).emit("wining_player_1vs1", playerId);
     io.to(gameId).socketsLeave(gameId);
-  } else if (game.playerOne.nb_life === 0 && game.playerTwo.nb_life === 0) {
+  } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
     io.to(gameId).emit("draw_1vs1");
     io.to(gameId).socketsLeave(gameId);
+  }
+};
+
+export const startGameBrEvent = (
+  io: Server,
+  {
+    lobbyId,
+    playerId,
+    eliminationRate,
+    globalTime,
+    timeAfterFirstGuess,
+  }: ArgStartGameBrType
+) => {
+  let lobby = lobbyMap.get(lobbyId);
+  if (lobby === undefined) {
+    console.log("start_game_br : lobby doesn't exist");
+    return;
+  }
+  if (lobby.owner !== playerId) {
+    console.log("start_game_br : only the owner can start the game");
+    return;
+  }
+  if (lobby.mode != "battle-royale") {
+    console.log(
+      "start_game_br : the mode selected on the lobby isn't battle-royale"
+    );
+    return;
+  }
+
+  let lobbyPlayerList = lobbyMap.get(lobbyId)?.playerList;
+  if (lobbyPlayerList === undefined) {
+    console.log("start_game_br : playerList of the lobby is undefined");
+    return;
+  }
+  if (lobbyPlayerList.length < 2) {
+    console.log("start_game_br : playerList is too short, lobby : ", lobby);
+    return;
+  }
+
+  let gameId = get_id();
+  lobby.state = "in-game";
+  lobby.currentGameId = gameId;
+
+  let playerArray = new Array<PlayerBr>();
+  lobbyPlayerList.forEach((player) => {
+    if (player !== undefined) {
+      playerArray.push({
+        id: player.id,
+        name: player.name,
+        nbLife: 6,
+      });
+    }
+  });
+
+  let word = get_word();
+  idToWord.set(gameId, word);
+
+  let game: GameBr = {
+    playerList: playerArray,
+    playerFound: new Array(),
+    playersLastNextRound: Math.floor(
+      playerArray.length * (1 - eliminationRate / 100)
+    ),
+    id: gameId,
+    firstLetter: word.charAt(0),
+    length: word.length,
+    eliminationRate: eliminationRate,
+    globalTime: globalTime,
+    timeAfterFirstGuess: timeAfterFirstGuess,
+  };
+
+  gameBrMap.set(gameId, game);
+  io.to(lobbyId).emit("starting_game", game);
+  io.to(lobbyId).socketsJoin(gameId);
+};
+
+export const guessWordBrEvent = (
+  io: Server,
+  response: any,
+  { word, gameId, playerId }: ArgUpdateWord
+) => {
+  let game = gameBrMap.get(gameId);
+  if (game === undefined) {
+    console.log("guess_word_br : there is no game unsing this gameId");
+    return;
+  }
+
+  let dico = get_dictionary();
+  let correctWord = false;
+  dico.forEach((w) => {
+    if (w === word) correctWord = true;
+  });
+  if (!correctWord) {
+    console.log("guess_word_br : this word isn't in the dictionary");
+    return;
+  }
+
+  let player: PlayerBr = { id: "", name: "", nbLife: 0 };
+  game.playerList.forEach((p) => {
+    if (p.id === playerId) {
+      player = p;
+    }
+  });
+  if (player.id === "") {
+    console.log(
+      "guess_word_br : there is no player in the game with this playerId"
+    );
+    return;
+  }
+
+  if (player.nbLife === 0) {
+    console.log("guess_word_br : player has no life left 💀");
+    return;
+  }
+
+  let tab_res = get_guess(gameId, word, idToWord);
+  response({
+    success: true,
+    message: "Le resultat du mot est renvoyé",
+    data: tab_res,
+  });
+  player.nbLife--;
+  io.to(gameId).emit("guess_word_broadcast", { tab_res, playerId, game });
+
+  let win = true;
+  tab_res.forEach((letter) => {
+    if (letter !== LetterResult.RIGHT_POSITION) win = false;
+  });
+
+  if (win) {
+    if (game.playerFound.length === 0) {
+      io.to(gameId).emit("first_winning_player_br", playerId);
+    } else if (game.playerFound.length >= game.playersLastNextRound) {
+      console.log("guess_word_br : player guessed too late");
+      return;
+    }
+
+    game.playerFound.push(player);
+    if (game.playerFound.length === game.playersLastNextRound) {
+      game.playersLastNextRound = Math.floor(
+        game.playersLastNextRound * (1 - game.eliminationRate / 100)
+      );
+
+      if (game.playersLastNextRound === 0) {
+        io.to(gameId).emit("winning_player_br", playerId);
+        io.to(gameId).socketsLeave(gameId);
+      } else if (game.playersLastNextRound === 1) {
+        //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
+      } else {
+        let newWord = get_word();
+        idToWord.set(gameId, newWord);
+        game.firstLetter = newWord.charAt(0);
+        game.length = newWord.length;
+        game.playerFound = new Array();
+        io.to(gameId).emit("next_word_br", game);
+      }
+    }
+  }
+
+  let noOneAlive = true;
+  game.playerList.forEach((p) => {
+    if (p.nbLife !== 0) {
+      noOneAlive = false;
+    }
+  });
+  if (noOneAlive && game.playerFound.length === 0) {
+    io.to(gameId).emit("draw_br");
+    let newWord = get_word();
+    idToWord.set(gameId, newWord);
+    game.firstLetter = newWord.charAt(0);
+    game.length = newWord.length;
+    game.playerFound = new Array();
+    io.to(gameId).emit("next_word_br", game);
   }
 };
