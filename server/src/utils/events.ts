@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import { get_guess, LetterResult } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
 import { idToWord } from "./server";
 import {
@@ -6,9 +7,10 @@ import {
   ArgJoinLobbyType,
   ArgLeaveLobbyType,
   ArgStartGameType,
+  ArgUpdateWord,
   EventResponseFn,
   Game1vs1,
-  Game1vs1Map,
+  game1vs1Map,
   lobbyMap,
   LobbyType,
   PacketType,
@@ -198,41 +200,6 @@ export const createPlayerEvent = (
   });
 };
 
-export const startGameEvent = (
-  io: Server,
-  { lobbyId, playerId }: ArgStartGameType
-) => {
-  let lobby = lobbyMap.get(lobbyId);
-  if (lobby === undefined) {
-    console.log("start_game : lobby doesn't exist");
-    return;
-  }
-  if (lobby.owner !== playerId) {
-    console.log("start_game : only the owner can start the game");
-    return;
-  }
-
-  let gameId = get_id();
-  lobby.state = "in-game";
-  lobby.currentGameId = gameId;
-
-  if (lobby.mode == "1vs1") {
-    let word = get_word();
-    idToWord.set(gameId, word); //the ID of the word is the same as the lobby
-    let game: Game1vs1 = {
-      id: gameId,
-      first_letter: word.charAt(0),
-      length: word.length,
-      nb_life: 6,
-    };
-
-    Game1vs1Map.set(gameId, game);
-    io.to(lobbyId).emit("starting_game", game);
-  } else if (lobby.mode == "battle-royale") {
-    //TODO
-  }
-};
-
 export const willLeaveLobbyOnDisconnect = (
   io: Server,
   socket: Socket,
@@ -251,4 +218,128 @@ export const willNoLongerLeaveLobbyOnDisconnect = (
   socket.removeListener("disconnect", () => {
     leaveLobbyEvent(io, socket, { lobbyId, playerId }, () => {});
   });
+};
+
+export const startGame1vs1Event = (
+  io: Server,
+  { lobbyId, playerId }: ArgStartGameType
+) => {
+  let lobby = lobbyMap.get(lobbyId);
+  if (lobby === undefined) {
+    console.log("start_game_1vs1 : lobby doesn't exist");
+    return;
+  }
+  if (lobby.owner !== playerId) {
+    console.log("start_game_1vs1 : only the owner can start the game");
+    return;
+  }
+  if (lobby.mode != "1vs1") {
+    console.log("start_game_1vs1 : the mode selected on the lobby isn't 1vs1");
+    return;
+  }
+
+  let playerList = lobbyMap.get(lobbyId)?.playerList;
+  if (playerList === undefined) {
+    console.log("start_game_1vs1 : playerList of the lobby is undefined");
+    return;
+  }
+  if (playerList.length < 2) {
+    console.log("start_game_1vs1 : playerList is too short, lobby : ", lobby);
+    return;
+  }
+
+  let playerOne = playerMap.get(playerList[0].id);
+  let playerTwo = playerMap.get(playerList[1].id);
+  if (playerOne === undefined || playerTwo === undefined) {
+    console.log("start_game_1vs1 : there isn't two players in the lobby");
+    return;
+  }
+
+  let gameId = get_id();
+  lobby.state = "in-game";
+  lobby.currentGameId = gameId;
+
+  let word = get_word();
+  idToWord.set(gameId, word); //the ID of the word is the same as the lobby
+  let game: Game1vs1 = {
+    playerOne: {
+      id: playerOne.id,
+      name: playerOne.name,
+      nb_life: 6,
+    },
+    playerTwo: {
+      id: playerTwo.id,
+      name: playerTwo.name,
+      nb_life: 6,
+    },
+    id: gameId,
+    first_letter: word.charAt(0),
+    length: word.length,
+  };
+
+  game1vs1Map.set(gameId, game);
+  io.to(lobbyId).emit("starting_game", game);
+  io.to(lobbyId).socketsJoin(gameId);
+};
+
+export const updateWordEvent = (
+  io: Server,
+  { word, gameId, playerId }: ArgUpdateWord
+) => {
+  let array = new Array<boolean>();
+  let regex = /[A-Z]/i;
+  for (let i = 0; i < word.length; i++) {
+    array.push(regex.test(word.charAt(i).toUpperCase()));
+  }
+
+  io.to(gameId).emit("update_word_broadcast", { array, playerId });
+};
+
+export const guessWordEvent = (
+  io: Server,
+  response: any,
+  { word, gameId, playerId }: ArgUpdateWord
+) => {
+  let game = game1vs1Map.get(gameId);
+  if (game === undefined) {
+    console.log("guess_word_1vs1 : there is no game unsing this gameId");
+    return;
+  }
+
+  let player;
+  if (game.playerOne.id === playerId) player = game.playerOne;
+  else if (game.playerTwo.id === playerId) player = game.playerTwo;
+  else {
+    console.log(
+      "guess_word_1vs1 : there is no player in the game with this playerId"
+    );
+    return;
+  }
+
+  if (player.nb_life === 0) {
+    console.log("guess_word_1vs1 : player has no life left 💀");
+    return;
+  }
+
+  let tab_res = get_guess(gameId, word, idToWord);
+  response({
+    success: true,
+    message: "Le resultat du mot est renvoyé",
+    data: tab_res,
+  });
+  player.nb_life--;
+  io.to(gameId).emit("guess_word_broadcast", { tab_res, playerId, game });
+
+  let win = true;
+  tab_res.forEach((letter) => {
+    if (letter !== LetterResult.RIGHT_POSITION) win = false;
+  });
+
+  if (win) {
+    io.to(gameId).emit("wining_player_1vs1", playerId);
+    io.to(gameId).socketsLeave(gameId);
+  } else if (game.playerOne.nb_life === 0 && game.playerTwo.nb_life === 0) {
+    io.to(gameId).emit("draw_1vs1");
+    io.to(gameId).socketsLeave(gameId);
+  }
 };

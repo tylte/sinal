@@ -36,10 +36,19 @@ export const Lobby = z.object({
 });
 
 export const Game1vs1 = z.object({
+  playerOne: z.object({
+    id: z.string(),
+    name: z.string(),
+    nb_life: z.number(),
+  }),
+  playerTwo: z.object({
+    id: z.string(),
+    name: z.string(),
+    nb_life: z.number(),
+  }),
   id: z.string(),
   length: z.number(),
   first_letter: z.string(),
-  nb_life: z.number(),
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;
@@ -66,7 +75,6 @@ export const ArgLeaveLobby = z.object({
 export const ArgUpdateWord = z.object({
   word: z.string(),
   gameId: z.string(),
-  lobbyId: z.string(),
   playerId: z.string(),
 });
 
@@ -80,12 +88,13 @@ export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
 export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
 export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
 export type ArgStartGameType = z.infer<typeof ArgStartGame>;
+export type ArgUpdateWord = z.infer<typeof ArgUpdateWord>;
 
 export let lobbyMap: Map<string, LobbyType> = new Map();
 
 export let playerMap: Map<string, Player> = new Map();
 
-export let Game1vs1Map: Map<string, Game1vs1> = new Map();
+export let game1vs1Map: Map<string, Game1vs1> = new Map();
 
 export type JoinLobbyResponse = (payload: {
   success: boolean;

@@ -14,6 +14,7 @@ import {
 } from "../src/utils/type";
 import { assert } from "console";
 import { fail } from "assert";
+import { LetterResult } from "../src/Endpoint/guess";
 
 const uuidValidateV4 = (uuid: string) => {
   return uuidValidate(uuid) && uuidVersion(uuid) === 4;
@@ -185,7 +186,7 @@ describe("Web socket testing", () => {
     });
   });
 
-  test("Guess Word of a player in a multiplayer game", (done) => {
+  test("Guess Word of a player in a 1vs1 game", (done) => {
     let createLobbyArg = {
       mode: "1vs1",
       place: 2,
@@ -198,20 +199,26 @@ describe("Web socket testing", () => {
       name: "lobby test",
     };
     clientSocket.emit("create_player", "Joueur 1", (player1: PacketType) => {
+      createLobbyArg.owner.id = player1.data.id;
       clientSocket.emit("create_lobby", createLobbyArg, (lobby: PacketType) => {
         otherClientSocket.emit(
           "create_player",
           "Joueur 2",
           (player2: PacketType) => {
             otherClientSocket.emit("join_lobby", {
-              lobbyId: lobby.data.id,
+              lobbyId: lobby.data,
               playerId: player2.data.id,
             });
-            clientSocket.emit("guess_word", {
-              word: "Coucou",
-              lobbyId: lobby.data.id,
+            clientSocket.emit("start_game_1vs1", {
+              lobbyId: lobby.data,
               playerId: player1.data.id,
             });
+            clientSocket.emit("guess_word_1vs1", {
+              word: "Coucou",
+              lobbyId: lobby.data,
+              playerId: player1.data.id,
+            });
+            done();
           }
         );
       });
@@ -290,6 +297,86 @@ describe("Web socket testing", () => {
             }
           );
         });
+      });
+    });
+  });
+  test("Normal game of 1vs1", (done) => {
+    clientSocket.emit("create_player", "Bob", (playerOne: PacketType) => {
+      clientSocket.on("wining_player_1vs1", (playerId) => {
+        try {
+          expect(playerId).toBe(playerOne.data.id);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+
+      let createLobbyArg = {
+        mode: "1vs1",
+        place: 2,
+        isPublic: true,
+        owner: {
+          name: "bob",
+          id: playerOne.data.id,
+          lobbyId: null,
+        },
+        name: "lobby test",
+      };
+      clientSocket.emit("create_lobby", createLobbyArg, (lobby: PacketType) => {
+        otherClientSocket.emit(
+          "create_player",
+          "John",
+          (playerTwo: PacketType) => {
+            otherClientSocket.emit(
+              "join_lobby",
+              { lobbyId: lobby.data, playerId: playerTwo.data.id },
+              () => {
+                clientSocket.emit("start_game_1vs1", {
+                  lobbyId: lobby.data,
+                  playerId: playerOne.data.id,
+                });
+              }
+            );
+
+            clientSocket.on("starting_game", (game) => {
+              clientSocket.emit("get_word", game.id, (soluce: PacketType) => {
+                let testWord: string = soluce.data;
+                if (testWord[testWord.length - 1] !== "W")
+                  testWord = testWord.slice(0, testWord.length - 1) + "W";
+                else testWord = testWord.slice(0, testWord.length - 1) + "Z";
+                otherClientSocket.emit(
+                  "guess_word_1vs1",
+                  {
+                    word: testWord,
+                    gameId: game.id,
+                    playerId: playerTwo.data.id,
+                  },
+                  (tab_res: PacketType) => {
+                    let array = Array<LetterResult>(testWord.length).fill(
+                      LetterResult.RIGHT_POSITION
+                    );
+                    array[array.length - 1] = LetterResult.NOT_FOUND;
+
+                    try {
+                      expect(tab_res.data).toStrictEqual(array);
+                    } catch (e) {
+                      done(e);
+                    }
+                  }
+                );
+                clientSocket.emit(
+                  "guess_word_1vs1",
+                  {
+                    word: soluce.data,
+                    gameId: game.id,
+                    playerId: playerOne.data.id,
+                  },
+                  () => {}
+                );
+              });
+            });
+          }
+        );
       });
     });
   });
