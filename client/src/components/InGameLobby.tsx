@@ -3,7 +3,6 @@ import React from "react";
 import { Game1vs1, Player } from "../utils/types";
 import { Layout } from "./Layout";
 import { OneVsOneGameLobby } from "./OneVsOneGameLobby";
-import { PlayerGrid } from "./PlayerGrid";
 
 interface InGameLobbyProps {
   player: Player;
