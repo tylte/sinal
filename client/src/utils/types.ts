@@ -66,3 +66,9 @@ export type SoloGameState = {
   isFinished: boolean;
   hasWon: boolean;
 };
+
+export type KeyboardSettings = {
+  onEnter: () => void;
+  onKeydown: (letter: string) => void;
+  onBackspace: () => void;
+};
