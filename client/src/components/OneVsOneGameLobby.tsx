@@ -1,7 +1,15 @@
 import { Box, Flex, Text, useToast } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useClassicWordInput, useDictionary, useSocket } from "../utils/hooks";
-import { Game1vs1, Player, LetterResult, TriesHistory } from "../utils/types";
+import {
+  Game1vs1,
+  Player,
+  LetterResult,
+  TriesHistory,
+  KeyboardSettings,
+} from "../utils/types";
+import { getClassicKeyboardSettings } from "../utils/utils";
+import { Keyboard } from "./keyboard/Keyboard";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 
 interface OneVsOneGameLobbyProps {
@@ -69,6 +77,12 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const [word, setWord] = useState(first_letter.toUpperCase());
   const [wordP2, setWordP2] = useState(first_letter.toUpperCase());
   useClassicWordInput(word, setWord, game_length, onEnter, false);
+  const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
+    onEnter,
+    setWord,
+    game_length
+  );
+
   return (
     <Flex p={8}>
       <Box h="500px" w={"25%"}>
@@ -92,23 +106,20 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
             <Flex alignItems="center" justifyContent={"center"} h="100%">
               <Box>
                 <Text align={"center"}>{playerOne.name}</Text>
-                <Box>
-                  <PlayerGrid
-                    isVisible={true}
-                    wordLength={game_length}
-                    nbLife={6}
-                    firstLetter={first_letter}
-                    word={word}
-                    triesHistory={[]}
-                  ></PlayerGrid>
-                </Box>
+                <PlayerGrid
+                  isVisible={true}
+                  wordLength={game_length}
+                  nbLife={6}
+                  firstLetter={first_letter}
+                  word={word}
+                  triesHistory={[]}
+                  keyboardSetting={keyboardSettings}
+                ></PlayerGrid>
               </Box>
             </Flex>
           </Box>
           <Box h="100px">
-            <Flex alignItems="center" justifyContent={"center"} h="100%">
-              <Box h="75" w="75%" bg={"gray"}></Box>
-            </Flex>
+            <Flex alignItems="center" justifyContent={"center"} h="100%"></Flex>
           </Box>
         </Flex>
       </Box>
