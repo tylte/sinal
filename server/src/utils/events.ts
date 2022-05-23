@@ -233,10 +233,10 @@ export const startGame1vs1Event = (
     console.log("start_game_1vs1 : only the owner can start the game");
     return;
   }
-  if (lobby.mode != "1vs1") {
-    console.log("start_game_1vs1 : the mode selected on the lobby isn't 1vs1");
-    return;
-  }
+  // if (lobby.mode != "1vs1") {
+  //   console.log("start_game_1vs1 : the mode selected on the lobby isn't 1vs1");
+  //   return;
+  // }
 
   let playerList = lobbyMap.get(lobbyId)?.playerList;
   if (playerList === undefined) {

@@ -65,3 +65,13 @@ export type SoloGameState = {
   isFinished: boolean;
   hasWon: boolean;
 };
+
+export type BrGameState = {
+  wordLength: number;
+  wordId: string;
+  firstLetter: string;
+  nbLife: number;
+  triesHistory: TriesHistory[];
+  isFinished: boolean;
+  hasWon: boolean;
+};

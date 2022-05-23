@@ -48,6 +48,24 @@ export const guessWordMulti = async (
   );
 };
 
+export const guessWordBr = async (
+  word: string,
+  lobbyId: string,
+  playerId: string,
+  socket: Socket | null,
+  response: (response: Packet) => void
+) => {
+  socket?.emit(
+    "guess_word_br",
+    {
+      word,
+      lobbyId,
+      playerId,
+    },
+    response
+  );
+};
+
 export const addSocketConnectionEvent = (
   socket: Socket | null,
   setIsConnected: Dispatch<SetStateAction<boolean>>
@@ -138,6 +156,7 @@ export const addSpecificLobbiesEvent = (
   setGameState: Dispatch<SetStateAction<Game1vs1 | null>>
 ) => {
   socket.on("starting_game", (game: Game1vs1) => {
+    console.log("starting-game");
     setGameState(game);
     //FIXME : Mettre le statut du lobby en "in-game" côté serveur
     setLobby((lobby) => {

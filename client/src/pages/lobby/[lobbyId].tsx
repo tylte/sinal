@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { InGameLobby } from "../../components/InGameLobby";
+import { InGameLobbyBr } from "../../components/InGameLobbyBr";
 import { Layout } from "../../components/Layout";
 import { PostGameLobby } from "../../components/PostGameLobby";
 import { PreGameLobby } from "../../components/PreGameLobby";
@@ -83,14 +84,20 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   if (state === "pre-game") {
     return (
       <Layout>
-        <PreGameLobby player={player} lobby={lobby} />
+        <PreGameLobby player={player} lobby={lobby} gameMode={lobby?.mode} />
       </Layout>
     );
-  } else if (state === "in-game" && gameState !== null) {
+  } else if (state === "in-game" && gameState !== null && lobby.mode === "1vs1") {
     return (
       <Layout variant="large">
         <InGameLobby lobbyId={lobbyId} player={player} gameState={gameState} />
       </Layout>
+    );
+  } else if(state === "in-game" && gameState !== null && lobby.mode === "battle-royale") {
+    return(
+    <Layout variant="large">
+      <InGameLobbyBr lobbyId={lobbyId} player={player} gameState={gameState} numberPlayer={10}/>
+    </Layout>
     );
   } else if (state === "finished") {
     return (
