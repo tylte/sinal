@@ -1,6 +1,7 @@
-import { Stack } from "@chakra-ui/react";
+import { Box, Stack } from "@chakra-ui/react";
 import React from "react";
-import { TriesHistory } from "../../utils/types";
+import { KeyboardSettings, TriesHistory } from "../../utils/types";
+import { Keyboard } from "../keyboard/Keyboard";
 import { PlayerGridRow } from "./PlayerGridRow";
 
 interface PlayerGridProps {
@@ -10,6 +11,7 @@ interface PlayerGridProps {
   nbLife: number;
   word: string;
   triesHistory: TriesHistory[];
+  keyboardSetting?: KeyboardSettings;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
@@ -19,6 +21,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   firstLetter,
   word,
   triesHistory,
+  keyboardSetting,
 }) => {
   if (isVisible === undefined) {
     isVisible = true;
@@ -49,8 +52,20 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   }
 
   return (
-    <Stack align={"center"} spacing={3}>
-      {rowsArray}
-    </Stack>
+    <>
+      <Stack align={"center"} spacing={3}>
+        {rowsArray}
+      </Stack>
+      {keyboardSetting && (
+        <Box mt={16}>
+          <Keyboard
+            onEnter={keyboardSetting.onEnter}
+            onKeydown={keyboardSetting.onKeydown}
+            onBackspace={keyboardSetting.onBackspace}
+            triesHistory={triesHistory}
+          />
+        </Box>
+      )}
+    </>
   );
 };

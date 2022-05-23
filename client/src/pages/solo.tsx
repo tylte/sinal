@@ -6,8 +6,12 @@ import { Layout } from "../components/Layout";
 import { PlayerGrid } from "../components/player-grid/PlayerGrid";
 import { guessWord } from "../utils/api";
 import { useClassicWordInput, useDictionary } from "../utils/hooks";
-import { SoloGameState, StartGameResponse } from "../utils/types";
-import { isWordCorrect } from "../utils/utils";
+import {
+  KeyboardSettings,
+  SoloGameState,
+  StartGameResponse,
+} from "../utils/types";
+import { getClassicKeyboardSettings, isWordCorrect } from "../utils/utils";
 
 interface SoloProps {}
 
@@ -134,6 +138,12 @@ const Solo: React.FC<SoloProps> = ({}) => {
   const { hasWon, triesHistory, firstLetter, nbLife, wordLength, isFinished } =
     gameState;
 
+  const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
+    onEnter,
+    setWord,
+    wordLength
+  );
+
   return (
     <Layout>
       {hasWon && <Confetti />}
@@ -148,6 +158,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
           nbLife={nbLife}
           word={word}
           triesHistory={triesHistory}
+          keyboardSetting={keyboardSettings}
         />
         {isFinished && (
           <Box mt={6} mx="auto">

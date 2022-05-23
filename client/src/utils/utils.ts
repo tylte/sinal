@@ -1,4 +1,10 @@
-import { LetterResult, LobbyState } from "./types";
+import { Dispatch, SetStateAction } from "react";
+import {
+  KeyboardSettings,
+  LetterResult,
+  LobbyState,
+  TriesHistory,
+} from "./types";
 
 export const isWordCorrect = (result: LetterResult[]): boolean => {
   if (result.length === 0) {
@@ -63,4 +69,65 @@ export const getIdFromPage = (id: string | string[] | undefined) => {
   } else {
     return null;
   }
+};
+
+export const classicWordWriting = (
+  letter: string,
+  setWord: Dispatch<SetStateAction<string>>,
+  wordLength: number
+) => {
+  setWord((word) => {
+    let newCharacter = letter.toUpperCase();
+    if (word.length < wordLength) {
+      return word + newCharacter;
+    } else {
+      return word;
+    }
+  });
+};
+
+export const classicWordDelete = (
+  setWord: Dispatch<SetStateAction<string>>
+) => {
+  setWord((word) => {
+    if (word.length > 1) {
+      return word.slice(0, word.length - 1);
+    } else {
+      // Cannot remove first letter
+      return word;
+    }
+  });
+};
+
+export const getClassicKeyboardSettings = (
+  onEnter: () => void,
+  setWord: Dispatch<SetStateAction<string>>,
+  wordLength: number
+): KeyboardSettings => {
+  return {
+    onBackspace: () => {
+      classicWordDelete(setWord);
+    },
+    onEnter,
+    onKeydown: (letter) => {
+      classicWordWriting(letter, setWord, wordLength);
+    },
+  };
+};
+
+export const getLetterToColorFromTriesHistory = (
+  triesHistory: TriesHistory[]
+): Map<string, string> => {
+  const ret = new Map();
+
+  triesHistory.forEach((oneTry) => {
+    const { result, wordTried } = oneTry;
+
+    for (let i = 0; i < result.length; i++) {
+      const res = result[i];
+      ret.set(wordTried[i], getColorFromResult(res));
+    }
+  });
+
+  return ret;
 };
