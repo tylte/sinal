@@ -31,6 +31,7 @@ export const KeyboardKey: React.FC<KeyboardKeyProps> = ({
       borderRadius="sm"
       height={height}
       width={width}
+      color={"white"}
     >
       <Text userSelect={"none"} m="auto">
         {letter}
