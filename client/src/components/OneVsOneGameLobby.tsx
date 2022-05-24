@@ -1,5 +1,5 @@
 import { Box, Flex, Text, useToast } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useClassicWordInput, useDictionary, useSocket } from "../utils/hooks";
 import {
   Game1vs1,
@@ -7,8 +7,13 @@ import {
   TriesHistory,
   KeyboardSettings,
 } from "../utils/types";
-import { getClassicKeyboardSettings } from "../utils/utils";
+import { getClassicKeyboardSettings, isWordCorrect } from "../utils/utils";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
+import Confetti from "react-confetti";
+import {
+  lobbyOneVsOneAddEvents,
+  lobbyOneVsOneRemoveEvents,
+} from "../utils/api";
 
 interface OneVsOneGameLobbyProps {
   player: Player;
@@ -29,7 +34,36 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const dictionary = useDictionary();
   const toast = useToast();
 
-  let tryHistory: TriesHistory[] = [];
+  const [hasWon, setHasWon] = useState(false);
+
+  const [tryHistory, setTryHistory] = useState<TriesHistory[]>([]);
+  const [tryHistoryP2, setTryHistoryP2] = useState<TriesHistory[]>([]);
+
+  const [word, setWord] = useState(first_letter.toUpperCase());
+  const [wordP2, setWordP2] = useState(first_letter.toUpperCase());
+
+  useEffect(() => {
+    if (socket) {
+      lobbyOneVsOneAddEvents(
+        socket,
+        toast,
+        playerId,
+        setHasWon,
+        tryHistoryP2,
+        setTryHistoryP2,
+        setWordP2
+      );
+    }
+    return () => {
+      if (socket) {
+        lobbyOneVsOneRemoveEvents(socket);
+      }
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.emit("update_word", { word, gameId, playerId });
+  }, [word]);
 
   const onEnter = () => {
     if (word.length !== game_length) {
@@ -64,9 +98,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         playerId,
       },
       (res: any) => {
-        console.log("TRY HISTORY BEF", tryHistory); //TO DELETE
-        tryHistory = [...tryHistory, { result: res.data, wordTried: word }];
-        console.log("TRY HISTORY AFT", tryHistory); //TO DELETE
+        setTryHistory([...tryHistory, { result: res.data, wordTried: word }]);
       }
     );
 
@@ -76,9 +108,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const adversaire: { id: string; name: string; nb_life: number } =
     playerOne.id !== playerId ? playerOne : playerTwo;
 
-  const [word, setWord] = useState(first_letter.toUpperCase());
-  const [wordP2, setWordP2] = useState(first_letter.toUpperCase());
-  useClassicWordInput(word, setWord, game_length, onEnter, false);
+  useClassicWordInput(word, setWord, game_length, onEnter, hasWon);
 
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
     onEnter,
@@ -88,7 +118,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
 
   return (
     <>
-      <Box>
+      <Box p={8}>
         <Flex height="100%" direction={"column"}>
           <Box m="auto">
             <Text mb="4" align={"center"}>
@@ -100,22 +130,23 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
               nbLife={6}
               firstLetter={first_letter}
               word={wordP2}
-              triesHistory={[]}
+              triesHistory={tryHistoryP2}
             />
           </Box>
         </Flex>
       </Box>
       <Box>
+        {hasWon && <Confetti />}
         <Text mb="4" align={"center"}>
-          {playerOne.name}
+          {name}
         </Text>
         <PlayerGrid
           isVisible={true}
           wordLength={game_length}
           nbLife={6}
-          firstLetter={first_letter}
+          firstLetter={first_letter.toUpperCase()}
           word={word}
-          triesHistory={[]}
+          triesHistory={tryHistory}
           keyboardSetting={keyboardSettings}
         />
       </Box>

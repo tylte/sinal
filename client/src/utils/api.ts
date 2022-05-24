@@ -1,6 +1,7 @@
 import { ToastId, UseToastOptions } from "@chakra-ui/react";
 import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
+import Confetti from "react-confetti/dist/types/Confetti";
 import { Socket } from "socket.io-client";
 import {
   Game1vs1,
@@ -8,6 +9,7 @@ import {
   Lobby,
   Packet,
   Player,
+  TriesHistory,
   UpdateLobbyJoinPayload,
   UpdateLobbyLeavePayload,
 } from "./types";
@@ -220,4 +222,63 @@ export const addUpdateWordBroadcast = (socket: Socket) => {
   socket.on("update_word_broadcast", (arg) => {
     console.log("update_word_broadcast : " + arg);
   });
+};
+
+export const lobbyOneVsOneAddEvents = (
+  socket: Socket,
+  toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
+  playerId: string,
+  setHasWon: Dispatch<SetStateAction<boolean>>,
+  tryHistoryP2: TriesHistory[],
+  setTryHistoryP2: Dispatch<SetStateAction<TriesHistory[]>>,
+  setWordP2: Dispatch<SetStateAction<string>>
+) => {
+  socket?.on("wining_player_1vs1", (req) => {
+    if (req === playerId) {
+      toast({
+        title: "GGEZ 😎",
+        status: "success",
+        isClosable: true,
+        duration: 2500,
+      });
+      setHasWon(true);
+      return;
+    } else {
+      toast({
+        title: "Perdu ! Sadge",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      return;
+    }
+  });
+  socket.on("draw_1vs1", () => {
+    toast({
+      title: "Egalité.",
+      status: "info",
+      isClosable: true,
+      duration: 2500,
+    });
+    return;
+  });
+  socket.on("guess_word_broadcast", (req) => {
+    if (req.playerId !== playerId) {
+      setTryHistoryP2([
+        ...tryHistoryP2,
+        { result: req.tab_res, wordTried: "●".repeat(req.tab_res.length) },
+      ]);
+    }
+  });
+
+  socket.on("update_word_broadcast", (req) => {
+    if (req.playerId !== playerId) {
+      setWordP2(req.array.filter((tabElt: boolean) => tabElt).map(() => "●"));
+    }
+  });
+};
+
+export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
+  socket?.removeListener("wining_player_1vs1");
+  socket?.removeListener("draw_1vs1");
 };

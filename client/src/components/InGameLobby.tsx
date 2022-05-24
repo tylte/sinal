@@ -14,9 +14,5 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
   gameState,
   lobbyId,
 }) => {
-  return (
-    <Layout variant="grid">
-      <OneVsOneGameLobby player={player} gameState={gameState} />
-    </Layout>
-  );
+  return <OneVsOneGameLobby player={player} gameState={gameState} />;
 };
