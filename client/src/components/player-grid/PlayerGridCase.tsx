@@ -26,6 +26,7 @@ export const PlayerGridCase: React.FC<PlayerGridCaseProps> = ({
   return (
     <Flex w={14} height={14} bgColor={color}>
       <Text
+        userSelect={"none"}
         color={"white"}
         fontFamily={"revert"}
         fontWeight={"bold"}

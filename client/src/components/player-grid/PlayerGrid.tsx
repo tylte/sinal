@@ -12,6 +12,7 @@ interface PlayerGridProps {
   word: string;
   triesHistory: TriesHistory[];
   keyboardSetting?: KeyboardSettings;
+  isFinished: boolean;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
@@ -22,6 +23,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   word,
   triesHistory,
   keyboardSetting,
+  isFinished,
 }) => {
   if (isVisible === undefined) {
     isVisible = true;
@@ -59,6 +61,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
       {keyboardSetting && (
         <Box mt={16}>
           <Keyboard
+            isClickable={!isFinished}
             onEnter={keyboardSetting.onEnter}
             onKeydown={keyboardSetting.onKeydown}
             onBackspace={keyboardSetting.onBackspace}
