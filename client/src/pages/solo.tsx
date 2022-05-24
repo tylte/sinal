@@ -152,6 +152,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
           Partie Solo
         </Text>
         <PlayerGrid
+          isFinished={isFinished}
           isVisible={true}
           firstLetter={firstLetter}
           wordLength={wordLength}

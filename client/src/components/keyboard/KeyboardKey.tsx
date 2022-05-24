@@ -8,6 +8,8 @@ interface KeyboardKeyProps {
   size?: size;
   onClick: (letter: string) => void;
   color?: string;
+
+  isClickable: boolean;
 }
 
 export const KeyboardKey: React.FC<KeyboardKeyProps> = ({
@@ -15,6 +17,7 @@ export const KeyboardKey: React.FC<KeyboardKeyProps> = ({
   size,
   onClick,
   color,
+  isClickable,
 }) => {
   let height = 12;
   let width = 12;
@@ -25,6 +28,7 @@ export const KeyboardKey: React.FC<KeyboardKeyProps> = ({
 
   return (
     <Flex
+      pointerEvents={isClickable ? "all" : "none"}
       onClick={() => onClick(letter)}
       bg={color ?? "GrayText"}
       m="2px"
