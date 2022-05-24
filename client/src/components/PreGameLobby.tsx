@@ -33,7 +33,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   const currentPlace = playerList.length;
 
   const startGame = () => {
-    socket?.emit("start_game", { lobbyId: id, playerId });
+    socket?.emit("start_game_1vs1", { lobbyId: id, playerId });
   };
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)

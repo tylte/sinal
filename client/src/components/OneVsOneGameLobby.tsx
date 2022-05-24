@@ -4,7 +4,6 @@ import { useClassicWordInput, useDictionary, useSocket } from "../utils/hooks";
 import {
   Game1vs1,
   Player,
-  LetterResult,
   TriesHistory,
   KeyboardSettings,
 } from "../utils/types";
@@ -64,18 +63,23 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         gameId: gameId,
         playerId,
       },
-      (res: LetterResult[]) => {
-        console.log(res);
-        console.log(tryHistory);
-        tryHistory = [...tryHistory, { result: res, wordTried: word }];
-        console.log(tryHistory);
+      (res: any) => {
+        console.log("TRY HISTORY BEF", tryHistory); //TO DELETE
+        tryHistory = [...tryHistory, { result: res.data, wordTried: word }];
+        console.log("TRY HISTORY AFT", tryHistory); //TO DELETE
       }
     );
+
+    setWord(first_letter.toUpperCase());
   };
+
+  const adversaire: { id: string; name: string; nb_life: number } =
+    playerOne.id !== playerId ? playerOne : playerTwo;
 
   const [word, setWord] = useState(first_letter.toUpperCase());
   const [wordP2, setWordP2] = useState(first_letter.toUpperCase());
   useClassicWordInput(word, setWord, game_length, onEnter, false);
+
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
     onEnter,
     setWord,
@@ -84,41 +88,42 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
 
   return (
     <Flex p={8}>
-      <Box h="500px" w={"25%"}>
-        <Flex alignItems="center" justifyContent={"center"} h="100%">
-          <Box>
-            <Text align={"center"}>{playerTwo.name}</Text>
-            <PlayerGrid
-              isVisible={false}
-              wordLength={game_length}
-              nbLife={6}
-              firstLetter={first_letter}
-              word={wordP2}
-              triesHistory={[]}
-            ></PlayerGrid>
-          </Box>
+      <Box>
+        <Flex
+          direction={"column"}
+          alignItems="center"
+          justifyContent={"center"}
+        >
+          <Text align={"center"}>{adversaire.name}</Text>
+          <PlayerGrid
+            isVisible={false}
+            wordLength={game_length}
+            nbLife={6}
+            firstLetter={first_letter}
+            word={wordP2}
+            triesHistory={[]}
+          ></PlayerGrid>
         </Flex>
       </Box>
       <Box w={"50%"}>
-        <Flex direction={"column"}>
+        <Flex>
           <Box h="400px">
-            <Flex alignItems="center" justifyContent={"center"} h="100%">
+            <Flex alignItems="center" justifyContent={"center"}>
               <Box>
-                <Text align={"center"}>{playerOne.name}</Text>
+                <Text align={"center"}>{name}</Text>
                 <PlayerGrid
                   isVisible={true}
                   wordLength={game_length}
                   nbLife={6}
                   firstLetter={first_letter}
                   word={word}
-                  triesHistory={[]}
+                  triesHistory={[
+                    { result: [0, 1, 1, 2, 1, 2, 2], wordTried: "OISEAUX" },
+                  ]}
                   keyboardSetting={keyboardSettings}
                 ></PlayerGrid>
               </Box>
             </Flex>
-          </Box>
-          <Box h="100px">
-            <Flex alignItems="center" justifyContent={"center"} h="100%"></Flex>
           </Box>
         </Flex>
       </Box>
