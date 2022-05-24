@@ -87,49 +87,38 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   );
 
   return (
-    <Flex p={8}>
+    <>
       <Box>
-        <Flex
-          direction={"column"}
-          alignItems="center"
-          justifyContent={"center"}
-        >
-          <Text align={"center"}>{adversaire.name}</Text>
-          <PlayerGrid
-            isVisible={false}
-            wordLength={game_length}
-            nbLife={6}
-            firstLetter={first_letter}
-            word={wordP2}
-            triesHistory={[]}
-          ></PlayerGrid>
-        </Flex>
-      </Box>
-      <Box w={"50%"}>
-        <Flex>
-          <Box h="400px">
-            <Flex alignItems="center" justifyContent={"center"}>
-              <Box>
-                <Text align={"center"}>{name}</Text>
-                <PlayerGrid
-                  isVisible={true}
-                  wordLength={game_length}
-                  nbLife={6}
-                  firstLetter={first_letter}
-                  word={word}
-                  triesHistory={[
-                    { result: [0, 1, 1, 2, 1, 2, 2], wordTried: "OISEAUX" },
-                  ]}
-                  keyboardSetting={keyboardSettings}
-                ></PlayerGrid>
-              </Box>
-            </Flex>
+        <Flex height="100%" direction={"column"}>
+          <Box m="auto">
+            <Text mb="4" align={"center"}>
+              {adversaire.name}
+            </Text>
+            <PlayerGrid
+              isVisible={false}
+              wordLength={game_length}
+              nbLife={6}
+              firstLetter={first_letter}
+              word={wordP2}
+              triesHistory={[]}
+            />
           </Box>
         </Flex>
       </Box>
-      <Box w={"25%"}>
-        <Text align={"center"}>Tchat</Text>
+      <Box>
+        <Text mb="4" align={"center"}>
+          {playerOne.name}
+        </Text>
+        <PlayerGrid
+          isVisible={true}
+          wordLength={game_length}
+          nbLife={6}
+          firstLetter={first_letter}
+          word={word}
+          triesHistory={[]}
+          keyboardSetting={keyboardSettings}
+        />
       </Box>
-    </Flex>
+    </>
   );
 };
