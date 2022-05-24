@@ -3,11 +3,14 @@ import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import {
+  BrGameInfo,
+  BrGameState,
   Game1vs1,
   LetterResult,
   Lobby,
   Packet,
   Player,
+  TriesHistory,
   UpdateLobbyJoinPayload,
   UpdateLobbyLeavePayload,
 } from "./types";
@@ -48,22 +51,34 @@ export const guessWordMulti = async (
   );
 };
 
-export const guessWordBr = async (
+export const guessWordBr = (
   word: string,
-  lobbyId: string,
+  gameId: string | undefined,
   playerId: string,
   socket: Socket | null,
   response: (response: Packet) => void
 ) => {
-  socket?.emit(
-    "guess_word_br",
-    {
-      word,
-      lobbyId,
-      playerId,
-    },
-    response
-  );
+  if (gameId !== undefined) {
+    socket?.emit(
+      "guess_word_br",
+      {
+        word,
+        gameId,
+        playerId,
+      },
+      response
+    );
+  } else {
+    console.log("guessWordBr error gameId undefined");
+  }
+};
+export const awaitResult = async (
+  resultOnChange: boolean
+): Promise<Boolean> => {
+  while (!resultOnChange) {
+    console.log("premise enter");
+  }
+  return true;
 };
 
 export const addSocketConnectionEvent = (
@@ -153,11 +168,24 @@ export const addSpecificLobbiesEvent = (
   socket: Socket,
   lobbyId: string,
   setLobby: Dispatch<SetStateAction<Lobby | null>>,
-  setGameState: Dispatch<SetStateAction<Game1vs1 | null>>
+  setGameState: Dispatch<SetStateAction<Game1vs1 | null>>,
+  setGameStateBr: React.Dispatch<React.SetStateAction<BrGameInfo | null>>
 ) => {
   socket.on("starting_game", (game: Game1vs1) => {
-    console.log("starting-game");
+    console.log("starting-game-1vs1");
     setGameState(game);
+    //FIXME : Mettre le statut du lobby en "in-game" côté serveur
+    setLobby((lobby) => {
+      if (lobby === null) {
+        return null;
+      } else {
+        return { ...lobby, state: "in-game" };
+      }
+    });
+  });
+  socket.on("starting_game_Br", (game: BrGameInfo) => {
+    console.log("starting-game-Br");
+    setGameStateBr(game);
     //FIXME : Mettre le statut du lobby en "in-game" côté serveur
     setLobby((lobby) => {
       if (lobby === null) {
@@ -238,5 +266,32 @@ export const getSpecificLobby = (
 export const addUpdateWordBroadcast = (socket: Socket) => {
   socket.on("update_word_broadcast", (arg) => {
     console.log("update_word_broadcast : " + arg);
+  });
+};
+export const addGuessWordBrBroadcast = async (
+  socket: Socket | null,
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
+) => {
+  socket?.on("guess_word_broadcast", (arg) => {
+    // console.log("success guess_word_broadcast");
+    // console.log("tableau : ", arg.tab_res);
+    // console.log("guess_word_broadcast : " + gameState + " id : ", arg.playerId);
+    // setGameState(
+    //   gameState.map((game) =>
+    //     game.playerId === arg.playerId
+    //       ? {
+    //           ...game,
+    //           triesHistory: [
+    //             ...game.triesHistory,
+    //             {
+    //               result: arg.tab_res,
+    //               wordTried: arg.word,
+    //             },
+    //           ],
+    //         }
+    //       : { ...game }
+    //   )
+    // );
+    // console.log("guess_word_broadcast : " + gameState);
   });
 };

@@ -229,6 +229,7 @@ export const startGame1vs1Event = (
   io: Server,
   { lobbyId, playerId }: ArgStartGame1vs1Type
 ) => {
+  console.log("startGame1vs1Event");
   let lobby = lobbyMap.get(lobbyId);
   if (lobby === undefined) {
     console.log("start_game_1vs1 : lobby doesn't exist");
@@ -359,6 +360,7 @@ export const startGameBrEvent = (
     timeAfterFirstGuess,
   }: ArgStartGameBrType
 ) => {
+  console.log("startGameBrEvent");
   let lobby = lobbyMap.get(lobbyId);
   if (lobby === undefined) {
     console.log("start_game_br : lobby doesn't exist");
@@ -418,7 +420,7 @@ export const startGameBrEvent = (
   };
 
   gameBrMap.set(gameId, game);
-  io.to(lobbyId).emit("starting_game", game);
+  io.to(lobbyId).emit("starting_game_Br", game);
   io.to(lobbyId).socketsJoin(gameId);
 };
 
@@ -439,7 +441,7 @@ export const guessWordBrEvent = (
     if (w === word) correctWord = true;
   });
   if (!correctWord) {
-    console.log("guess_word_br : this word isn't in the dictionary");
+    console.log("guess_word_br : this word isn't in the dictionary : ", word);
     return;
   }
 
@@ -468,7 +470,7 @@ export const guessWordBrEvent = (
     data: tab_res,
   });
   player.nbLife--;
-  io.to(gameId).emit("guess_word_broadcast", { tab_res, playerId, game });
+  io.to(gameId).emit("guess_word_broadcast", { tab_res, playerId, game, word });
 
   let win = true;
   tab_res.forEach((letter) => {

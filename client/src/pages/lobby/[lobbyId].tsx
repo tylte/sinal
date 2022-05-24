@@ -1,4 +1,5 @@
 import { Spinner, useDisclosure, useToast } from "@chakra-ui/react";
+import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { usePlayer, useSocket } from "src/utils/hooks";
@@ -14,7 +15,12 @@ import {
   getSpecificLobby,
   removeSpecificLobbyEvent,
 } from "../../utils/api";
-import { Game1vs1, Lobby } from "../../utils/types";
+import {
+  Game1vs1,
+  Lobby,
+  BrGameInfo,
+  StartGameResponse,
+} from "../../utils/types";
 import { getIdFromPage } from "../../utils/utils";
 
 interface LobbyProps {}
@@ -26,6 +32,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   const { onClose } = useDisclosure();
   const toast = useToast();
   const [gameState, setGameState] = useState<Game1vs1 | null>(null);
+  const [gameStateBr, setGameStateBr] = useState<BrGameInfo | null>(null);
 
   let lobbyId = getIdFromPage(router.query.lobbyId);
   const [lobby, setLobby] = useState<Lobby | null>(null);
@@ -51,7 +58,8 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
         socket,
         lobbyId as string,
         setLobby,
-        setGameState
+        setGameState,
+        setGameStateBr
       );
       addPreGameEvent(socket);
     }
@@ -87,18 +95,39 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
         <PreGameLobby player={player} lobby={lobby} gameMode={lobby?.mode} />
       </Layout>
     );
-  } else if (state === "in-game" && gameState !== null && lobby.mode === "1vs1") {
+  } else if (
+    state === "in-game" &&
+    gameState !== null &&
+    lobby.mode === "1vs1"
+  ) {
     return (
       <Layout variant="large">
         <InGameLobby lobbyId={lobbyId} player={player} gameState={gameState} />
       </Layout>
     );
-  } else if(state === "in-game" && gameState !== null && lobby.mode === "battle-royale") {
-    return(
-    <Layout variant="large">
-      <InGameLobbyBr lobbyId={lobbyId} player={player} gameState={gameState} numberPlayer={10}/>
-    </Layout>
-    );
+  } else if (
+    state === "in-game" &&
+    gameStateBr !== null &&
+    lobby.mode === "battle-royale"
+  ) {
+    if (gameStateBr !== null) {
+      return (
+        <Layout variant="large">
+          <InGameLobbyBr
+            lobbyId={lobbyId}
+            player={player}
+            gameInfo={gameStateBr}
+            numberPlayer={2}
+          />
+        </Layout>
+      );
+    } else {
+      return (
+        <Layout>
+          <Spinner />
+        </Layout>
+      );
+    }
   } else if (state === "finished") {
     return (
       <Layout>
@@ -107,6 +136,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
     );
   } else {
     // Its supposed to have a state
+    console.log("error");
     return (
       <Layout>
         <Spinner />
