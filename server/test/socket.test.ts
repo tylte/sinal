@@ -338,7 +338,7 @@ describe("Web socket testing", () => {
               }
             );
 
-            clientSocket.on("starting_game", (game) => {
+            clientSocket.on("starting_game_br", (game) => {
               clientSocket.emit("get_word", game.id, (soluce: PacketType) => {
                 let testWord: string = soluce.data;
                 if (testWord[testWord.length - 1] !== "W")

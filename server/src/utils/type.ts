@@ -70,6 +70,7 @@ export const GameBr = z.object({
   firstLetter: z.string(),
   eliminationRate: z.number(),
   globalTime: z.number(),
+  currentTimeout: z.optional(z.any()),
   timeAfterFirstGuess: z.number(),
 });
 

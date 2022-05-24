@@ -283,7 +283,7 @@ export const startGame1vs1Event = (
   };
 
   game1vs1Map.set(gameId, game);
-  io.to(lobbyId).emit("starting_game", game);
+  io.to(lobbyId).emit("starting_game_br", game);
   io.to(lobbyId).socketsJoin(gameId);
 };
 
@@ -417,8 +417,31 @@ export const startGameBrEvent = (
     timeAfterFirstGuess: timeAfterFirstGuess,
   };
 
+  game.currentTimeout = setTimeout(() => {
+    if (game.playerFound.length === 0) {
+      io.to(gameId).emit("draw_br");
+      let newWord = get_word();
+      idToWord.set(gameId, newWord);
+      game.firstLetter = newWord.charAt(0);
+      game.length = newWord.length;
+      game.playerFound = new Array();
+      io.to(gameId).emit("next_word_br", game);
+    } else {
+      game.playersLastNextRound = Math.floor(
+        game.playersLastNextRound * (1 - game.eliminationRate / 100)
+      );
+      let newWord = get_word();
+      idToWord.set(gameId, newWord);
+      game.firstLetter = newWord.charAt(0);
+      game.length = newWord.length;
+      game.playerList = game.playerFound;
+      game.playerFound = new Array();
+      io.to(gameId).emit("next_word_br", game);
+    }
+  }, globalTime);
+
   gameBrMap.set(gameId, game);
-  io.to(lobbyId).emit("starting_game", game);
+  io.to(lobbyId).emit("starting_game_br", game);
   io.to(lobbyId).socketsJoin(gameId);
 };
 
@@ -477,7 +500,22 @@ export const guessWordBrEvent = (
 
   if (win) {
     if (game.playerFound.length === 0) {
-      io.to(gameId).emit("first_winning_player_br", playerId);
+      clearTimeout(game.currentTimeout);
+      game.currentTimeout = setTimeout(() => {
+        if (game !== undefined) {
+          game.playersLastNextRound = Math.floor(
+            game.playersLastNextRound * (1 - game.eliminationRate / 100)
+          );
+          let newWord = get_word();
+          idToWord.set(gameId, newWord);
+          game.firstLetter = newWord.charAt(0);
+          game.length = newWord.length;
+          game.playerList = game.playerFound;
+          game.playerFound = new Array();
+          io.to(gameId).emit("next_word_br", game);
+        }
+      }, game.timeAfterFirstGuess);
+      io.to(gameId).emit("first_winning_player_br", game);
     } else if (game.playerFound.length >= game.playersLastNextRound) {
       console.log("guess_word_br : player guessed too late");
       return;
@@ -499,7 +537,9 @@ export const guessWordBrEvent = (
         idToWord.set(gameId, newWord);
         game.firstLetter = newWord.charAt(0);
         game.length = newWord.length;
+        game.playerList = game.playerFound;
         game.playerFound = new Array();
+        clearTimeout(game.currentTimeout);
         io.to(gameId).emit("next_word_br", game);
       }
     }
@@ -518,6 +558,7 @@ export const guessWordBrEvent = (
     game.firstLetter = newWord.charAt(0);
     game.length = newWord.length;
     game.playerFound = new Array();
+    clearTimeout(game.currentTimeout);
     io.to(gameId).emit("next_word_br", game);
   }
 };
