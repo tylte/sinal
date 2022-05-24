@@ -311,6 +311,16 @@ export const guessWord1vs1Event = (
     return;
   }
 
+  let dico = get_dictionary();
+  let correctWord = false;
+  dico.forEach((w) => {
+    if (w === word) correctWord = true;
+  });
+  if (!correctWord) {
+    console.log("guess_word_1vs1 : this word isn't in the dictionary");
+    return;
+  }
+
   let player;
   if (game.playerOne.id === playerId) player = game.playerOne;
   else if (game.playerTwo.id === playerId) player = game.playerTwo;
@@ -343,9 +353,11 @@ export const guessWord1vs1Event = (
   if (win) {
     io.to(gameId).emit("wining_player_1vs1", playerId);
     io.to(gameId).socketsLeave(gameId);
+    game1vs1Map.delete(gameId);
   } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
     io.to(gameId).emit("draw_1vs1");
     io.to(gameId).socketsLeave(gameId);
+    game1vs1Map.delete(gameId);
   }
 };
 
