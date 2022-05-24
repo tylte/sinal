@@ -71,3 +71,9 @@ export type KeyboardSettings = {
   onKeydown: (letter: string) => void;
   onBackspace: () => void;
 };
+
+export type ChatMessage = {
+  content: string;
+  author: string;
+  id: string;
+};
