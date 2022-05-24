@@ -97,7 +97,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
               firstLetter={first_letter}
               word={wordP2}
               triesHistory={[]}
-            ></PlayerGrid>
+            />
           </Box>
         </Flex>
       </Box>
@@ -113,7 +113,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
           word={word}
           triesHistory={[]}
           keyboardSetting={keyboardSettings}
-        ></PlayerGrid>
+        />
       </Box>
     </>
   );
