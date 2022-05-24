@@ -83,11 +83,13 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   );
 
   return (
-    <Flex p={8}>
-      <Box h="500px" w={"25%"}>
-        <Flex alignItems="center" justifyContent={"center"} h="100%">
-          <Box>
-            <Text align={"center"}>{playerTwo.name}</Text>
+    <>
+      <Box>
+        <Flex height="100%" direction={"column"}>
+          <Box m="auto">
+            <Text mb="4" align={"center"}>
+              {playerTwo.name}
+            </Text>
             <PlayerGrid
               isVisible={false}
               wordLength={game_length}
@@ -99,32 +101,20 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
           </Box>
         </Flex>
       </Box>
-      <Box w={"50%"}>
-        <Flex direction={"column"}>
-          <Box h="400px">
-            <Flex alignItems="center" justifyContent={"center"} h="100%">
-              <Box>
-                <Text align={"center"}>{playerOne.name}</Text>
-                <PlayerGrid
-                  isVisible={true}
-                  wordLength={game_length}
-                  nbLife={6}
-                  firstLetter={first_letter}
-                  word={word}
-                  triesHistory={[]}
-                  keyboardSetting={keyboardSettings}
-                ></PlayerGrid>
-              </Box>
-            </Flex>
-          </Box>
-          <Box h="100px">
-            <Flex alignItems="center" justifyContent={"center"} h="100%"></Flex>
-          </Box>
-        </Flex>
+      <Box>
+        <Text mb="4" align={"center"}>
+          {playerOne.name}
+        </Text>
+        <PlayerGrid
+          isVisible={true}
+          wordLength={game_length}
+          nbLife={6}
+          firstLetter={first_letter}
+          word={word}
+          triesHistory={[]}
+          keyboardSetting={keyboardSettings}
+        ></PlayerGrid>
       </Box>
-      <Box w={"25%"}>
-        <Text align={"center"}>Tchat</Text>
-      </Box>
-    </Flex>
+    </>
   );
 };
