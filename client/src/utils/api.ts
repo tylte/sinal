@@ -255,7 +255,6 @@ export const lobbyOneVsOneAddEvents = (
         duration: 2500,
       });
       setHasWon(true);
-      return;
     } else {
       toast({
         title: "Perdu ! Sadge",
@@ -263,7 +262,7 @@ export const lobbyOneVsOneAddEvents = (
         isClosable: true,
         duration: 2500,
       });
-      return;
+      setWordP2("●");
     }
   });
   socket.on("draw_1vs1", () => {
@@ -274,11 +273,10 @@ export const lobbyOneVsOneAddEvents = (
       isClosable: true,
       duration: 2500,
     });
-    return;
   });
   socket.on("guess_word_broadcast", (req) => {
     if (req.playerId !== playerId) {
-      setTryHistoryP2([
+      setTryHistoryP2((tryHistoryP2) => [
         ...tryHistoryP2,
         { result: req.tab_res, wordTried: "●".repeat(req.tab_res.length) },
       ]);
