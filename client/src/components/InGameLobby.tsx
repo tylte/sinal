@@ -14,7 +14,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
   gameState,
   GameMode,
 }) => {
-  if ((GameMode === "1vs1")) {
+  if (GameMode === "1vs1") {
     return <OneVsOneGameLobby player={player} gameState={gameState as Game1vs1} />;
   } else {
     return (

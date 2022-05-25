@@ -29,9 +29,9 @@ const Solo: React.FC<SoloProps> = ({}) => {
       .post<StartGameResponse>("http://localhost:4000/start_game", {
         mode: "solo",
       })
-      .then(({ data: { first_letter, id, length, nb_life } }) => {
+      .then(({ data: { firstLetter, id, length, nb_life } }) => {
         setGameState({
-          firstLetter: first_letter.toUpperCase(),
+          firstLetter: firstLetter.toUpperCase(),
           isFinished: false,
           nbLife: nb_life,
           triesHistory: [],
@@ -39,7 +39,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
           hasWon: false,
           wordId: id,
         });
-        setWord(first_letter.toUpperCase());
+        setWord(firstLetter.toUpperCase());
       });
   };
   useEffect(() => {
