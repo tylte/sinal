@@ -9,6 +9,7 @@ interface KeyboardProps {
   onBackspace: () => void;
   onKeydown: (letter: string) => void;
   triesHistory: TriesHistory[];
+  isClickable: boolean;
 }
 
 const FRIST_ROW_LETTERS = "AZERTYUIOP";
@@ -20,6 +21,7 @@ export const Keyboard: React.FC<KeyboardProps> = ({
   onKeydown: setWord,
   onBackspace,
   triesHistory,
+  isClickable,
 }) => {
   const letterToColor = getLetterToColorFromTriesHistory(triesHistory);
 
@@ -29,6 +31,7 @@ export const Keyboard: React.FC<KeyboardProps> = ({
         {[...FRIST_ROW_LETTERS].map((letter) => {
           return (
             <KeyboardKey
+              isClickable={isClickable}
               onClick={setWord}
               key={letter}
               letter={letter}
@@ -41,6 +44,7 @@ export const Keyboard: React.FC<KeyboardProps> = ({
         {[...SECOND_ROW_LETTERS].map((letter) => {
           return (
             <KeyboardKey
+              isClickable={isClickable}
               onClick={setWord}
               key={letter}
               letter={letter}
@@ -50,10 +54,16 @@ export const Keyboard: React.FC<KeyboardProps> = ({
         })}
       </Flex>
       <Flex>
-        <KeyboardKey onClick={onEnter} size="large" letter={"ENTER"} />
+        <KeyboardKey
+          isClickable={isClickable}
+          onClick={onEnter}
+          size="large"
+          letter={"ENTER"}
+        />
         {[...THIRD_ROW_LETTERS].map((letter) => {
           return (
             <KeyboardKey
+              isClickable={isClickable}
               onClick={setWord}
               key={letter}
               letter={letter}
@@ -61,7 +71,11 @@ export const Keyboard: React.FC<KeyboardProps> = ({
             />
           );
         })}
-        <KeyboardKey onClick={onBackspace} letter={"⇽"} />
+        <KeyboardKey
+          isClickable={isClickable}
+          onClick={onBackspace}
+          letter={"⇽"}
+        />
       </Flex>
     </Flex>
   );
