@@ -231,9 +231,11 @@ export const lobbyOneVsOneAddEvents = (
   setHasWon: Dispatch<SetStateAction<boolean>>,
   tryHistoryP2: TriesHistory[],
   setTryHistoryP2: Dispatch<SetStateAction<TriesHistory[]>>,
-  setWordP2: Dispatch<SetStateAction<string>>
+  setWordP2: Dispatch<SetStateAction<string>>,
+  setIsFinished: Dispatch<SetStateAction<boolean>>
 ) => {
   socket?.on("wining_player_1vs1", (req) => {
+    setIsFinished(true);
     if (req === playerId) {
       toast({
         title: "GGEZ 😎",
@@ -281,4 +283,6 @@ export const lobbyOneVsOneAddEvents = (
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
   socket?.removeListener("wining_player_1vs1");
   socket?.removeListener("draw_1vs1");
+  socket?.removeListener("guess_word_broadcast");
+  socket?.removeListener("update_word_broadcast");
 };

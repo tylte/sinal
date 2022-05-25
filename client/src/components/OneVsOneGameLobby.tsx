@@ -34,13 +34,19 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const dictionary = useDictionary();
   const toast = useToast();
 
-  const [hasWon, setHasWon] = useState(false);
-
+  // TriesHistory of the player and his opponent.
   const [tryHistory, setTryHistory] = useState<TriesHistory[]>([]);
   const [tryHistoryP2, setTryHistoryP2] = useState<TriesHistory[]>([]);
 
+  // Word of the player and his opponent.
   const [word, setWord] = useState(first_letter.toUpperCase());
   const [wordP2, setWordP2] = useState(first_letter.toUpperCase());
+
+  const [hasWon, setHasWon] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+
+  const adversaire: { id: string; name: string; nb_life: number } =
+    playerOne.id !== playerId ? playerOne : playerTwo;
 
   useEffect(() => {
     if (socket) {
@@ -51,7 +57,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         setHasWon,
         tryHistoryP2,
         setTryHistoryP2,
-        setWordP2
+        setWordP2,
+        setIsFinished
       );
     }
     return () => {
@@ -105,10 +112,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     setWord(first_letter.toUpperCase());
   };
 
-  const adversaire: { id: string; name: string; nb_life: number } =
-    playerOne.id !== playerId ? playerOne : playerTwo;
-
-  useClassicWordInput(word, setWord, game_length, onEnter, hasWon);
+  useClassicWordInput(word, setWord, game_length, onEnter, isFinished);
 
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
     onEnter,
