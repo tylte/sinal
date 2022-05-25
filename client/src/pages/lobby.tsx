@@ -31,10 +31,6 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
       .then(({ data }) => {
         setLobbies(data);
       });
-
-    return () => {
-      removeLobbiesEvent(socket);
-    };
   }, []);
 
   useEffect(() => {
@@ -42,6 +38,12 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
       // Update event lobbies
       addLobbiesEvent(socket, setLobbies);
     }
+
+    return () => {
+      if (socket) {
+        removeLobbiesEvent(socket);
+      }
+    };
   }, [socket]);
 
   return (
