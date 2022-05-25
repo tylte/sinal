@@ -19,7 +19,6 @@ export const PlayerGridCase: React.FC<PlayerGridCaseProps> = ({
   let letterToShow = letter;
 
   if (!isVisible && letter !== undefined) {
-    console.log("isVisible ; ", isVisible);
     letterToShow = "●";
   }
 
