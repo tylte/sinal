@@ -135,6 +135,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
               firstLetter={first_letter}
               word={wordP2}
               triesHistory={tryHistoryP2}
+              isFinished={isFinished}
             />
           </Box>
         </Flex>
@@ -152,6 +153,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
           word={word}
           triesHistory={tryHistory}
           keyboardSetting={keyboardSettings}
+          isFinished={isFinished}
         />
       </Box>
     </>
