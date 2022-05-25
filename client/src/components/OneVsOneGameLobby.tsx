@@ -30,6 +30,18 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     length: game_length,
   },
 }) => {
+  console.log(
+    "playerOne : ",
+    playerOne,
+    " playerTwo : ",
+    playerTwo,
+    " first_Letter : ",
+    first_letter,
+    " id : ",
+    gameId,
+    " length : ",
+    game_length
+  );
   const socket = useSocket();
   const dictionary = useDictionary();
   const toast = useToast();

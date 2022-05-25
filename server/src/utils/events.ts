@@ -497,12 +497,14 @@ export const guessWordBrEvent = (
       );
 
       if (game.playersLastNextRound === 0) {
+        console.log("new game 1");
         io.to(gameId).emit("winning_player_br", playerId);
         io.to(gameId).socketsLeave(gameId);
       } else if (game.playersLastNextRound === 1) {
+        console.log("new game 2");
         //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
       } else {
-        console.log("new game");
+        console.log("new game 3");
         let newWord = get_word();
         idToWord.set(gameId, newWord);
         game.firstLetter = newWord.charAt(0);

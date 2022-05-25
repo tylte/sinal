@@ -37,6 +37,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const socket = useSocket();
   // const [result, setResult] = useState<LetterResult[]>([]);
   const startGame = (gameBr: BrGameInfo) => {
+    setGameState([]);
     setNumberPlayer(gameBr.playerList.length);
     setGameState((game) => [
       ...game,
@@ -76,7 +77,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     // Request the word when mounted
     startGame(gameInfo);
     addGuessWordBrBroadcast(socket, player.id, setGameState);
-    addBrEvent(startGame, socket);
+    addBrEvent(startGame, socket, gameInfo);
   }, []);
   const toast = useToast();
   const onEnter = async () => {

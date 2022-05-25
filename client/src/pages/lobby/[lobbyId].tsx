@@ -98,7 +98,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   ) {
     return (
       <Layout variant="grid">
-        <InGameLobby GameMode={"1vs1"} player={player} gameState={gameState} />
+        <InGameLobby GameMode={lobby.mode} player={player} gameState={gameState} />
       </Layout>
     );
   } else if (
@@ -115,7 +115,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
             gameInfo={gameStateBr}
             numberPlayer={2}
           /> */}
-          <InGameLobby GameMode={"battle-royale"} player={player} gameState={gameState} />
+          <InGameLobby GameMode={lobby.mode} player={player} gameState={gameState} />
         </Layout>
       );
     } else {
