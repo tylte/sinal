@@ -88,7 +88,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
     );
   } else if (state === "in-game" && gameState !== null) {
     return (
-      <Layout variant="large">
+      <Layout variant="grid">
         <InGameLobby lobbyId={lobbyId} player={player} gameState={gameState} />
       </Layout>
     );

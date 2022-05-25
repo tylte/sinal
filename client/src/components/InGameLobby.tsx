@@ -1,26 +1,22 @@
-import { Box, HStack } from "@chakra-ui/react";
 import React from "react";
-import { Game1vs1, Player } from "../utils/types";
+import { Game1vs1, GameMode, Player } from "../utils/types";
+import { Layout } from "./Layout";
+import { OneVsOneGameLobby } from "./OneVsOneGameLobby";
 
 interface InGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
-  lobbyId: string | null;
+  GameMode: GameMode;
 }
 
 export const InGameLobby: React.FC<InGameLobbyProps> = ({
   player,
-  gameState: {
-    first_letter,
-    id: game_id,
-    length: game_length,
-    nb_life: game_nb_life,
-  },
-  lobbyId,
+  gameState,
+  GameMode,
 }) => {
-  return (
-    <Box>
-      <HStack></HStack>
-    </Box>
-  );
+  if ((GameMode = "1vs1")) {
+    return <OneVsOneGameLobby player={player} gameState={gameState} />;
+  } else {
+    return <Layout>Le mode de jeu n'existe pas</Layout>;
+  }
 };
