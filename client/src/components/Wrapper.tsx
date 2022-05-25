@@ -1,5 +1,6 @@
 import { Box, Grid, Text } from "@chakra-ui/layout";
 import React from "react";
+import { Chat } from "./Chat";
 
 export type WrapperVariant = "small" | "regular" | "large" | "grid";
 
@@ -26,7 +27,7 @@ export const Wrapper: React.FC<WrapperProps> = ({
       <Grid w="100%" templateColumns="1fr 2fr 1fr">
         {children}
         <Box>
-          <Text align={"center"}>Tchat</Text>
+          <Chat />
         </Box>
       </Grid>
     );

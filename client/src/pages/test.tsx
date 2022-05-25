@@ -1,4 +1,4 @@
-import { useDisclosure } from "@chakra-ui/react";
+import { Box, useDisclosure } from "@chakra-ui/react";
 import React from "react";
 import { Chat } from "../components/Chat";
 import { CreatePlayerModal } from "../components/CreatePlayerModal";
@@ -20,8 +20,9 @@ const Test: React.FC<TestProps> = ({}) => {
     );
   }
   return (
-    <Layout>
-      <Chat />
+    <Layout variant="grid">
+      <Box>Yep</Box>
+      <Box>Nope</Box>
     </Layout>
   );
 };
