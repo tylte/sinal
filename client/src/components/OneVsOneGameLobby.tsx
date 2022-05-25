@@ -1,19 +1,19 @@
 import { Box, Flex, Text, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { useClassicWordInput, useDictionary, useSocket } from "../utils/hooks";
-import {
-  Game1vs1,
-  Player,
-  TriesHistory,
-  KeyboardSettings,
-} from "../utils/types";
-import { getClassicKeyboardSettings, isWordCorrect } from "../utils/utils";
-import { PlayerGrid } from "./player-grid/PlayerGrid";
 import Confetti from "react-confetti";
 import {
   lobbyOneVsOneAddEvents,
   lobbyOneVsOneRemoveEvents,
 } from "../utils/api";
+import { useClassicWordInput, useDictionary, useSocket } from "../utils/hooks";
+import {
+  Game1vs1,
+  KeyboardSettings,
+  Player,
+  TriesHistory,
+} from "../utils/types";
+import { getClassicKeyboardSettings } from "../utils/utils";
+import { PlayerGrid } from "./player-grid/PlayerGrid";
 
 interface OneVsOneGameLobbyProps {
   player: Player;

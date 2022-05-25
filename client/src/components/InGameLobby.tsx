@@ -1,18 +1,22 @@
 import React from "react";
-import { Game1vs1, Player } from "../utils/types";
+import { Game1vs1, GameMode, Player } from "../utils/types";
 import { Layout } from "./Layout";
 import { OneVsOneGameLobby } from "./OneVsOneGameLobby";
 
 interface InGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
-  lobbyId: string | null;
+  GameMode: GameMode;
 }
 
 export const InGameLobby: React.FC<InGameLobbyProps> = ({
   player,
   gameState,
-  lobbyId,
+  GameMode,
 }) => {
-  return <OneVsOneGameLobby player={player} gameState={gameState} />;
+  if ((GameMode = "1vs1")) {
+    return <OneVsOneGameLobby player={player} gameState={gameState} />;
+  } else {
+    return <Layout>Le mode de jeu n'existe pas</Layout>;
+  }
 };

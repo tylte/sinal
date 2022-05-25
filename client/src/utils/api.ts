@@ -1,7 +1,6 @@
 import { ToastId, UseToastOptions } from "@chakra-ui/react";
 import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
-import Confetti from "react-confetti/dist/types/Confetti";
 import { Socket } from "socket.io-client";
 import {
   Game1vs1,
@@ -256,6 +255,7 @@ export const lobbyOneVsOneAddEvents = (
     }
   });
   socket.on("draw_1vs1", () => {
+    setIsFinished(true);
     toast({
       title: "Egalité.",
       status: "info",
