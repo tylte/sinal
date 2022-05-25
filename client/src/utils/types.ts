@@ -50,10 +50,11 @@ export type UpdateLobbyLeavePayload = {
   lobby: Lobby | null;
 };
 export type Game1vs1 = {
+  playerOne: { id: string; name: string; nb_life: number };
+  playerTwo: { id: string; name: string; nb_life: number };
   id: string;
   length: number;
   first_letter: string;
-  nb_life: number;
 };
 
 export type SoloGameState = {
