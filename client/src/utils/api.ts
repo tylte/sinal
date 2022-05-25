@@ -270,28 +270,50 @@ export const addUpdateWordBroadcast = (socket: Socket) => {
 };
 export const addGuessWordBrBroadcast = async (
   socket: Socket | null,
+  playerId: string,
   setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
 ) => {
   socket?.on("guess_word_broadcast", (arg) => {
-    // console.log("success guess_word_broadcast");
-    // console.log("tableau : ", arg.tab_res);
-    // console.log("guess_word_broadcast : " + gameState + " id : ", arg.playerId);
-    // setGameState(
-    //   gameState.map((game) =>
-    //     game.playerId === arg.playerId
-    //       ? {
-    //           ...game,
-    //           triesHistory: [
-    //             ...game.triesHistory,
-    //             {
-    //               result: arg.tab_res,
-    //               wordTried: arg.word,
-    //             },
-    //           ],
-    //         }
-    //       : { ...game }
-    //   )
-    // );
+    if (arg.playerId !== playerId) {
+      console.log("guess_word_broadcast arg : ", arg);
+      // console.log("success guess_word_broadcast");
+      // console.log("tableau : ", arg.tab_res);
+      // console.log("guess_word_broadcast : " + gameState + " id : ", arg.playerId);
+      setGameState((gameState) =>
+        gameState.map((game) =>
+          game.playerId === arg.playerId
+            ? {
+                ...game,
+                triesHistory: [
+                  ...game.triesHistory,
+                  {
+                    result: arg.tab_res,
+                    wordTried: arg.word,
+                  },
+                ],
+              }
+            : { ...game }
+        )
+      );
+    }
     // console.log("guess_word_broadcast : " + gameState);
+  });
+};
+
+export const addBrEvent = async (
+  startGame:() => void,
+  socket: Socket | null,
+) => {
+  socket?.on("first_winning_player_br", (arg) => {
+
+  });
+  socket?.on("winning_player_br", (arg) => {
+
+  });
+  socket?.on("next_word_br", (arg) => {
+    startGame();
+  });
+  socket?.on("draw_br", (arg) => {
+
   });
 };

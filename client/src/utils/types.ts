@@ -75,6 +75,7 @@ export type BrGameState = {
   triesHistory: TriesHistory[];
   isFinished: boolean;
   hasWon: boolean;
+  isVisible: boolean;
 };
 export type PlayerBr = {
   id: string,

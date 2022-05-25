@@ -1,21 +1,10 @@
-import { Flex, Spinner, Text, useToast } from "@chakra-ui/react";
+import { Flex, Spacer, Spinner, Text, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
-import {
-  addGuessWordBrBroadcast,
-  guessWordBr,
-} from "src/utils/api";
-import {
-  useClassicWordInput,
-  useDictionary,
-  useSocket,
-} from "src/utils/hooks";
+import { addBrEvent, addGuessWordBrBroadcast, guessWordBr } from "src/utils/api";
+import { useClassicWordInput, useDictionary, useSocket } from "src/utils/hooks";
 import { isWordCorrect } from "src/utils/utils";
-import {
-  Player,
-  BrGameState,
-  BrGameInfo,
-} from "../utils/types";
+import { Player, BrGameState, BrGameInfo } from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
 
@@ -41,27 +30,45 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const socket = useSocket();
   // const [result, setResult] = useState<LetterResult[]>([]);
   const startGame = () => {
+    setGameState((game) => [
+      ...game,
+      {
+        playerId: player.id,
+        firstLetter: gameInfo.firstLetter.toUpperCase(),
+        isFinished: false,
+        nbLife: 6,
+        triesHistory: [],
+        wordLength: gameInfo.length,
+        hasWon: false,
+        wordId: gameInfo.id,
+        isVisible: true,
+      },
+    ]);
     gameInfo.playerList.forEach((pl) => {
-      setGameState((game) => [
-        ...game,
-        {
-          playerId: pl.id,
-          firstLetter: gameInfo.firstLetter.toUpperCase(),
-          isFinished: false,
-          nbLife: 6,
-          triesHistory: [],
-          wordLength: gameInfo.length,
-          hasWon: false,
-          wordId: gameInfo.id,
-        },
-      ]);
+      if (player.id !== pl.id) {
+        setGameState((game) => [
+          ...game,
+          {
+            playerId: pl.id,
+            firstLetter: gameInfo.firstLetter.toUpperCase(),
+            isFinished: false,
+            nbLife: 6,
+            triesHistory: [],
+            wordLength: gameInfo.length,
+            hasWon: false,
+            wordId: gameInfo.id,
+            isVisible: true,
+          },
+        ]);
+      }
     });
     setWord(gameInfo.firstLetter.toUpperCase());
   };
   useEffect(() => {
     // Request the word when mounted
     startGame();
-    addGuessWordBrBroadcast(socket, setGameState);
+    addGuessWordBrBroadcast(socket, player.id, setGameState);
+    addBrEvent(startGame, socket);
   }, []);
   const toast = useToast();
   const onEnter = async () => {
@@ -149,7 +156,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isClosable: true,
         duration: 2500,
       });
-      return;
     }
 
     setGameState(
@@ -159,6 +165,14 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           : { ...game }
       )
     );
+    setGameState(
+      gameState.map((game) =>
+        game.playerId !== player.id && game.triesHistory.length >= game.nbLife && !game.hasWon
+          ? { ...game, isVisible:false }
+          : { ...game }
+      )
+    );
+
     console.log("gameState triesHistory : ", gameState);
   };
   useClassicWordInput(
@@ -182,7 +196,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   // save the grid of player
   const items: any[] = [];
   let j = 0;
-  for (let i = 1; i < numberPlayer ; ) {
+  for (let i = 1; i < numberPlayer; ) {
+    // 1 because 0 is the player
     for (j = 0; j < 6 && i < numberPlayer; j++) {
       const {
         hasWon,
@@ -191,10 +206,11 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         nbLife,
         wordLength,
         isFinished,
+        isVisible,
       } = gameState?.[i] || {};
       items.push(
         <SmallPlayerGrid
-          isVisible={true}
+          isVisible={isVisible}
           firstLetter={firstLetter}
           wordLength={wordLength}
           nbLife={nbLife}
@@ -207,7 +223,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     }
     grid.push(
       <Flex direction={"column"} alignContent={"center"}>
-        {items.slice((i -1) - j, i-1)}
+        {items.slice(i - 1 - j, i - 1)}
       </Flex>
     );
   }
@@ -219,15 +235,17 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       </Text>
       <Flex direction={"row"} alignContent={"center"}>
         {grid}
-
-        <PlayerGrid
-          isVisible={true}
-          firstLetter={firstLetter}
-          wordLength={wordLength}
-          nbLife={nbLife}
-          word={word}
-          triesHistory={triesHistory}
-        />
+        <Flex direction={"column"} alignContent={"center"}>
+          <Text align="center" fontSize="large">{player.name}</Text>
+          <PlayerGrid
+            isVisible={true}
+            firstLetter={firstLetter}
+            wordLength={wordLength}
+            nbLife={nbLife}
+            word={word}
+            triesHistory={triesHistory}
+          />
+        </Flex>
       </Flex>
     </Flex>
   );
