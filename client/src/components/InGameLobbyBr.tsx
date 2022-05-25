@@ -1,4 +1,4 @@
-import { Flex, Spacer, Spinner, Text, useToast } from "@chakra-ui/react";
+import { Flex, Spinner, Text, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import { addBrEvent, addGuessWordBrBroadcast, guessWordBr } from "src/utils/api";
@@ -10,7 +10,6 @@ import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
 
 interface InGameLobbyBrProps {
   player: Player;
-  lobbyId: string | null;
   gameInfo: BrGameInfo;
   numberPlayer: number;
 }
@@ -21,7 +20,6 @@ const NOT_IN_DICTIONARY = "NODICTIONARY";
 export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
   gameInfo,
-  lobbyId,
   numberPlayer,
 }) => {
   const [word, setWord] = useState("");
@@ -75,7 +73,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     if (gameState === null) {
       return;
     }
-    const { nbLife, triesHistory, wordId, wordLength } = gameState[0];
+    const { nbLife, triesHistory, wordLength } = gameState[0];
 
     const lowerCaseWord = word.toLowerCase();
     if (lowerCaseWord.length !== wordLength) {
@@ -244,6 +242,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             nbLife={nbLife}
             word={word}
             triesHistory={triesHistory}
+            isFinished={isFinished}
           />
         </Flex>
       </Flex>

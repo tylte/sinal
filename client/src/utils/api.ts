@@ -168,8 +168,7 @@ export const addSpecificLobbiesEvent = (
   socket: Socket,
   lobbyId: string,
   setLobby: Dispatch<SetStateAction<Lobby | null>>,
-  setGameState: Dispatch<SetStateAction<Game1vs1 | null>>,
-  setGameStateBr: React.Dispatch<React.SetStateAction<BrGameInfo | null>>
+  setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>,
 ) => {
   socket.on("starting_game", (game: Game1vs1) => {
     console.log("starting-game-1vs1");
@@ -185,7 +184,7 @@ export const addSpecificLobbiesEvent = (
   });
   socket.on("starting_game_Br", (game: BrGameInfo) => {
     console.log("starting-game-Br");
-    setGameStateBr(game);
+    setGameState(game);
     //FIXME : Mettre le statut du lobby en "in-game" côté serveur
     setLobby((lobby) => {
       if (lobby === null) {
@@ -316,4 +315,68 @@ export const addBrEvent = async (
   socket?.on("draw_br", (arg) => {
 
   });
+};
+
+export const lobbyOneVsOneAddEvents = (
+  socket: Socket,
+  toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
+  playerId: string,
+  setHasWon: Dispatch<SetStateAction<boolean>>,
+  tryHistoryP2: TriesHistory[],
+  setTryHistoryP2: Dispatch<SetStateAction<TriesHistory[]>>,
+  setWordP2: Dispatch<SetStateAction<string>>,
+  setIsFinished: Dispatch<SetStateAction<boolean>>
+) => {
+  socket?.on("wining_player_1vs1", (req) => {
+    setIsFinished(true);
+    if (req === playerId) {
+      toast({
+        title: "GGEZ 😎",
+        status: "success",
+        isClosable: true,
+        duration: 2500,
+      });
+      setHasWon(true);
+      return;
+    } else {
+      toast({
+        title: "Perdu ! Sadge",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      return;
+    }
+  });
+  socket.on("draw_1vs1", () => {
+    setIsFinished(true);
+    toast({
+      title: "Egalité.",
+      status: "info",
+      isClosable: true,
+      duration: 2500,
+    });
+    return;
+  });
+  socket.on("guess_word_broadcast", (req) => {
+    if (req.playerId !== playerId) {
+      setTryHistoryP2([
+        ...tryHistoryP2,
+        { result: req.tab_res, wordTried: "●".repeat(req.tab_res.length) },
+      ]);
+    }
+  });
+
+  socket.on("update_word_broadcast", (req) => {
+    if (req.playerId !== playerId) {
+      setWordP2(req.array.filter((tabElt: boolean) => tabElt).map(() => "●"));
+    }
+  });
+};
+
+export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
+  socket?.removeListener("wining_player_1vs1");
+  socket?.removeListener("draw_1vs1");
+  socket?.removeListener("guess_word_broadcast");
+  socket?.removeListener("update_word_broadcast");
 };

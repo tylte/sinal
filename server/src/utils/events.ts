@@ -266,7 +266,8 @@ export const startGame1vs1Event = (
   lobby.currentGameId = gameId;
 
   let word = get_word();
-  idToWord.set(gameId, word); //the ID of the word is the same as the game
+  console.log("Mot à découvrir : ", word);
+  idToWord.set(gameId, word); //the ID of the word is the same as the lobby
   let game: Game1vs1 = {
     playerOne: {
       id: playerOne.id,

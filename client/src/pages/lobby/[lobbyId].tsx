@@ -1,11 +1,9 @@
 import { Spinner, useDisclosure, useToast } from "@chakra-ui/react";
-import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { CreatePlayerModal } from "../../components/CreatePlayerModal";
 import { InGameLobby } from "../../components/InGameLobby";
-import { InGameLobbyBr } from "../../components/InGameLobbyBr";
 import { Layout } from "../../components/Layout";
 import { PostGameLobby } from "../../components/PostGameLobby";
 import { PreGameLobby } from "../../components/PreGameLobby";
@@ -19,7 +17,6 @@ import {
   Game1vs1,
   Lobby,
   BrGameInfo,
-  StartGameResponse,
 } from "../../utils/types";
 import { getIdFromPage } from "../../utils/utils";
 
@@ -31,8 +28,8 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   const [player] = usePlayer();
   const { onClose } = useDisclosure();
   const toast = useToast();
-  const [gameState, setGameState] = useState<Game1vs1 | null>(null);
-  const [gameStateBr, setGameStateBr] = useState<BrGameInfo | null>(null);
+  const [gameState, setGameState] = useState<Game1vs1 | BrGameInfo | null>(null);
+  // const [gameStateBr, setGameStateBr] = useState<BrGameInfo | null>(null);
 
   let lobbyId = getIdFromPage(router.query.lobbyId);
   const [lobby, setLobby] = useState<Lobby | null>(null);
@@ -58,8 +55,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
         socket,
         lobbyId as string,
         setLobby,
-        setGameState,
-        setGameStateBr
+        setGameState
       );
       addPreGameEvent(socket);
     }
@@ -101,24 +97,25 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
     lobby.mode === "1vs1"
   ) {
     return (
-      <Layout variant="large">
-        <InGameLobby lobbyId={lobbyId} player={player} gameState={gameState} />
+      <Layout variant="grid">
+        <InGameLobby GameMode={"1vs1"} player={player} gameState={gameState} />
       </Layout>
     );
   } else if (
     state === "in-game" &&
-    gameStateBr !== null &&
+    gameState !== null &&
     lobby.mode === "battle-royale"
   ) {
-    if (gameStateBr !== null) {
+    if (gameState !== null) {
       return (
         <Layout variant="large">
-          <InGameLobbyBr
+          {/* <InGameLobbyBr
             lobbyId={lobbyId}
             player={player}
             gameInfo={gameStateBr}
             numberPlayer={2}
-          />
+          /> */}
+          <InGameLobby GameMode={"battle-royale"} player={player} gameState={gameState} />
         </Layout>
       );
     } else {

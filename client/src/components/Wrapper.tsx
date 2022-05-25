@@ -1,7 +1,7 @@
-import { Box } from "@chakra-ui/layout";
+import { Box, Grid, Text } from "@chakra-ui/layout";
 import React from "react";
 
-export type WrapperVariant = "small" | "regular" | "large";
+export type WrapperVariant = "small" | "regular" | "large" | "grid";
 
 interface WrapperProps {
   variant?: WrapperVariant;
@@ -21,9 +21,20 @@ export const Wrapper: React.FC<WrapperProps> = ({
   variant = "regular",
   children,
 }) => {
-  return (
-    <Box mt={8} w="100%" maxW={variantSize(variant)} mx="auto">
-      {children}
-    </Box>
-  );
+  if (variant === "grid") {
+    return (
+      <Grid w="100%" templateColumns="1fr 2fr 1fr">
+        {children}
+        <Box>
+          <Text align={"center"}>Tchat</Text>
+        </Box>
+      </Grid>
+    );
+  } else {
+    return (
+      <Box mt={8} w="100%" maxW={variantSize(variant)} mx="auto">
+        {children}
+      </Box>
+    );
+  }
 };
