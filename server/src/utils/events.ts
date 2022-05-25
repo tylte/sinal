@@ -421,6 +421,8 @@ export const startGameBrEvent = (
   };
 
   gameBrMap.set(gameId, game);
+  console.log("The word is : ", game);
+  console.log("The word is : ", word);
   io.to(lobbyId).emit("starting_game_Br", game);
   io.to(lobbyId).socketsJoin(gameId);
 };
@@ -479,6 +481,7 @@ export const guessWordBrEvent = (
   });
 
   if (win) {
+    console.log("win");
     if (game.playerFound.length === 0) {
       io.to(gameId).emit("first_winning_player_br", playerId);
     } else if (game.playerFound.length >= game.playersLastNextRound) {
@@ -488,6 +491,7 @@ export const guessWordBrEvent = (
 
     game.playerFound.push(player);
     if (game.playerFound.length === game.playersLastNextRound) {
+      console.log("finish");
       game.playersLastNextRound = Math.floor(
         game.playersLastNextRound * (1 - game.eliminationRate / 100)
       );
@@ -498,6 +502,7 @@ export const guessWordBrEvent = (
       } else if (game.playersLastNextRound === 1) {
         //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
       } else {
+        console.log("new game");
         let newWord = get_word();
         idToWord.set(gameId, newWord);
         game.firstLetter = newWord.charAt(0);

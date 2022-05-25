@@ -108,7 +108,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   ) {
     if (gameState !== null) {
       return (
-        <Layout variant="large">
+        <Layout variant="grid">
           {/* <InGameLobbyBr
             lobbyId={lobbyId}
             player={player}

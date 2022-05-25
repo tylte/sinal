@@ -21,7 +21,6 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
       <InGameLobbyBr
         player={player}
         gameInfo={gameState as BrGameInfo}
-        numberPlayer={2}
       />
     );
   }

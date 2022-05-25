@@ -300,7 +300,7 @@ export const addGuessWordBrBroadcast = async (
 };
 
 export const addBrEvent = async (
-  startGame:() => void,
+  startGame:(gameBr:BrGameInfo) => void,
   socket: Socket | null,
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
@@ -310,7 +310,7 @@ export const addBrEvent = async (
 
   });
   socket?.on("next_word_br", (arg) => {
-    startGame();
+    startGame(arg.data);
   });
   socket?.on("draw_br", (arg) => {
 

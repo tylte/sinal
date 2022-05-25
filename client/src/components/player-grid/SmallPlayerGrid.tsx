@@ -52,7 +52,7 @@ export const SmallPlayerGrid: React.FC<SmallPlayerGridProps> = ({
   }
 
   return (
-    <Stack spacing={1} margin={5}>
+    <Stack spacing={1} margin={3}>
       {rowsArray}
     </Stack>
   );

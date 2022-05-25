@@ -1,17 +1,26 @@
-import { Flex, Spinner, Text, useToast } from "@chakra-ui/react";
+import { Box, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
-import { addBrEvent, addGuessWordBrBroadcast, guessWordBr } from "src/utils/api";
+import {
+  addBrEvent,
+  addGuessWordBrBroadcast,
+  guessWordBr,
+} from "src/utils/api";
 import { useClassicWordInput, useDictionary, useSocket } from "src/utils/hooks";
 import { isWordCorrect } from "src/utils/utils";
-import { Player, BrGameState, BrGameInfo } from "../utils/types";
+import {
+  Player,
+  BrGameState,
+  BrGameInfo,
+  KeyboardSettings,
+} from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
+import { getClassicKeyboardSettings } from "../utils/utils";
 
 interface InGameLobbyBrProps {
   player: Player;
   gameInfo: BrGameInfo;
-  numberPlayer: number;
 }
 
 const NOT_ENOUGH_LETTER = "NOLETTER";
@@ -20,14 +29,15 @@ const NOT_IN_DICTIONARY = "NODICTIONARY";
 export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
   gameInfo,
-  numberPlayer,
 }) => {
+  const [numberPlayer, setNumberPlayer] = useState(gameInfo.playerList.length);
   const [word, setWord] = useState("");
   const [gameState, setGameState] = useState<BrGameState[]>([]);
   const dictionary = useDictionary();
   const socket = useSocket();
   // const [result, setResult] = useState<LetterResult[]>([]);
-  const startGame = () => {
+  const startGame = (gameBr: BrGameInfo) => {
+    setNumberPlayer(gameBr.playerList.length);
     setGameState((game) => [
       ...game,
       {
@@ -42,7 +52,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isVisible: true,
       },
     ]);
-    gameInfo.playerList.forEach((pl) => {
+    gameBr.playerList.forEach((pl) => {
       if (player.id !== pl.id) {
         setGameState((game) => [
           ...game,
@@ -60,11 +70,11 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         ]);
       }
     });
-    setWord(gameInfo.firstLetter.toUpperCase());
+    setWord(gameBr.firstLetter.toUpperCase());
   };
   useEffect(() => {
     // Request the word when mounted
-    startGame();
+    startGame(gameInfo);
     addGuessWordBrBroadcast(socket, player.id, setGameState);
     addBrEvent(startGame, socket);
   }, []);
@@ -120,14 +130,21 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         },
       ],
     };
+
     console.log("newState : ", newState);
     setWord(firstLetter);
 
+    setGameState((gameState) =>
+      gameState.map((game) =>
+        game.playerId === player.id ? { ...newState } : { ...game }
+      )
+    );
+    console.log("gameState triesHistory : ", gameState);
     if (isWordCorrect(result)) {
       setGameState(
         gameState.map((game) =>
           game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: true }
+            ? { ...newState, isFinished: true, hasWon: true }
             : { ...game }
         )
       );
@@ -137,14 +154,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isClosable: true,
         duration: 2500,
       });
-      return;
     }
-
     if (triesHistory.length + 1 === nbLife) {
       setGameState(
         gameState.map((game) =>
           game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: false }
+            ? { ...newState, isFinished: true, hasWon: false }
             : { ...game }
         )
       );
@@ -155,23 +170,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         duration: 2500,
       });
     }
-
-    setGameState(
-      gameState.map((game) =>
-        game.playerId === player.id
-          ? { ...game, triesHistory: newState.triesHistory }
-          : { ...game }
-      )
-    );
-    setGameState(
-      gameState.map((game) =>
-        game.playerId !== player.id && game.triesHistory.length >= game.nbLife && !game.hasWon
-          ? { ...game, isVisible:false }
-          : { ...game }
-      )
-    );
-
-    console.log("gameState triesHistory : ", gameState);
   };
   useClassicWordInput(
     word,
@@ -180,8 +178,13 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     onEnter,
     gameState?.[0]?.isFinished
   );
+  const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
+    onEnter,
+    setWord,
+    gameInfo.length
+  );
 
-  if (gameState === null) {
+  if (gameState === null || gameState[0] === undefined) {
     return (
       <Flex>
         <Spinner mt={6} mx="auto" size="xl" />
@@ -189,7 +192,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     );
   }
   const { hasWon, triesHistory, firstLetter, nbLife, wordLength, isFinished } =
-    gameState?.[0] || {};
+    gameState[0];
   const grid = [];
   // save the grid of player
   const items: any[] = [];
@@ -226,26 +229,52 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     );
   }
   return (
-    <Flex direction={"column"} align={"left"}>
+    <>
       {hasWon && <Confetti />}
-      <Text mb={5} align="center" fontSize={"larger"}>
-        Partie Battle Royale
-      </Text>
-      <Flex direction={"row"} alignContent={"center"}>
-        {grid}
-        <Flex direction={"column"} alignContent={"center"}>
-          <Text align="center" fontSize="large">{player.name}</Text>
-          <PlayerGrid
-            isVisible={true}
-            firstLetter={firstLetter}
-            wordLength={wordLength}
-            nbLife={nbLife}
-            word={word}
-            triesHistory={triesHistory}
-            isFinished={isFinished}
-          />
+      <Box>
+        <Flex marginLeft={10} direction={"row"} alignContent={"center"}>
+          {grid}
         </Flex>
-      </Flex>
-    </Flex>
+      </Box>
+      <Box>
+        <Text align="center" fontSize="large">
+          {player.name}
+        </Text>
+        <PlayerGrid
+          isVisible={true}
+          firstLetter={firstLetter}
+          wordLength={wordLength}
+          nbLife={nbLife}
+          word={word}
+          triesHistory={triesHistory}
+          isFinished={isFinished}
+          keyboardSetting={keyboardSettings}
+        />
+      </Box>
+    </>
+    // <Flex direction={"column"} align={"left"}>
+    //   {hasWon && <Confetti />}
+    //   <Text mb={5} align="center" fontSize={"larger"}>
+    //     Partie Battle Royale
+    //   </Text>
+    //   <Flex direction={"row"} alignContent={"center"}>
+    //     {grid}
+    //     <Flex direction={"column"} alignContent={"center"}>
+    //       <Text align="center" fontSize="large">
+    //         {player.name}
+    //       </Text>
+    //       <PlayerGrid
+    //         isVisible={true}
+    //         firstLetter={firstLetter}
+    //         wordLength={wordLength}
+    //         nbLife={nbLife}
+    //         word={word}
+    //         triesHistory={triesHistory}
+    //         isFinished={isFinished}
+    //         keyboardSetting={keyboardSettings}
+    //       />
+    //     </Flex>
+    //   </Flex>
+    // </Flex>
   );
 };
