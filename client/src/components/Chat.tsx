@@ -50,7 +50,7 @@ export const Chat: React.FC<ChatProps> = ({}) => {
   };
 
   return (
-    <Box>
+    <Box border={"1px"} h={"100vh"} maxH={"100vh"}>
       {messageHistory.map((mess) => {
         return (
           <Text key={mess.id}>
