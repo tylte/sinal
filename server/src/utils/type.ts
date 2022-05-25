@@ -107,6 +107,15 @@ export const Packet = z.object({
   data: z.any(),
 });
 
+export const LastGame = z.object({
+  gameMode: GameMode,
+  playerList: Player.array(),
+  winner: Player,
+  wordToGuess: z.string(),
+});
+
+export type LastGame = z.infer<typeof LastGame>;
+
 export type PacketType = z.infer<typeof Packet>;
 
 export type EventResponseFn = (payload: PacketType) => void;

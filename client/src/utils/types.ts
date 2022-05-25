@@ -35,6 +35,7 @@ export type Lobby = {
   isPublic: boolean;
   mode: GameMode;
   currentGameId: string;
+  lastGame?: LastGame;
 };
 
 export type Packet = {
@@ -70,4 +71,11 @@ export type KeyboardSettings = {
   onEnter: () => void;
   onKeydown: (letter: string) => void;
   onBackspace: () => void;
+};
+
+type LastGame = {
+  gameMode: GameMode;
+  playerList: Player[];
+  winner: Player;
+  wordToGuess: string;
 };
