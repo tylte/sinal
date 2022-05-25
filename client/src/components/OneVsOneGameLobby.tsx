@@ -5,7 +5,12 @@ import {
   lobbyOneVsOneAddEvents,
   lobbyOneVsOneRemoveEvents,
 } from "../utils/api";
-import { useClassicWordInput, useDictionary, useSocket } from "../utils/hooks";
+import {
+  useClassicWordInput,
+  useDictionary,
+  useIsChatting,
+  useSocket,
+} from "../utils/hooks";
 import {
   Game1vs1,
   KeyboardSettings,
@@ -33,6 +38,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const socket = useSocket();
   const dictionary = useDictionary();
   const toast = useToast();
+  const isChatting = useIsChatting();
 
   // TriesHistory of the player and his opponent.
   const [tryHistory, setTryHistory] = useState<TriesHistory[]>([]);
@@ -112,7 +118,13 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     setWord(first_letter.toUpperCase());
   };
 
-  useClassicWordInput(word, setWord, game_length, onEnter, isFinished);
+  useClassicWordInput(
+    word,
+    setWord,
+    game_length,
+    onEnter,
+    isFinished || isChatting
+  );
 
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
     onEnter,
@@ -135,7 +147,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
               firstLetter={first_letter}
               word={wordP2}
               triesHistory={tryHistoryP2}
-              isFinished={isFinished}
+              isFinished={isFinished || isChatting}
             />
           </Box>
         </Flex>

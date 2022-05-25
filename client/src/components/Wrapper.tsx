@@ -1,4 +1,4 @@
-import { Box, Grid, Text } from "@chakra-ui/layout";
+import { Box, Grid } from "@chakra-ui/layout";
 import React from "react";
 import { Chat } from "./Chat";
 

@@ -1,7 +1,7 @@
 import { Alert, AlertIcon, Box, Flex, Input, Text } from "@chakra-ui/react";
 import React, { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
 import { addChatEvents, removeChatEvents } from "../utils/api";
-import { usePlayer, useSocket } from "../utils/hooks";
+import { useChattingActions, usePlayer, useSocket } from "../utils/hooks";
 import { ChatMessage } from "../utils/types";
 
 interface ChatProps {}
@@ -12,6 +12,7 @@ export const Chat: React.FC<ChatProps> = ({}) => {
   const [alert, setAlert] = useState({ enabled: false, message: "" });
   const [canSendMessage, setCanSendMessage] = useState(true);
   const [messageHistory, setMessageHistory] = useState<ChatMessage[]>([]);
+  const [_, setIsChatting] = useChattingActions();
 
   useEffect(() => {
     if (socket) {
@@ -95,6 +96,8 @@ export const Chat: React.FC<ChatProps> = ({}) => {
           </Alert>
         )}
         <Input
+          onBlur={() => setIsChatting && setIsChatting(false)}
+          onFocus={() => setIsChatting && setIsChatting(true)}
           w="100%"
           value={message}
           onChange={handleMessageChange}
@@ -104,12 +107,12 @@ export const Chat: React.FC<ChatProps> = ({}) => {
       <Flex direction={"column"}>
         {messageHistory.map((mess) => {
           return (
-            <Flex overflowX={"hidden"} key={mess.id}>
+            <Box overflowX={"hidden"} key={mess.id}>
               <Text fontWeight={"bold"}>{mess.author}:</Text>
               <Text ml={2} wordBreak={"break-word"}>
                 {mess.content}
               </Text>
-            </Flex>
+            </Box>
           );
         })}
       </Flex>
