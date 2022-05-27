@@ -22,6 +22,21 @@ export const usePlayer = (): [
   return playerActions;
 };
 
+export const useIsChatting = (): boolean => {
+  let {
+    chattingActions: [isChatting],
+  } = useContext(SinalContext);
+  return isChatting;
+};
+
+export const useChattingActions = (): [
+  isChatting: boolean,
+  setIsChatting: Dispatch<SetStateAction<boolean>> | null
+] => {
+  let { chattingActions } = useContext(SinalContext);
+  return chattingActions;
+};
+
 export const useConnected = (): boolean => {
   let { isConnected } = useContext(SinalContext);
   return isConnected;

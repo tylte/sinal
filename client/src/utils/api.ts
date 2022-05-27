@@ -3,6 +3,7 @@ import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import {
+  ChatMessage,
   Game1vs1,
   LetterResult,
   Lobby,
@@ -217,10 +218,21 @@ export const getSpecificLobby = (
       }
     });
 };
-export const addUpdateWordBroadcast = (socket: Socket) => {
-  socket.on("update_word_broadcast", (arg) => {
-    console.log("update_word_broadcast : " + arg);
+
+export const addChatEvents = (
+  socket: Socket,
+  setMessageHistory: Dispatch<SetStateAction<ChatMessage[]>>
+) => {
+  socket.on("broadcast_message", (message: ChatMessage) => {
+    setMessageHistory((messageHistory) => [...messageHistory, message]);
   });
+
+  socket.emit("join_chat_global");
+};
+
+export const removeChatEvents = (socket: Socket) => {
+  socket.removeListener("broadcast_message");
+  socket.emit("leave_chat_global");
 };
 
 export const lobbyOneVsOneAddEvents = (
@@ -243,7 +255,6 @@ export const lobbyOneVsOneAddEvents = (
         duration: 2500,
       });
       setHasWon(true);
-      return;
     } else {
       toast({
         title: "Perdu ! Sadge",
@@ -251,7 +262,7 @@ export const lobbyOneVsOneAddEvents = (
         isClosable: true,
         duration: 2500,
       });
-      return;
+      setWordP2("●");
     }
   });
   socket.on("draw_1vs1", () => {
@@ -262,11 +273,10 @@ export const lobbyOneVsOneAddEvents = (
       isClosable: true,
       duration: 2500,
     });
-    return;
   });
   socket.on("guess_word_broadcast", (req) => {
     if (req.playerId !== playerId) {
-      setTryHistoryP2([
+      setTryHistoryP2((tryHistoryP2) => [
         ...tryHistoryP2,
         { result: req.tab_res, wordTried: "●".repeat(req.tab_res.length) },
       ]);
