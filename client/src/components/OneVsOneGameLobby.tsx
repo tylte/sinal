@@ -18,10 +18,11 @@ import { PlayerGrid } from "./player-grid/PlayerGrid";
 interface OneVsOneGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
+  lobbyId: string;
 }
 
 export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
-  player: { id: playerId, name, lobbyId },
+  player: { id: playerId, name },
   gameState: {
     playerOne,
     playerTwo,
@@ -29,6 +30,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     id: gameId,
     length: game_length,
   },
+  lobbyId,
 }) => {
   const socket = useSocket();
   const dictionary = useDictionary();
@@ -103,6 +105,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         word: word.toLowerCase(),
         gameId: gameId,
         playerId,
+        lobbyId,
       },
       (res: any) => {
         setTryHistory([...tryHistory, { result: res.data, wordTried: word }]);

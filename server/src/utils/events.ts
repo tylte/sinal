@@ -4,6 +4,7 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import { idToWord } from "./server";
 import {
   ArgCreateLobbyType,
+  ArgGuessWordType,
   ArgJoinLobbyType,
   ArgLeaveLobbyType,
   ArgStartGameType,
@@ -36,6 +37,7 @@ export const createLobbyEvent = (
     isPublic,
     mode,
     currentGameId: null,
+    lastGame: null,
   };
 
   let player = playerMap.get(owner.id);
@@ -299,7 +301,7 @@ export const updateWordEvent = (
 export const guessWordEvent = (
   io: Server,
   response: any,
-  { word, gameId, playerId }: ArgUpdateWord
+  { word, gameId, playerId, lobbyId }: ArgGuessWordType
 ) => {
   let game = game1vs1Map.get(gameId);
   if (game === undefined) {
@@ -338,9 +340,29 @@ export const guessWordEvent = (
 
   if (win) {
     io.to(gameId).emit("wining_player_1vs1", playerId);
-    io.to(gameId).socketsLeave(gameId);
+    let lobby = lobbyMap.get(lobbyId);
+    if (lobby) {
+      lobby.lastGame = {
+        gameMode: lobby.mode,
+        playerList: lobby.playerList,
+        winner: player.name,
+        wordToGuess: word,
+      };
+      lobby.state = "pre-game";
+    }
+    io.to(gameId).socketsLeave(lobbyId);
   } else if (game.playerOne.nb_life === 0 && game.playerTwo.nb_life === 0) {
     io.to(gameId).emit("draw_1vs1");
-    io.to(gameId).socketsLeave(gameId);
+    let lobby = lobbyMap.get(lobbyId);
+    if (lobby) {
+      lobby.lastGame = {
+        gameMode: lobby.mode,
+        playerList: lobby.playerList,
+        winner: null,
+        wordToGuess: word,
+      };
+      lobby.state = "pre-game";
+    }
+    io.to(gameId).socketsLeave(lobbyId);
   }
 };

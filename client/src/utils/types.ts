@@ -35,7 +35,7 @@ export type Lobby = {
   isPublic: boolean;
   mode: GameMode;
   currentGameId: string;
-  lastGame?: LastGame;
+  lastGame: LastGame | null;
 };
 
 export type Packet = {
@@ -77,6 +77,6 @@ export type KeyboardSettings = {
 type LastGame = {
   gameMode: GameMode;
   playerList: Player[];
-  winner: Player;
+  winner: string | null;
   wordToGuess: string;
 };
