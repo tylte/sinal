@@ -10,6 +10,7 @@ import {
   ArgStartGame1vs1Type,
   ArgStartGameBrType,
   ArgUpdateWord,
+  ChatMessageToSend,
   EventResponseFn,
   Game1vs1,
   game1vs1Map,
@@ -22,8 +23,9 @@ import {
   PlayerBr,
   playerMap,
   timeoutMap,
+  ReceivedChatMessageType,
 } from "./type";
-import { PUBLIC_LOBBIES } from "./utils";
+import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 
 export const createLobbyEvent = (
   io: Server,
@@ -267,7 +269,8 @@ export const startGame1vs1Event = (
   lobby.currentGameId = gameId;
 
   let word = get_word();
-  idToWord.set(gameId, word); //the ID of the word is the same as the game
+  console.log("Mot à découvrir : ", word);
+  idToWord.set(gameId, word); //the ID of the word is the same as the lobby
   let game: Game1vs1 = {
     playerOne: {
       id: playerOne.id,
@@ -435,6 +438,7 @@ export const startGameBrEvent = (
 
   gameBrMap.set(gameId, game);
   io.to(lobbyId).emit("starting_game_br", game);
+  io.to(lobbyId).emit("starting_game_Br", game);
   io.to(lobbyId).socketsJoin(gameId);
 
   let timeout = setTimeout(() => {
@@ -498,6 +502,7 @@ export const guessWordBrEvent = (
   });
 
   if (win) {
+    console.log("win");
     if (game.playerFound.length === 0) {
       console.log("1");
       game.playerFound.push(player);
@@ -516,7 +521,6 @@ export const guessWordBrEvent = (
       console.log("guess_word_br : player guessed too late");
       return;
     } else {
-      console.log("2");
       game.playerFound.push(player);
 
       if (game.playerFound.length === game.playersLastNextRound) {
@@ -602,4 +606,26 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
       io.to(game.id).emit("next_word_br", game);
     }
   }
+};
+
+export const sendChatMessage = (
+  io: Server,
+  { content, playerId }: ReceivedChatMessageType
+) => {
+  const player = playerMap.get(playerId);
+
+  if (!player) {
+    console.log("send_chat_message : player doesn't seem to exist");
+    return;
+  }
+
+  let messageId = get_id();
+
+  let messageToSend: ChatMessageToSend = {
+    author: player.name,
+    content,
+    id: messageId,
+  };
+
+  io.to(PUBLIC_CHAT).emit("broadcast_message", messageToSend);
 };

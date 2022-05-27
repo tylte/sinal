@@ -1,29 +1,27 @@
-import { Flex, Spinner, Text, useToast } from "@chakra-ui/react";
+import { Box, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
+  addBrEvent,
   addGuessWordBrBroadcast,
   guessWordBr,
 } from "src/utils/api";
-import {
-  useClassicWordInput,
-  useDictionary,
-  useSocket,
-} from "src/utils/hooks";
+import { useClassicWordInput, useDictionary, useSocket } from "src/utils/hooks";
 import { isWordCorrect } from "src/utils/utils";
 import {
   Player,
   BrGameState,
   BrGameInfo,
+  KeyboardSettings,
 } from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
+import { getClassicKeyboardSettings } from "../utils/utils";
+import Timer from "./Timer";
 
 interface InGameLobbyBrProps {
   player: Player;
-  lobbyId: string | null;
   gameInfo: BrGameInfo;
-  numberPlayer: number;
 }
 
 const NOT_ENOUGH_LETTER = "NOLETTER";
@@ -32,43 +30,62 @@ const NOT_IN_DICTIONARY = "NODICTIONARY";
 export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
   gameInfo,
-  lobbyId,
-  numberPlayer,
 }) => {
+  const [numberPlayer, setNumberPlayer] = useState(gameInfo.playerList.length);
   const [word, setWord] = useState("");
   const [gameState, setGameState] = useState<BrGameState[]>([]);
   const dictionary = useDictionary();
   const socket = useSocket();
   // const [result, setResult] = useState<LetterResult[]>([]);
-  const startGame = () => {
-    gameInfo.playerList.forEach((pl) => {
-      setGameState((game) => [
-        ...game,
-        {
-          playerId: pl.id,
-          firstLetter: gameInfo.firstLetter.toUpperCase(),
-          isFinished: false,
-          nbLife: 6,
-          triesHistory: [],
-          wordLength: gameInfo.length,
-          hasWon: false,
-          wordId: gameInfo.id,
-        },
-      ]);
+  const startGame = (gameBr: BrGameInfo) => {
+    setGameState([]);
+    setNumberPlayer(gameBr.playerList.length);
+    setGameState((game) => [
+      ...game,
+      {
+        playerId: player.id,
+        firstLetter: gameInfo.firstLetter.toUpperCase(),
+        isFinished: false,
+        nbLife: 6,
+        triesHistory: [],
+        wordLength: gameInfo.length,
+        hasWon: false,
+        wordId: gameInfo.id,
+        isVisible: true,
+      },
+    ]);
+    gameBr.playerList.forEach((pl) => {
+      if (player.id !== pl.id) {
+        setGameState((game) => [
+          ...game,
+          {
+            playerId: pl.id,
+            firstLetter: gameInfo.firstLetter.toUpperCase(),
+            isFinished: false,
+            nbLife: 6,
+            triesHistory: [],
+            wordLength: gameInfo.length,
+            hasWon: false,
+            wordId: gameInfo.id,
+            isVisible: true,
+          },
+        ]);
+      }
     });
-    setWord(gameInfo.firstLetter.toUpperCase());
+    setWord(gameBr.firstLetter.toUpperCase());
   };
   useEffect(() => {
     // Request the word when mounted
-    startGame();
-    addGuessWordBrBroadcast(socket, setGameState);
+    startGame(gameInfo);
+    addGuessWordBrBroadcast(socket, player.id, setGameState);
+    addBrEvent(startGame, socket, player.id, toast);
   }, []);
   const toast = useToast();
   const onEnter = async () => {
     if (gameState === null) {
       return;
     }
-    const { nbLife, triesHistory, wordId, wordLength } = gameState[0];
+    const { nbLife, triesHistory, wordLength } = gameState[0];
 
     const lowerCaseWord = word.toLowerCase();
     if (lowerCaseWord.length !== wordLength) {
@@ -115,14 +132,21 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         },
       ],
     };
+
     console.log("newState : ", newState);
     setWord(firstLetter);
 
+    setGameState((gameState) =>
+      gameState.map((game) =>
+        game.playerId === player.id ? { ...newState } : { ...game }
+      )
+    );
+    console.log("gameState triesHistory : ", gameState);
     if (isWordCorrect(result)) {
       setGameState(
         gameState.map((game) =>
           game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: true }
+            ? { ...newState, isFinished: true, hasWon: true }
             : { ...game }
         )
       );
@@ -132,14 +156,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isClosable: true,
         duration: 2500,
       });
-      return;
     }
-
     if (triesHistory.length + 1 === nbLife) {
       setGameState(
         gameState.map((game) =>
           game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: false }
+            ? { ...newState, isFinished: true, hasWon: false }
             : { ...game }
         )
       );
@@ -149,17 +171,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isClosable: true,
         duration: 2500,
       });
-      return;
     }
-
-    setGameState(
-      gameState.map((game) =>
-        game.playerId === player.id
-          ? { ...game, triesHistory: newState.triesHistory }
-          : { ...game }
-      )
-    );
-    console.log("gameState triesHistory : ", gameState);
   };
   useClassicWordInput(
     word,
@@ -168,8 +180,13 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     onEnter,
     gameState?.[0]?.isFinished
   );
+  const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
+    onEnter,
+    setWord,
+    gameInfo.length
+  );
 
-  if (gameState === null) {
+  if (gameState === null || gameState[0] === undefined) {
     return (
       <Flex>
         <Spinner mt={6} mx="auto" size="xl" />
@@ -177,24 +194,24 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     );
   }
   const { hasWon, triesHistory, firstLetter, nbLife, wordLength, isFinished } =
-    gameState?.[0] || {};
+    gameState[0];
   const grid = [];
   // save the grid of player
   const items: any[] = [];
   let j = 0;
-  for (let i = 1; i < numberPlayer ; ) {
+  for (let i = 1; i < numberPlayer; ) {
+    // 1 because 0 is the player
     for (j = 0; j < 6 && i < numberPlayer; j++) {
       const {
-        hasWon,
         triesHistory,
         firstLetter,
         nbLife,
         wordLength,
-        isFinished,
+        isVisible,
       } = gameState?.[i] || {};
       items.push(
         <SmallPlayerGrid
-          isVisible={true}
+          isVisible={isVisible}
           firstLetter={firstLetter}
           wordLength={wordLength}
           nbLife={nbLife}
@@ -207,19 +224,25 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     }
     grid.push(
       <Flex direction={"column"} alignContent={"center"}>
-        {items.slice((i -1) - j, i-1)}
+        {items.slice(i - 1 - j, i - 1)}
       </Flex>
     );
   }
   return (
-    <Flex direction={"column"} align={"left"}>
+    <>
       {hasWon && <Confetti />}
-      <Text mb={5} align="center" fontSize={"larger"}>
-        Partie Battle Royale
-      </Text>
-      <Flex direction={"row"} alignContent={"center"}>
-        {grid}
-
+      <Box>
+        <Flex marginLeft={10} direction={"row"} alignContent={"center"}>
+          {grid}
+        </Flex>
+      </Box>
+      <Box>
+        <Text align="center" fontSize="large">
+          {player.name}
+        </Text>
+        <Text>
+        {/* <Timer></Timer> */}
+        </Text>
         <PlayerGrid
           isVisible={true}
           firstLetter={firstLetter}
@@ -227,8 +250,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           nbLife={nbLife}
           word={word}
           triesHistory={triesHistory}
+          isFinished={isFinished}
+          keyboardSetting={keyboardSettings}
         />
-      </Flex>
-    </Flex>
+      </Box>
+    </>
   );
 };

@@ -13,23 +13,34 @@ export const Header: React.FC<HeaderProps> = ({}) => {
 
   return (
     <Flex alignItems={"center"}>
-      <Text ml={5} fontSize="3xl" fontWeight="extrabold">
+      <Text userSelect={"none"} ml={5} fontSize="3xl" fontWeight="extrabold">
         <Link as={NextLink} href="/">
           Sinal
         </Link>
       </Text>
-      <Text fontSize="xl" my={2} ml={35} fontWeight="extrabold">
+      <Text
+        userSelect={"none"}
+        fontSize="xl"
+        my={2}
+        ml={35}
+        fontWeight="extrabold"
+      >
         <Link as={NextLink} href="/about">
           About
         </Link>
       </Text>
       <Spacer />
       {connected ? (
-        <Tag variant={"outline"} colorScheme={"green"} mr={4}>
+        <Tag
+          userSelect={"none"}
+          variant={"outline"}
+          colorScheme={"green"}
+          mr={4}
+        >
           connected
         </Tag>
       ) : (
-        <Tag variant={"outline"} colorScheme={"red"} mr={4}>
+        <Tag userSelect={"none"} variant={"outline"} colorScheme={"red"} mr={4}>
           {"disconnected >:("}
         </Tag>
       )}

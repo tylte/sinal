@@ -19,13 +19,13 @@ export const PlayerGridCase: React.FC<PlayerGridCaseProps> = ({
   let letterToShow = letter;
 
   if (!isVisible && letter !== undefined) {
-    console.log("isVisible ; ", isVisible);
     letterToShow = "●";
   }
 
   return (
     <Flex w={14} height={14} bgColor={color}>
       <Text
+        userSelect={"none"}
         color={"white"}
         fontFamily={"revert"}
         fontWeight={"bold"}

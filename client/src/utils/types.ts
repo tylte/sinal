@@ -1,6 +1,6 @@
 export interface StartGameResponse {
   length: number;
-  first_letter: string;
+  firstLetter: string;
   id: string;
   nb_life: number;
 }
@@ -50,10 +50,11 @@ export type UpdateLobbyLeavePayload = {
   lobby: Lobby | null;
 };
 export type Game1vs1 = {
+  playerOne: { id: string; name: string; nb_life: number };
+  playerTwo: { id: string; name: string; nb_life: number };
   id: string;
   length: number;
-  first_letter: string;
-  nb_life: number;
+  firstLetter: string;
 };
 
 export type SoloGameState = {
@@ -75,6 +76,7 @@ export type BrGameState = {
   triesHistory: TriesHistory[];
   isFinished: boolean;
   hasWon: boolean;
+  isVisible: boolean;
 };
 export type PlayerBr = {
   id: string,
@@ -93,3 +95,15 @@ export type BrGameInfo = {
   globalTime: number,
   timeAfterFirstGuess: number,
 }
+
+export type KeyboardSettings = {
+  onEnter: () => void;
+  onKeydown: (letter: string) => void;
+  onBackspace: () => void;
+};
+
+export type ChatMessage = {
+  content: string;
+  author: string;
+  id: string;
+};

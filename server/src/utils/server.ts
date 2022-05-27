@@ -2,7 +2,6 @@ import cors from "cors";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { date } from "zod";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
 import { get_lobbies, get_lobby_id } from "../Endpoint/lobbies";
@@ -14,6 +13,7 @@ import {
   guessWordBrEvent,
   joinLobbyEvent,
   leaveLobbyEvent,
+  sendChatMessage,
   startGame1vs1Event,
   startGameBrEvent,
   updateWordEvent,
@@ -26,8 +26,9 @@ import {
   ArgUpdateWord,
   EventResponseFn,
   PacketType,
+  ReceivedChatMessage,
 } from "./type";
-import { PUBLIC_LOBBIES } from "./utils";
+import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 
 export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
@@ -270,6 +271,20 @@ export const getServer = () => {
         console.log("start_game_br : ", check);
       }
     });
+    /**
+     * send_message
+     * @param { message, playerId }
+     * broadcast "broadcast_message" on all player in the general
+     */
+    socket.on("send_chat_message", (req) => {
+      let check = ReceivedChatMessage.safeParse(req); // Same arguments for update_word
+      if (check.success) {
+        sendChatMessage(io, check.data);
+      } else {
+        console.log("send_chat_message payload : ", req);
+        console.log("send_chat_message : ", check);
+      }
+    });
 
     /**
      * guess_word_br
@@ -302,6 +317,14 @@ export const getServer = () => {
 
     socket.on("leave_public_lobbies", () => {
       socket.leave(PUBLIC_LOBBIES);
+    });
+
+    socket.on("join_chat_global", () => {
+      socket.join(PUBLIC_CHAT);
+    });
+
+    socket.on("leave_chat_global", () => {
+      socket.leave(PUBLIC_CHAT);
     });
   });
 
