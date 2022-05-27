@@ -67,6 +67,7 @@ export type SoloGameState = {
 };
 
 export type BrGameState = {
+  playerId:string;
   wordLength: number;
   wordId: string;
   firstLetter: string;
@@ -75,3 +76,20 @@ export type BrGameState = {
   isFinished: boolean;
   hasWon: boolean;
 };
+export type PlayerBr = {
+  id: string,
+  name: string,
+  nbLife: number,
+};
+
+export type BrGameInfo = {
+  playerList: PlayerBr[],
+  playerFound: PlayerBr[],
+  playersLastNextRound: number,
+  id: string,
+  length: number,
+  firstLetter: string,
+  eliminationRate: number,
+  globalTime: number,
+  timeAfterFirstGuess: number,
+}

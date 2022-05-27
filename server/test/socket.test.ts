@@ -23,6 +23,7 @@ const uuidValidateV4 = (uuid: string) => {
 describe("Web socket testing", () => {
   let clientSocket: ClientSocket, httpServer: HTTPServer;
   let otherClientSocket: ClientSocket;
+  let thirdClientSocket: ClientSocket;
 
   beforeAll((done) => {
     httpServer = getServer();
@@ -32,9 +33,11 @@ describe("Web socket testing", () => {
     httpServer.listen(port, () => {
       clientSocket = connect(`http://localhost:${port}`);
       otherClientSocket = connect(`http://localhost:${port}`);
+      thirdClientSocket = connect(`http://localhost:${port}`);
 
       clientSocket.on("connect", done);
       otherClientSocket.on("connect", done);
+      thirdClientSocket.on("connect", done);
     });
   });
 
@@ -42,6 +45,7 @@ describe("Web socket testing", () => {
     httpServer.close();
     clientSocket.close();
     otherClientSocket.close();
+    thirdClientSocket.close();
   });
   test("Create lobby + create player success case", (done) => {
     let playerId: string = "";
@@ -338,7 +342,7 @@ describe("Web socket testing", () => {
               }
             );
 
-            clientSocket.on("starting_game_br", (game) => {
+            clientSocket.on("starting_game_1vs1", (game) => {
               clientSocket.emit("get_word", game.id, (soluce: PacketType) => {
                 let testWord: string = soluce.data;
                 if (testWord[testWord.length - 1] !== "W")
@@ -360,6 +364,7 @@ describe("Web socket testing", () => {
                     try {
                       expect(tab_res.data).toStrictEqual(array);
                     } catch (e) {
+                      fail(e);
                       done(e);
                     }
                   }
@@ -378,6 +383,85 @@ describe("Web socket testing", () => {
           }
         );
       });
+    });
+  });
+  test("normal game of Battle Royale", (done) => {
+    clientSocket.emit("create_player", "Bob", (playerOne: PacketType) => {
+      otherClientSocket.emit(
+        "create_player",
+        "Jhon",
+        (playerTwo: PacketType) => {
+          thirdClientSocket.emit(
+            "create_player",
+            "Didier",
+            (playerThree: PacketType) => {
+              let createLobbyArg = {
+                mode: "battle-royale",
+                place: 5,
+                isPublic: true,
+                owner: {
+                  name: "bob",
+                  id: playerOne.data.id,
+                  lobbyId: null,
+                },
+                name: "lobby test",
+              };
+              clientSocket.emit(
+                "create_lobby",
+                createLobbyArg,
+                (lobby: PacketType) => {
+                  clientSocket.on("starting_game_br", (game) => {
+                    clientSocket.emit(
+                      "get_word",
+                      game.id,
+                      (soluce: PacketType) => {
+                        clientSocket.emit(
+                          "guess_word_br",
+                          {
+                            word: soluce.data,
+                            gameId: game.id,
+                            playerId: playerOne.data.id,
+                          },
+                          () => {}
+                        );
+                      }
+                    );
+                  });
+
+                  clientSocket.on("draw_br", () => {
+                    fail("partie nulle :/");
+                  });
+
+                  clientSocket.on("winning_player_br", (winningPlayer) => {
+                    expect(winningPlayer.id).toBe(playerOne.data.id);
+                    done();
+                  });
+
+                  otherClientSocket.emit(
+                    "join_lobby",
+                    { lobbyId: lobby.data, playerId: playerTwo.data.id },
+                    () => {
+                      thirdClientSocket.emit(
+                        "join_lobby",
+                        { lobbyId: lobby.data, playerId: playerThree.data.id },
+                        () => {
+                          clientSocket.emit("start_game_br", {
+                            lobbyId: lobby.data,
+                            playerId: playerOne.data.id,
+                            eliminationRate: 10,
+                            globalTime: 1000,
+                            timeAfterFirstGuess: 1000,
+                          });
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
     });
   });
 });

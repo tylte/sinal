@@ -70,7 +70,7 @@ export const GameBr = z.object({
   firstLetter: z.string(),
   eliminationRate: z.number(),
   globalTime: z.number(),
-  currentTimeout: z.optional(z.any()),
+  endTime: z.optional(z.number()),
   timeAfterFirstGuess: z.number(),
 });
 
@@ -128,6 +128,8 @@ export let playerMap: Map<string, Player> = new Map();
 
 export let game1vs1Map: Map<string, Game1vs1> = new Map();
 export let gameBrMap: Map<string, GameBr> = new Map();
+
+export let timeoutMap: Map<string, NodeJS.Timeout> = new Map();
 
 export type JoinLobbyResponse = (payload: {
   success: boolean;
