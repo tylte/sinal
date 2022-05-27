@@ -1,4 +1,12 @@
-import { Alert, AlertIcon, Box, Flex, Input, Text } from "@chakra-ui/react";
+import {
+  Alert,
+  AlertIcon,
+  Box,
+  Flex,
+  Input,
+  Text,
+  useColorMode,
+} from "@chakra-ui/react";
 import React, { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
 import { addChatEvents, removeChatEvents } from "../utils/api";
 import { useChattingActions, usePlayer, useSocket } from "../utils/hooks";
@@ -13,6 +21,7 @@ export const Chat: React.FC<ChatProps> = ({}) => {
   const [canSendMessage, setCanSendMessage] = useState(true);
   const [messageHistory, setMessageHistory] = useState<ChatMessage[]>([]);
   const [_, setIsChatting] = useChattingActions();
+  const { colorMode } = useColorMode();
 
   useEffect(() => {
     if (socket) {
@@ -96,6 +105,7 @@ export const Chat: React.FC<ChatProps> = ({}) => {
           </Alert>
         )}
         <Input
+          borderColor={colorMode === "dark" ? "white" : "black"}
           onBlur={() => setIsChatting && setIsChatting(false)}
           onFocus={() => setIsChatting && setIsChatting(true)}
           w="100%"
