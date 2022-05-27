@@ -275,9 +275,6 @@ export const addGuessWordBrBroadcast = async (
   socket?.on("guess_word_broadcast", (arg) => {
     if (arg.playerId !== playerId) {
       console.log("guess_word_broadcast arg : ", arg);
-      // console.log("success guess_word_broadcast");
-      // console.log("tableau : ", arg.tab_res);
-      // console.log("guess_word_broadcast : " + gameState + " id : ", arg.playerId);
       setGameState((gameState) =>
         gameState.map((game) =>
           game.playerId === arg.playerId
@@ -295,19 +292,29 @@ export const addGuessWordBrBroadcast = async (
         )
       );
     }
-    // console.log("guess_word_broadcast : " + gameState);
   });
 };
 
 export const addBrEvent = async (
   startGame:(gameBr:BrGameInfo) => void,
   socket: Socket | null,
-  gameInfo:BrGameInfo
+  playerId:string,
+  toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
 
   });
   socket?.on("winning_player_br", (arg) => {
+    if(arg !== playerId) {
+      console.log("arg.data : ", arg, " playerId : ", playerId);
+      toast({
+        title: "Perdu ! Sadge",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      return;
+    }
     console.log("winning_player_br");
   });
   socket?.on("next_word_br", (arg) => {

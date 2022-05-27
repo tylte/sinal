@@ -17,6 +17,7 @@ import {
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
 import { getClassicKeyboardSettings } from "../utils/utils";
+import Timer from "./Timer";
 
 interface InGameLobbyBrProps {
   player: Player;
@@ -77,7 +78,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     // Request the word when mounted
     startGame(gameInfo);
     addGuessWordBrBroadcast(socket, player.id, setGameState);
-    addBrEvent(startGame, socket, gameInfo);
+    addBrEvent(startGame, socket, player.id, toast);
   }, []);
   const toast = useToast();
   const onEnter = async () => {
@@ -202,12 +203,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     // 1 because 0 is the player
     for (j = 0; j < 6 && i < numberPlayer; j++) {
       const {
-        hasWon,
         triesHistory,
         firstLetter,
         nbLife,
         wordLength,
-        isFinished,
         isVisible,
       } = gameState?.[i] || {};
       items.push(
@@ -241,6 +240,9 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         <Text align="center" fontSize="large">
           {player.name}
         </Text>
+        <Text>
+        {/* <Timer></Timer> */}
+        </Text>
         <PlayerGrid
           isVisible={true}
           firstLetter={firstLetter}
@@ -253,29 +255,5 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         />
       </Box>
     </>
-    // <Flex direction={"column"} align={"left"}>
-    //   {hasWon && <Confetti />}
-    //   <Text mb={5} align="center" fontSize={"larger"}>
-    //     Partie Battle Royale
-    //   </Text>
-    //   <Flex direction={"row"} alignContent={"center"}>
-    //     {grid}
-    //     <Flex direction={"column"} alignContent={"center"}>
-    //       <Text align="center" fontSize="large">
-    //         {player.name}
-    //       </Text>
-    //       <PlayerGrid
-    //         isVisible={true}
-    //         firstLetter={firstLetter}
-    //         wordLength={wordLength}
-    //         nbLife={nbLife}
-    //         word={word}
-    //         triesHistory={triesHistory}
-    //         isFinished={isFinished}
-    //         keyboardSetting={keyboardSettings}
-    //       />
-    //     </Flex>
-    //   </Flex>
-    // </Flex>
   );
 };
