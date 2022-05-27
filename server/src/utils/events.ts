@@ -10,6 +10,7 @@ import {
   ArgStartGame1vs1Type,
   ArgStartGameBrType,
   ArgUpdateWord,
+  ChatMessageToSend,
   EventResponseFn,
   Game1vs1,
   game1vs1Map,
@@ -21,8 +22,9 @@ import {
   Player,
   PlayerBr,
   playerMap,
+  ReceivedChatMessageType,
 } from "./type";
-import { PUBLIC_LOBBIES } from "./utils";
+import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 
 export const createLobbyEvent = (
   io: Server,
@@ -530,4 +532,25 @@ export const guessWordBrEvent = (
     game.playerFound = new Array();
     io.to(gameId).emit("next_word_br", game);
   }
+};
+export const sendChatMessage = (
+  io: Server,
+  { content, playerId }: ReceivedChatMessageType
+) => {
+  const player = playerMap.get(playerId);
+
+  if (!player) {
+    console.log("send_chat_message : player doesn't seem to exist");
+    return;
+  }
+
+  let messageId = get_id();
+
+  let messageToSend: ChatMessageToSend = {
+    author: player.name,
+    content,
+    id: messageId,
+  };
+
+  io.to(PUBLIC_CHAT).emit("broadcast_message", messageToSend);
 };
