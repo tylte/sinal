@@ -3,6 +3,7 @@ import {
   KeyboardSettings,
   LetterResult,
   LobbyState,
+  MyFocus,
   TriesHistory,
 } from "./types";
 
@@ -74,27 +75,31 @@ export const getIdFromPage = (id: string | string[] | undefined) => {
 export const classicWordWriting = (
   letter: string,
   setWord: Dispatch<SetStateAction<string>>,
-  wordLength: number
+  wordLength: number,
+  focus: MyFocus
 ) => {
   setWord((word) => {
     let newCharacter = letter.toUpperCase();
-    if (word.length < wordLength) {
-      return word + newCharacter;
-    } else {
-      return word;
+    if (focus.index < wordLength && !focus.isBorder) {
+      return writeWordWithFocus(focus, word, newCharacter);
     }
+    return word;
   });
 };
 
 export const classicWordDelete = (
-  setWord: Dispatch<SetStateAction<string>>
+  setWord: Dispatch<SetStateAction<string>>,
+  { index, isBorder }: MyFocus
 ) => {
   setWord((word) => {
-    if (word.length > 1) {
-      return word.slice(0, word.length - 1);
-    } else {
+    if (index <= 1) {
       // Cannot remove first letter
       return word;
+    }
+    if (isBorder) {
+      return word.slice(0, index);
+    } else {
+      return word.slice(0, index - 1) + word.slice(index);
     }
   });
 };
@@ -102,15 +107,19 @@ export const classicWordDelete = (
 export const getClassicKeyboardSettings = (
   onEnter: () => void,
   setWord: Dispatch<SetStateAction<string>>,
+  focus: MyFocus,
+  setFocus: Dispatch<SetStateAction<MyFocus>>,
   wordLength: number
 ): KeyboardSettings => {
   return {
     onBackspace: () => {
-      classicWordDelete(setWord);
+      decrementFocus(setFocus, 1);
+      classicWordDelete(setWord, focus);
     },
     onEnter,
     onKeydown: (letter) => {
-      classicWordWriting(letter, setWord, wordLength);
+      incrementFocus(setFocus, wordLength - 1);
+      classicWordWriting(letter, setWord, wordLength, focus);
     },
   };
 };
@@ -130,4 +139,63 @@ export const getLetterToColorFromTriesHistory = (
   });
 
   return ret;
+};
+
+export const incrementFocus = (
+  setFocusIndex: Dispatch<SetStateAction<MyFocus>>,
+  upperLimit: number
+) => {
+  setFocusIndex((focus) => {
+    if (focus.index < upperLimit) {
+      return {
+        ...focus,
+        index: focus.index + 1,
+      };
+    } else {
+      return { ...focus, isBorder: focus.index === upperLimit };
+    }
+  });
+};
+
+export const decrementFocus = (
+  setFocus: Dispatch<SetStateAction<MyFocus>>,
+  lowerLimit: number
+) => {
+  setFocus((focus) => {
+    if (focus.isBorder) {
+      return { ...focus, isBorder: false };
+    }
+
+    if (focus.index > lowerLimit) {
+      return { ...focus, index: focus.index - 1 };
+    }
+
+    return focus;
+  });
+};
+
+export const writeWordWithFocus = (
+  focus: MyFocus,
+  word: string,
+  newCharacter: string
+): string => {
+  if (focus.focusMode === "insert") {
+    return (
+      word.slice(0, focus.index) +
+      newCharacter +
+      word.slice(focus.index, word.length)
+    );
+  } else if (focus.focusMode === "overwrite") {
+    let newWord = [...word];
+
+    while (newWord.length < focus.index) {
+      newWord.push(" ");
+    }
+    newWord[focus.index] = newCharacter;
+
+    console.log(newWord);
+    return newWord.join("");
+  }
+
+  return word;
 };

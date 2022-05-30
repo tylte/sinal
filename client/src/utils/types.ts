@@ -78,3 +78,11 @@ export type ChatMessage = {
   author: string;
   id: string;
 };
+
+export type MyFocus = {
+  index: number;
+  isBorder: boolean;
+  focusMode: FocusMode;
+};
+
+export type FocusMode = "overwrite" | "insert";

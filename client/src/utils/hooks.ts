@@ -1,8 +1,13 @@
 import { Dispatch, SetStateAction, useContext, useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { SinalContext } from "./context";
-import { Player } from "./types";
-import { classicWordDelete, classicWordWriting } from "./utils";
+import { MyFocus, Player } from "./types";
+import {
+  classicWordDelete,
+  classicWordWriting,
+  decrementFocus,
+  incrementFocus,
+} from "./utils";
 
 export const useDictionary = (): Set<string> => {
   let { dictionary } = useContext(SinalContext);
@@ -46,19 +51,27 @@ const handleWordInput = (
   e: KeyboardEvent,
   setWord: Dispatch<SetStateAction<string>>,
   wordLength: number,
-  onEnter: () => void
+  onEnter: () => void,
+  focus: MyFocus,
+  setFocus: Dispatch<SetStateAction<MyFocus>>
 ) => {
   // Only one alphabetic caracter in the key
   const re = /^([a-zA-Z]{1})$/;
   // more detail on e.key https://www.toptal.com/developers/keycode/for/alt
   if (re.test(e.key)) {
-    classicWordWriting(e.key, setWord, wordLength);
+    incrementFocus(setFocus, wordLength - 1);
+    classicWordWriting(e.key, setWord, wordLength, focus);
   } else if (e.key === "Backspace") {
     // Remove last character of the word
-    classicWordDelete(setWord);
+    classicWordDelete(setWord, focus);
+    decrementFocus(setFocus, 1);
   } else if (e.key === "Enter") {
     // Function coming from props to let upper components decide what to do
     onEnter();
+  } else if (e.key === "ArrowRight") {
+    incrementFocus(setFocus, wordLength - 1);
+  } else if (e.key === "ArrowLeft") {
+    decrementFocus(setFocus, 1);
   }
 };
 
@@ -76,10 +89,12 @@ export const useClassicWordInput = (
   setWord: Dispatch<SetStateAction<string>>,
   wordLength: number,
   onEnter: () => void,
+  focus: MyFocus,
+  setFocus: Dispatch<SetStateAction<MyFocus>>,
   stopListening?: boolean
 ) => {
   const handleInput = (e: KeyboardEvent) => {
-    handleWordInput(e, setWord, wordLength, onEnter);
+    handleWordInput(e, setWord, wordLength, onEnter, focus, setFocus);
   };
   useEffect(() => {
     if (!stopListening) {
@@ -91,5 +106,5 @@ export const useClassicWordInput = (
         document.removeEventListener("keydown", handleInput);
       }
     };
-  }, [word, stopListening]);
+  }, [word, focus, stopListening]);
 };

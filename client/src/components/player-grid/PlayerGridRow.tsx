@@ -1,6 +1,6 @@
 import { HStack } from "@chakra-ui/react";
 import React from "react";
-import { LetterResult } from "../../utils/types";
+import { LetterResult, MyFocus } from "../../utils/types";
 import { PlayerGridCase } from "./PlayerGridCase";
 
 interface PlayerGridRowProps {
@@ -9,6 +9,7 @@ interface PlayerGridRowProps {
   wordLength: number;
   letterResults?: LetterResult[];
   isVisible?: boolean;
+  focus?: MyFocus;
 }
 
 export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
@@ -16,6 +17,7 @@ export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
   wordLength: length,
   letterResults,
   isVisible,
+  focus,
 }) => {
   let playerRow = [...word].map((letter, index) => {
     return (
@@ -24,14 +26,22 @@ export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
         letter={letter}
         isVisible={isVisible}
         letterResult={letterResults && letterResults[index]}
+        isFocus={focus?.index === index}
+        isGradient={focus?.isBorder}
       />
     );
   });
-
+  let index = word.length;
   while (playerRow.length < length) {
     playerRow.push(
-      <PlayerGridCase isVisible={isVisible} key={playerRow.length} />
+      <PlayerGridCase
+        isVisible={isVisible}
+        key={playerRow.length}
+        isFocus={focus?.index === index}
+        isGradient={focus?.isBorder}
+      />
     );
+    index++;
   }
 
   return <HStack spacing={1}>{playerRow}</HStack>;

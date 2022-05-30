@@ -1,6 +1,6 @@
 import { Box, Stack } from "@chakra-ui/react";
 import React from "react";
-import { KeyboardSettings, TriesHistory } from "../../utils/types";
+import { KeyboardSettings, MyFocus, TriesHistory } from "../../utils/types";
 import { Keyboard } from "../keyboard/Keyboard";
 import { PlayerGridRow } from "./PlayerGridRow";
 
@@ -11,8 +11,9 @@ interface PlayerGridProps {
   nbLife: number;
   word: string;
   triesHistory: TriesHistory[];
-  keyboardSetting?: KeyboardSettings;
   isFinished: boolean;
+  focus: MyFocus;
+  keyboardSetting?: KeyboardSettings;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
@@ -24,6 +25,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   triesHistory,
   keyboardSetting,
   isFinished,
+  focus,
 }) => {
   if (isVisible === undefined) {
     isVisible = true;
@@ -35,10 +37,12 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   const rowsArray = [];
 
   for (let i = 0; i < nbLife; i++) {
+    let isCurrentRow = i === triesHistory.length;
     let wordToShow = firstLetter;
+
     if (triesHistory.length > i) {
       wordToShow = triesHistory[i].wordTried;
-    } else if (i === triesHistory.length) {
+    } else if (isCurrentRow) {
       wordToShow = word;
     }
 
@@ -49,6 +53,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
         letterResults={triesHistory[i]?.result}
         wordLength={length}
         isVisible={isVisible}
+        focus={isCurrentRow ? focus : undefined}
       />
     );
   }
