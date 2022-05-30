@@ -502,9 +502,7 @@ export const guessWordBrEvent = (
   });
 
   if (win) {
-    console.log("win");
     if (game.playerFound.length === 0) {
-      console.log("1");
       game.playerFound.push(player);
 
       let timeout = timeoutMap.get(gameId);
@@ -544,12 +542,17 @@ export const guessWordBrEvent = (
           let timeout = timeoutMap.get(gameId);
           if (timeout !== undefined) clearTimeout(timeout);
 
-          timeout = setTimeout(() => {
-            tempsEcouleBr(game, io);
-          }, game.timeAfterFirstGuess);
+          if (
+            typeof game?.endTime !== "undefined" &&
+            game?.endTime - Date.now() > game.timeAfterFirstGuess
+          ) {
+            timeout = setTimeout(() => {
+              tempsEcouleBr(game, io);
+            }, game.timeAfterFirstGuess);
+            game.endTime = Date.now() + game.timeAfterFirstGuess;
+            timeoutMap.set(gameId, timeout);
+          }
 
-          game.endTime = Date.now() + game.timeAfterFirstGuess;
-          timeoutMap.set(gameId, timeout);
           io.to(gameId).emit("next_word_br", game);
         }
       }
