@@ -1,10 +1,11 @@
 import { Box, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
   addBrEvent,
   addGuessWordBrBroadcast,
   guessWordBr,
+  removeBrEvent,
 } from "src/utils/api";
 import {
   useClassicWordInput,
@@ -52,11 +53,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const [secondsRemaining, setSecondsRemaining] = useState(1);
 
   //the interval of the chrono
-  const countRef = useRef<NodeJS.Timeout>(
-    setInterval(() => {
-      setSecondsRemaining((timer) => timer);
-    }, 0)
-  );
+  const [countRef, setCountRef] = useState<NodeJS.Timeout | null>(null);
 
   //the chrono to display
   const secondsToDisplay = Math.trunc((secondsRemaining / 1000) % 60);
@@ -107,13 +104,16 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     setWord(gameInfo.firstLetter.toUpperCase());
 
     //initialize the chrono
-    clearInterval(countRef.current);
+    // clearInterval(countRef);
     if (gameInfo.endTime !== undefined) {
       setSecondsRemaining(gameInfo.endTime - Date.now());
     }
-    countRef.current = setInterval(() => {
-      setSecondsRemaining((timer) => timer - 1000);
-    }, 1000);
+    setCountRef(
+      setInterval(() => {
+        console.log("enter intervale");
+        setSecondsRemaining((timer) => timer - 1000);
+      }, 1000)
+    );
   };
 
   //reset the game for the new word
@@ -156,13 +156,15 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     setWord(gameBr.firstLetter.toUpperCase());
 
     //initialize the chrono
-    clearInterval(countRef.current);
+    // clearInterval(countRef);
     if (gameBr.endTime !== undefined) {
       setSecondsRemaining(gameBr.endTime - Date.now());
     }
-    countRef.current = setInterval(() => {
-      setSecondsRemaining((timer) => timer - 1000);
-    }, 1000);
+    setCountRef(
+      setInterval(() => {
+        setSecondsRemaining((timer) => timer - 1000);
+      }, 1000)
+    );
   };
 
   //useEffect base of the game
@@ -178,6 +180,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       countRef,
       setGameState
     );
+    return () => {
+      removeBrEvent(socket);
+      if (countRef !== null) {
+        clearInterval(countRef);
+      }
+    };
   }, []);
 
   const toast = useToast();
@@ -185,7 +193,9 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   //useEffect for the timer
   useEffect(() => {
     if (looseByTime) {
-      clearInterval(countRef.current);
+      if (countRef !== null) {
+        clearInterval(countRef);
+      }
       toast({
         title: "perdu, le temps est dépassé",
         status: "error",
@@ -200,7 +210,20 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         )
       );
     }
+    return () => {
+      if (countRef !== null) {
+        clearInterval(countRef);
+      }
+    };
   }, [looseByTime]);
+
+  useEffect(() => {
+    return () => {
+      if (countRef !== null) {
+        clearInterval(countRef);
+      }
+    };
+  }, [countRef]);
 
   const onEnter = async () => {
     if (gameState === null) {
@@ -272,7 +295,9 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         duration: 2500,
       });
       //the game is finished so we stop the timer
-      clearInterval(countRef.current);
+      if (countRef !== null) {
+        clearInterval(countRef);
+      }
     }
     if (triesHistory.length + 1 === nbLife) {
       setGameState(
@@ -289,7 +314,9 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         duration: 2500,
       });
       //the game is finished so we stop the timer
-      clearInterval(countRef.current);
+      if (countRef !== null) {
+        clearInterval(countRef);
+      }
     }
   };
 

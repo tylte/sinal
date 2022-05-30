@@ -302,7 +302,7 @@ export const addBrEvent = async (
   playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
   setSecondsRemaining: React.Dispatch<React.SetStateAction<number>>,
-  countRef: React.MutableRefObject<NodeJS.Timeout>,
+  countRef: NodeJS.Timeout | null,
   setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
@@ -324,7 +324,9 @@ export const addBrEvent = async (
         )
       );
     }
-    clearTimeout(countRef.current);
+    if(countRef !== null) {
+      clearTimeout(countRef)
+    }
     return;
   });
   socket?.on("next_word_br", (arg) => {
@@ -333,6 +335,14 @@ export const addBrEvent = async (
   socket?.on("draw_br", (arg) => {
     console.log("draw_br");
   });
+};
+
+export const removeBrEvent = (socket: Socket | null) => {
+  socket?.removeListener("guess_word_broadcast");
+  socket?.removeListener("first_winning_player_br");
+  socket?.removeListener("winning_player_br");
+  socket?.removeListener("next_word_br");
+  socket?.removeListener("draw_br");
 };
 
 export const lobbyOneVsOneAddEvents = (
