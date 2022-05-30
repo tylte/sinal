@@ -161,7 +161,7 @@ export const addSpecificLobbiesEvent = (
   setLobby: Dispatch<SetStateAction<Lobby | null>>,
   setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>
 ) => {
-  socket.on("starting_game", (game: Game1vs1) => {
+  socket.on("starting_game_1vs1", (game: Game1vs1) => {
     console.log("starting-game-1vs1");
     setGameState(game);
     //FIXME : Mettre le statut du lobby en "in-game" côté serveur

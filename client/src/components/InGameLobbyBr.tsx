@@ -349,7 +349,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       i++;
     }
     grid.push(
-      <Flex direction={"column"} alignContent={"center"}>
+      <Flex key={i} direction={"column"} alignContent={"center"}>
         {items.slice(i - 1 - j, i - 1)}
       </Flex>
     );
@@ -366,7 +366,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         <Text align="center" fontSize="large">
           {player.name}
         </Text>
-        <Text>
+        <Box as="span">
           <Text
             color={
               !hasWon && minutesToDisplay <= 0 && secondsToDisplay <= 30
@@ -392,7 +392,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
               {twoDigits(minutesToDisplay)}:{twoDigits(secondsToDisplay)}
             </Text>
           )}
-        </Text>
+        </Box>
         <PlayerGrid
           isVisible={true}
           firstLetter={firstLetter}
