@@ -24,7 +24,7 @@ interface PreGameLobbyProps {
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
-  lobby: { name, totalPlace, state, playerList, id, owner, mode },
+  lobby: { name, totalPlace, state, playerList, id, owner, mode, lastGame },
   player: { id: playerId },
 }) => {
   const socket = useSocket();
@@ -41,45 +41,69 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
     : "Plein";
 
   return (
-    <Flex direction={"column"} alignContent={"center"}>
-      <Box mx="auto">
-        <Text fontSize={"4xl"}>
-          {name} - {mode} - {placeStatus}
-        </Text>
-      </Box>
+    <>
+      {lastGame != null && (
+        <Box pt={8} pl={8}>
+          <Text fontSize={"3xl"} fontWeight={"bold"}>
+            Dernière partie
+          </Text>
+          <Text>
+            <b>Mode de jeu :</b> {lastGame.gameMode}
+          </Text>
+          <Text>
+            <b>Liste des joueurs : </b>
+            {lastGame.playerList.map((player) => player.name + ", ")}
+          </Text>
+          <Text>
+            <b>Gagnant : </b>
+            {lastGame.winner}
+          </Text>
+          <Text>
+            <b>Mot à deviner : </b>
+            {lastGame.wordToGuess}
+          </Text>
+        </Box>
+      )}
+      <Flex direction={"column"} alignContent={"center"}>
+        <Box mx="auto">
+          <Text fontSize={"4xl"}>
+            {name} - {mode} - {placeStatus}
+          </Text>
+        </Box>
 
-      <Text fontSize={"2xl"}>Players</Text>
-      <Divider />
-      <List>
-        {playerList.map((player) => {
-          return (
-            <ListItem key={player.id}>
-              <HStack>
-                {player.id === owner && (
-                  <ListIcon as={GiLaurelCrown} color="green.500" />
-                )}
-                <Text fontSize={"xl"}>
-                  {player.name} {player.id === playerId && "(You)"}
-                </Text>
-              </HStack>
-            </ListItem>
-          );
-        })}
-      </List>
-      <HStack mx="auto">
-        <IconButton
-          aria-label="quit lobby"
-          icon={<ArrowBackIcon />}
-          onClick={() => router.push("/lobby")}
-        />
-        <Button
-          isDisabled={playerId !== owner || playerList.length < totalPlace}
-          colorScheme={"green"}
-          onClick={startGame}
-        >
-          Commencer
-        </Button>
-      </HStack>
-    </Flex>
+        <Text fontSize={"2xl"}>Players</Text>
+        <Divider />
+        <List>
+          {playerList.map((player) => {
+            return (
+              <ListItem key={player.id}>
+                <HStack>
+                  {player.id === owner && (
+                    <ListIcon as={GiLaurelCrown} color="green.500" />
+                  )}
+                  <Text fontSize={"xl"}>
+                    {player.name} {player.id === playerId && "(You)"}
+                  </Text>
+                </HStack>
+              </ListItem>
+            );
+          })}
+        </List>
+        <HStack mx="auto">
+          <IconButton
+            aria-label="quit lobby"
+            icon={<ArrowBackIcon />}
+            onClick={() => router.push("/lobby")}
+          />
+          <Button
+            isDisabled={playerId !== owner || playerList.length < totalPlace}
+            colorScheme={"green"}
+            onClick={startGame}
+          >
+            Commencer
+          </Button>
+        </HStack>
+      </Flex>
+    </>
   );
 };
