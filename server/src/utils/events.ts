@@ -420,6 +420,7 @@ export const startGameBrEvent = (
 
   let word = get_word();
   idToWord.set(gameId, word);
+  console.log("Mot à découvrir : ", word);
 
   let game: GameBr = {
     playerList: playerArray,
@@ -458,7 +459,6 @@ export const guessWordBrEvent = (
     console.log("guess_word_br : there is no game unsing this gameId");
     return;
   }
-
   let dico = get_dictionary();
   let correctWord = false;
   dico.forEach((w) => {
@@ -502,9 +502,7 @@ export const guessWordBrEvent = (
   });
 
   if (win) {
-    console.log("win");
     if (game.playerFound.length === 0) {
-      console.log("1");
       game.playerFound.push(player);
 
       let timeout = timeoutMap.get(gameId);
@@ -517,6 +515,36 @@ export const guessWordBrEvent = (
       game.endTime = Date.now() + game.timeAfterFirstGuess;
       timeoutMap.set(gameId, timeout);
       io.to(gameId).emit("first_winning_player_br", game);
+      if (game.playerFound.length === game.playersLastNextRound) {
+        game.playersLastNextRound = Math.floor(
+          game.playersLastNextRound * (1 - game.eliminationRate / 100)
+        );
+
+        if (game.playersLastNextRound === 0) {
+          io.to(gameId).emit("winning_player_br", playerId);
+          io.to(gameId).socketsLeave(gameId);
+        } else if (game.playersLastNextRound === 1) {
+          //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
+        } else {
+          let newWord = get_word();
+          idToWord.set(gameId, newWord);
+          game.firstLetter = newWord.charAt(0);
+          game.length = newWord.length;
+          game.playerList = game.playerFound;
+          game.playerFound = new Array();
+
+          let timeout = timeoutMap.get(gameId);
+          if (timeout !== undefined) clearTimeout(timeout);
+
+          timeout = setTimeout(() => {
+            tempsEcouleBr(game, io);
+          }, game.timeAfterFirstGuess);
+
+          game.endTime = Date.now() + game.timeAfterFirstGuess;
+          timeoutMap.set(gameId, timeout);
+          io.to(gameId).emit("next_word_br", game);
+        }
+      }
     } else if (game.playerFound.length >= game.playersLastNextRound) {
       console.log("guess_word_br : player guessed too late");
       return;

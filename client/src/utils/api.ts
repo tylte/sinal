@@ -69,17 +69,7 @@ export const guessWordBr = (
       },
       response
     );
-  } else {
-    console.log("guessWordBr error gameId undefined");
   }
-};
-export const awaitResult = async (
-  resultOnChange: boolean
-): Promise<Boolean> => {
-  while (!resultOnChange) {
-    console.log("premise enter");
-  }
-  return true;
 };
 
 export const addSocketConnectionEvent = (
@@ -169,7 +159,7 @@ export const addSpecificLobbiesEvent = (
   socket: Socket,
   lobbyId: string,
   setLobby: Dispatch<SetStateAction<Lobby | null>>,
-  setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>,
+  setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>
 ) => {
   socket.on("starting_game", (game: Game1vs1) => {
     console.log("starting-game-1vs1");
@@ -286,7 +276,6 @@ export const addGuessWordBrBroadcast = async (
 ) => {
   socket?.on("guess_word_broadcast", (arg) => {
     if (arg.playerId !== playerId) {
-      console.log("guess_word_broadcast arg : ", arg);
       setGameState((gameState) =>
         gameState.map((game) =>
           game.playerId === arg.playerId
@@ -308,32 +297,47 @@ export const addGuessWordBrBroadcast = async (
 };
 
 export const addBrEvent = async (
-  startGame:(gameBr:BrGameInfo) => void,
+  startGame: (gameBr: BrGameInfo) => void,
   socket: Socket | null,
-  playerId:string,
+  playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
+  setSecondsRemaining: React.Dispatch<React.SetStateAction<number>>,
+  countRef: React.MutableRefObject<NodeJS.Timeout>,
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
-
+    setSecondsRemaining(arg.endTime - Date.now());
   });
   socket?.on("winning_player_br", (arg) => {
-    if(arg !== playerId) {
-      console.log("arg.data : ", arg, " playerId : ", playerId);
+    if (arg !== playerId) {
+      console.log(
+        "winning_player_br arg.data : ",
+        arg,
+        " playerId : ",
+        playerId
+      );
       toast({
         title: "Perdu ! Sadge",
         status: "error",
         isClosable: true,
         duration: 2500,
       });
-      return;
+      setGameState((gameSate) =>
+        gameSate.map((game) =>
+          game.playerId !== arg
+            ? { ...game, isFinished: true, hasWon: false }
+            : { ...game }
+        )
+      );
     }
-    console.log("winning_player_br");
+    clearTimeout(countRef.current);
+    return;
   });
   socket?.on("next_word_br", (arg) => {
     startGame(arg.data);
   });
   socket?.on("draw_br", (arg) => {
-
+    console.log("draw_br");
   });
 };
 

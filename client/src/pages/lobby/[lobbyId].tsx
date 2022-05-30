@@ -137,7 +137,6 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
     );
   } else {
     // Its supposed to have a state
-    console.log("error");
     return (
       <Layout>
         <Spinner />
