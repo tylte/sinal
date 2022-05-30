@@ -97,9 +97,12 @@ export const classicWordDelete = (
       return word;
     }
     if (isBorder) {
+      // Remove last element
       return word.slice(0, index);
     } else {
-      return word.slice(0, index - 1) + word.slice(index);
+      let newWord = [...word];
+      newWord[index - 1] = " ";
+      return newWord.join("");
     }
   });
 };
