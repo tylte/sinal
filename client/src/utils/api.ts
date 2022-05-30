@@ -310,12 +310,6 @@ export const addBrEvent = async (
   });
   socket?.on("winning_player_br", (arg) => {
     if (arg !== playerId) {
-      console.log(
-        "winning_player_br arg.data : ",
-        arg,
-        " playerId : ",
-        playerId
-      );
       toast({
         title: "Perdu ! Sadge",
         status: "error",
