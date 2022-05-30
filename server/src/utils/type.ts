@@ -72,6 +72,7 @@ export const GameBr = z.object({
   globalTime: z.number(),
   endTime: z.optional(z.number()),
   timeAfterFirstGuess: z.number(),
+  numberOfDrawStreak: z.number(),
 });
 
 export type GameBr = z.infer<typeof GameBr>;

@@ -435,6 +435,7 @@ export const startGameBrEvent = (
     globalTime: globalTime,
     timeAfterFirstGuess: timeAfterFirstGuess,
     endTime: Date.now() + globalTime,
+    numberOfDrawStreak: 0,
   };
 
   gameBrMap.set(gameId, game);
@@ -504,6 +505,7 @@ export const guessWordBrEvent = (
   if (win) {
     if (game.playerFound.length === 0) {
       game.playerFound.push(player);
+      game.numberOfDrawStreak = 0;
 
       let timeout = timeoutMap.get(gameId);
       if (timeout !== undefined) clearTimeout(timeout);
@@ -572,12 +574,17 @@ export const guessWordBrEvent = (
           let timeout = timeoutMap.get(gameId);
           if (timeout !== undefined) clearTimeout(timeout);
 
-          timeout = setTimeout(() => {
-            tempsEcouleBr(game, io);
-          }, game.timeAfterFirstGuess);
+          if (
+            typeof game?.endTime !== "undefined" &&
+            game?.endTime - Date.now() > game.timeAfterFirstGuess
+          ) {
+            timeout = setTimeout(() => {
+              tempsEcouleBr(game, io);
+            }, game.timeAfterFirstGuess);
+            game.endTime = Date.now() + game.timeAfterFirstGuess;
+            timeoutMap.set(gameId, timeout);
+          }
 
-          game.endTime = Date.now() + game.timeAfterFirstGuess;
-          timeoutMap.set(gameId, timeout);
           io.to(gameId).emit("next_word_br", game);
         }
       }
@@ -591,23 +598,28 @@ export const guessWordBrEvent = (
     }
   });
   if (noOneAlive && game.playerFound.length === 0) {
-    io.to(gameId).emit("draw_br");
-    let newWord = get_word();
-    idToWord.set(gameId, newWord);
-    game.firstLetter = newWord.charAt(0);
-    game.length = newWord.length;
-    game.playerFound = new Array();
+    if (game.numberOfDrawStreak < 3) {
+      game.numberOfDrawStreak++;
+      io.to(gameId).emit("draw_br");
+      let newWord = get_word();
+      idToWord.set(gameId, newWord);
+      game.firstLetter = newWord.charAt(0);
+      game.length = newWord.length;
+      game.playerFound = new Array();
 
-    let timeout = timeoutMap.get(gameId);
-    if (timeout !== undefined) clearTimeout(timeout);
+      let timeout = timeoutMap.get(gameId);
+      if (timeout !== undefined) clearTimeout(timeout);
 
-    timeout = setTimeout(() => {
-      tempsEcouleBr(game, io);
-    }, game.timeAfterFirstGuess);
+      timeout = setTimeout(() => {
+        tempsEcouleBr(game, io);
+      }, game.globalTime);
 
-    game.endTime = Date.now() + game.timeAfterFirstGuess;
-    timeoutMap.set(gameId, timeout);
-    io.to(gameId).emit("next_word_br", game);
+      game.endTime = Date.now() + game.globalTime;
+      timeoutMap.set(gameId, timeout);
+      io.to(gameId).emit("next_word_br", game);
+    } else {
+      io.to(gameId).emit("end_of_game_draw", game);
+    }
   }
 };
 
