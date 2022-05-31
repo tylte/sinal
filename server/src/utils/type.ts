@@ -27,7 +27,7 @@ export const LastGame = z.object({
   gameMode: GameMode,
   playerList: Player.array(),
   winner: z.nullable(z.string()),
-  wordToGuess: z.string(),
+  wordsToGuess: z.string().array(),
 });
 
 export type LastGameType = z.infer<typeof LastGame>;

@@ -78,5 +78,5 @@ type LastGame = {
   gameMode: GameMode;
   playerList: Player[];
   winner: string | null;
-  wordToGuess: string;
+  wordsToGuess: string[];
 };

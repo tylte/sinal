@@ -57,11 +57,11 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             </Text>
             <Text>
               <b>Gagnant : </b>
-              {lastGame.winner}
+              {lastGame.winner ? lastGame.winner : "Egalité"}
             </Text>
             <Text>
               <b>Mot(s) à deviner : </b>
-              {lastGame.wordToGuess}
+              {lastGame.wordsToGuess.map((word) => word + ", ")}
             </Text>
           </>
         )}

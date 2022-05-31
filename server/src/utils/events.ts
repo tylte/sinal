@@ -346,7 +346,7 @@ export const guessWordEvent = (
         gameMode: lobby.mode,
         playerList: lobby.playerList,
         winner: player.name,
-        wordToGuess: word,
+        wordsToGuess: [word],
       };
       lobby.state = "pre-game";
       io.to(gameId).emit("ending_game", { lobby });
@@ -360,7 +360,7 @@ export const guessWordEvent = (
         gameMode: lobby.mode,
         playerList: lobby.playerList,
         winner: null,
-        wordToGuess: word,
+        wordsToGuess: [word],
       };
       lobby.state = "pre-game";
       io.to(gameId).emit("ending_game", { lobby });
