@@ -19,6 +19,7 @@ import {
   BrGameState,
   BrGameInfo,
   KeyboardSettings,
+  MyFocus,
 } from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
@@ -63,6 +64,13 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //check if the time is finished
   const looseByTime = secondsRemaining <= 0;
+
+  //the focus in the grid
+  const [focus, setFocus] = useState<MyFocus>({
+    index: 1,
+    isBorder: false,
+    focusMode: "overwrite",
+  });
 
   //start the game
   const startGame = () => {
@@ -266,6 +274,11 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       return;
     }
 
+    // Word taken into account
+    setFocus((focus) => {
+      return { ...focus, index: 1, isBorder: false };
+    });
+
     //check the word
     let result = await new Promise<number[]>((resolve) =>
       guessWordBr(lowerCaseWord, gameInfo.id, player.id, socket, (arg) => {
@@ -341,14 +354,18 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   useClassicWordInput(
     word,
     setWord,
-    gameState?.[0]?.wordLength ?? 0,
+    gameState[0]?.wordLength ?? 0,
     onEnter,
-    gameState?.[0]?.isFinished || isChatting
+    focus,
+    setFocus,
+    gameState[0]?.isFinished || isChatting
   );
 
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
     onEnter,
     setWord,
+    focus,
+    setFocus,
     gameInfo.length
   );
 
@@ -441,6 +458,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           )}
         </Box>
         <PlayerGrid
+          focus={focus}
           isVisible={true}
           firstLetter={firstLetter}
           wordLength={wordLength}
