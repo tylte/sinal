@@ -14,6 +14,7 @@ import {
 import {
   Game1vs1,
   KeyboardSettings,
+  MyFocus,
   Player,
   TriesHistory,
 } from "../utils/types";
@@ -50,6 +51,12 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
 
   const [hasWon, setHasWon] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+
+  const [focus, setFocus] = useState<MyFocus>({
+    index: 1,
+    isBorder: false,
+    focusMode: "overwrite",
+  });
 
   const adversaire: { id: string; name: string; nb_life: number } =
     playerOne.id !== playerId ? playerOne : playerTwo;
@@ -102,6 +109,10 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         });
       return;
     }
+    // Word taken into account
+    setFocus((focus) => {
+      return { ...focus, index: 1, isBorder: false };
+    });
 
     socket?.emit(
       "guess_word_1vs1",
@@ -123,12 +134,16 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     setWord,
     game_length,
     onEnter,
+    focus,
+    setFocus,
     isFinished || isChatting
   );
 
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
     onEnter,
     setWord,
+    focus,
+    setFocus,
     game_length
   );
 
@@ -158,6 +173,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
           {name}
         </Text>
         <PlayerGrid
+          focus={focus}
           isVisible={true}
           wordLength={game_length}
           nbLife={6}

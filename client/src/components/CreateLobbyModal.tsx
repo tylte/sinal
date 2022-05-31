@@ -98,7 +98,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         <ModalCloseButton />
         <ModalBody>
           <Box onKeyDown={handleKeyPressed}>
-            <Input value={lobbyName} onChange={handleLobbyName} />
+            <Input autoFocus value={lobbyName} onChange={handleLobbyName} />
             {/* GAME MODE */}
             <Text my={2}>Mode de jeu</Text>
             <RadioGroup onChange={handleGameMode} value={gameMode}>
