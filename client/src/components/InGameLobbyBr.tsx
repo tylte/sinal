@@ -52,18 +52,18 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const isChatting = useIsChatting();
 
   //The time remaining for the timer in ms
-  const [secondsRemaining, setSecondsRemaining] = useState(1);
+  const [msRemaining, setMsRemaining] = useState(1);
 
   //the interval of the chrono
   const [countRef, setCountRef] = useState<NodeJS.Timeout | null>(null);
 
   //the chrono to display
-  const secondsToDisplay = Math.trunc((secondsRemaining / 1000) % 60);
-  const minutesRemaining = secondsRemaining / 1000 / 60;
+  const secondsToDisplay = Math.trunc((msRemaining / 1000) % 60);
+  const minutesRemaining = msRemaining / 1000 / 60;
   const minutesToDisplay = Math.trunc(minutesRemaining);
 
   //check if the time is finished
-  const looseByTime = secondsRemaining <= 0;
+  const looseByTime = msRemaining <= 0;
 
   //the focus in the grid
   const [focus, setFocus] = useState<MyFocus>({
@@ -74,6 +74,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //start the game
   const startGame = () => {
+    //the first player
     setNumberPlayer(gameInfo.playerList.length);
     let newGameState = [];
     newGameState.push({
@@ -87,6 +88,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       wordId: gameInfo.id,
       isVisible: true,
     });
+    //the other player
     setNumberPlayer(gameInfo.playerList.length);
     gameInfo.playerList.forEach((pl) => {
       if (player.id !== pl.id) {
@@ -107,13 +109,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     setWord(gameInfo.firstLetter.toUpperCase());
 
     //initialize the chrono
-    // clearInterval(countRef);
     if (gameInfo.endTime !== undefined) {
-      setSecondsRemaining(gameInfo.endTime - Date.now());
+      setMsRemaining(gameInfo.endTime - Date.now());
     }
     setCountRef(
       setInterval(() => {
-        setSecondsRemaining((timer) => timer - 1000);
+        setMsRemaining((timer) => timer - 1000);
       }, 1000)
     );
   };
@@ -127,6 +128,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       }) !== undefined;
     if (playerIn) {
       let newGameState = [];
+      //the first player
       newGameState.push({
         playerId: player.id,
         firstLetter: gameBr.firstLetter.toUpperCase(),
@@ -138,6 +140,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         wordId: gameBr.id,
         isVisible: true,
       });
+      //the other player
       setNumberPlayer(gameBr.playerList.length);
       gameBr.playerList.forEach((pl) => {
         if (player.id !== pl.id) {
@@ -159,14 +162,17 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
       //initialize the chrono
       if (gameBr.endTime !== undefined) {
-        setSecondsRemaining(gameBr.endTime - Date.now());
+        //set the time
+        setMsRemaining(gameBr.endTime - Date.now());
       }
+      //set the interval
       setCountRef(
         setInterval(() => {
-          setSecondsRemaining((timer) => timer - 1000);
+          setMsRemaining((timer) => timer - 1000);
         }, 1000)
       );
     } else {
+      //set the game for the looser
       setGameState((gameSate) =>
         gameSate.map((game) =>
           game.playerId === player.id
@@ -174,9 +180,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             : { ...game }
         )
       );
+      //set the interval to 0 because the clear is not taken into account
       setCountRef(
         setInterval(() => {
-          setSecondsRemaining((timer) => timer - 0);
+          setMsRemaining((timer) => timer - 0);
         }, 0)
       );
     }
@@ -184,18 +191,22 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //useEffect base of the game
   useEffect(() => {
+    //start the game
     startGame();
+    //the broadcast of the gessWordBr
     addGuessWordBrBroadcast(socket, player.id, setGameState);
+    //all the other event
     addBrEvent(
       resetGame,
       socket,
       player.id,
       toast,
-      setSecondsRemaining,
+      setMsRemaining,
       countRef,
       setGameState
     );
     return () => {
+      //remove all the event
       removeBrEvent(socket);
       if (countRef !== null) {
         clearInterval(countRef);
@@ -207,6 +218,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //useEffect for the timer
   useEffect(() => {
+    //check if the time is over
     if (looseByTime) {
       if (countRef !== null) {
         clearInterval(countRef);
@@ -244,6 +256,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     if (gameState === null) {
       return;
     }
+    //the param of the current player
     const { nbLife, triesHistory, wordLength } = gameState[0];
 
     const lowerCaseWord = word.toLowerCase();
@@ -302,6 +315,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     };
     setWord(firstLetter);
 
+    //change the gameState of the player
     setGameState((gameState) =>
       gameState.map((game) =>
         game.playerId === player.id ? { ...newState } : { ...game }
@@ -377,6 +391,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       </Flex>
     );
   }
+  //the param of the current player
   const { hasWon, triesHistory, firstLetter, nbLife, wordLength, isFinished } =
     gameState[0];
 
