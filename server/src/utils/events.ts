@@ -367,7 +367,7 @@ export const guessWord1vs1Event = (
   if (win) {
     player.hasWon = true;
     if (otherPlayer.hasWon) {
-      if (player.nbLife < otherPlayer.nbLife) {
+      if (player.nbLife > otherPlayer.nbLife) {
         io.to(gameId).emit("wining_player_1vs1", player.id);
         io.to(gameId).socketsLeave(gameId);
       } else {
