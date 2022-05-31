@@ -26,8 +26,7 @@ export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
         letter={letter}
         isVisible={isVisible}
         letterResult={letterResults && letterResults[index]}
-        isFocus={focus?.index === index}
-        isGradient={focus?.isBorder}
+        focus={focus?.index === index ? focus : undefined}
       />
     );
   });
@@ -37,8 +36,7 @@ export const PlayerGridRow: React.FC<PlayerGridRowProps> = ({
       <PlayerGridCase
         isVisible={isVisible}
         key={playerRow.length}
-        isFocus={focus?.index === index}
-        isGradient={focus?.isBorder}
+        focus={focus?.index === index ? focus : undefined}
       />
     );
     index++;

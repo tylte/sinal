@@ -12,7 +12,7 @@ interface PlayerGridProps {
   word: string;
   triesHistory: TriesHistory[];
   isFinished: boolean;
-  focus: MyFocus;
+  focus?: MyFocus;
   keyboardSetting?: KeyboardSettings;
 }
 

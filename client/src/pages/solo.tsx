@@ -23,7 +23,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
   const [gameState, setGameState] = useState<SoloGameState | null>(null);
   const [word, setWord] = useState("");
   const [focus, setFocus] = useState<MyFocus>({
-    index: 0,
+    index: 1,
     isBorder: false,
     focusMode: "overwrite",
   });
@@ -46,10 +46,6 @@ const Solo: React.FC<SoloProps> = ({}) => {
           wordId: id,
         });
         setWord(first_letter.toUpperCase());
-        // Index 1 for the first letter
-        setFocus((focus) => {
-          return { ...focus, index: 1 };
-        });
       });
   };
   useEffect(() => {
@@ -171,7 +167,6 @@ const Solo: React.FC<SoloProps> = ({}) => {
         </Text>
         <PlayerGrid
           isFinished={isFinished}
-          isVisible={true}
           firstLetter={firstLetter}
           wordLength={wordLength}
           nbLife={nbLife}

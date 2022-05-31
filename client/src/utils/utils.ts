@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import {
+  FocusMode,
   KeyboardSettings,
   LetterResult,
   LobbyState,
@@ -81,7 +82,7 @@ export const classicWordWriting = (
   setWord((word) => {
     let newCharacter = letter.toUpperCase();
     if (focus.index < wordLength && !focus.isBorder) {
-      return writeWordWithFocus(focus, word, newCharacter);
+      return writeWordWithFocus(focus, word, newCharacter, wordLength);
     }
     return word;
   });
@@ -178,27 +179,55 @@ export const decrementFocus = (
 };
 
 export const writeWordWithFocus = (
-  focus: MyFocus,
+  { focusMode, index }: MyFocus,
   word: string,
-  newCharacter: string
+  newCharacter: string,
+  wordLength: number
 ): string => {
-  if (focus.focusMode === "insert") {
-    return (
-      word.slice(0, focus.index) +
-      newCharacter +
-      word.slice(focus.index, word.length)
-    );
-  } else if (focus.focusMode === "overwrite") {
-    let newWord = [...word];
-
-    while (newWord.length < focus.index) {
+  let newWord = [...word];
+  if (focusMode === "insert") {
+    while (newWord.length < index) {
       newWord.push(" ");
     }
-    newWord[focus.index] = newCharacter;
+    newWord.splice(index, 0, newCharacter);
+
+    // newWord[index] = newCharacter;
+
+    return newWord.slice(0, wordLength).join("");
+  } else if (focusMode === "overwrite") {
+    while (newWord.length < index) {
+      newWord.push(" ");
+    }
+    newWord[index] = newCharacter;
 
     console.log(newWord);
     return newWord.join("");
   }
 
   return word;
+};
+
+export const nextFocusMode = (focusMode: FocusMode): FocusMode => {
+  if (focusMode === "insert") {
+    return "overwrite";
+  } else if (focusMode === "overwrite") {
+    return "insert";
+  } else {
+    // Should not happen
+    return "overwrite";
+  }
+};
+
+export const getGradientFromFocus = (
+  focus: MyFocus | undefined,
+  color: string
+): string | undefined => {
+  if (focus?.isBorder) {
+    return `linear(to-r, ${color} 0%, ${color} 80%, red)`;
+  }
+  if (focus?.focusMode === "insert") {
+    return `linear(to-l, ${color} 0%, ${color} 80%, red)`;
+  }
+
+  return undefined;
 };

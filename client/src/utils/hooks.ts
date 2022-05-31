@@ -7,6 +7,7 @@ import {
   classicWordWriting,
   decrementFocus,
   incrementFocus,
+  nextFocusMode,
 } from "./utils";
 
 export const useDictionary = (): Set<string> => {
@@ -72,6 +73,10 @@ const handleWordInput = (
     incrementFocus(setFocus, wordLength - 1);
   } else if (e.key === "ArrowLeft") {
     decrementFocus(setFocus, 1);
+  } else if (e.key === "Shift") {
+    setFocus((focus) => {
+      return { ...focus, focusMode: nextFocusMode(focus.focusMode) };
+    });
   }
 };
 
