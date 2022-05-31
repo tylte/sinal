@@ -109,6 +109,10 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         });
       return;
     }
+    // Word taken into account
+    setFocus((focus) => {
+      return { ...focus, index: 1, isBorder: false };
+    });
 
     socket?.emit(
       "guess_word_1vs1",

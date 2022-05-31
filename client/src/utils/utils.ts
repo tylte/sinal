@@ -200,7 +200,6 @@ export const writeWordWithFocus = (
     }
     newWord[index] = newCharacter;
 
-    console.log(newWord);
     return newWord.join("");
   }
 
