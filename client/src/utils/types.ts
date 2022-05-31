@@ -80,3 +80,16 @@ type LastGame = {
   winner: string | null;
   wordsToGuess: string[];
 };
+export type ChatMessage = {
+  content: string;
+  author: string;
+  id: string;
+};
+
+export type MyFocus = {
+  index: number;
+  isBorder: boolean;
+  focusMode: FocusMode;
+};
+
+export type FocusMode = "overwrite" | "insert";

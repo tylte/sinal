@@ -92,6 +92,10 @@ export const ArgStartGame = z.object({
   lobbyId: z.string(),
   playerId: z.string(),
 });
+export const ReceivedChatMessage = z.object({
+  content: z.string(),
+  playerId: z.string(),
+});
 
 export const ArgGuessWord = z.object({
   word: z.string(),
@@ -107,6 +111,7 @@ export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
 export type ArgStartGameType = z.infer<typeof ArgStartGame>;
 export type ArgUpdateWord = z.infer<typeof ArgUpdateWord>;
 export type ArgGuessWordType = z.infer<typeof ArgGuessWord>;
+export type ReceivedChatMessageType = z.infer<typeof ReceivedChatMessage>;
 
 export let lobbyMap: Map<string, LobbyType> = new Map();
 
@@ -128,3 +133,9 @@ export const Packet = z.object({
 export type PacketType = z.infer<typeof Packet>;
 
 export type EventResponseFn = (payload: PacketType) => void;
+
+export type ChatMessageToSend = {
+  content: string;
+  author: string;
+  id: string;
+};

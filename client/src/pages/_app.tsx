@@ -14,6 +14,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [player, setPlayer] = useState<Player | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [isChatting, setIsChatting] = useState<boolean>(false);
 
   useEffect(() => {
     axios.get<string[]>("http://localhost:4000/dictionary").then(({ data }) => {
@@ -35,6 +36,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         socket,
         playerActions: [player, setPlayer],
         isConnected,
+        chattingActions: [isChatting, setIsChatting],
       }}
     >
       <ChakraProvider resetCSS theme={theme}>

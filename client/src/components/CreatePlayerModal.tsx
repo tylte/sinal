@@ -91,6 +91,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
         <ModalCloseButton />
         <ModalBody>
           <Input
+            autoFocus
             onKeyDown={handleKeyDownCreatePlayer}
             value={pseudo}
             onChange={handlePseudoChange}
