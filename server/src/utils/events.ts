@@ -513,7 +513,6 @@ export const guessWordBrEvent = (
       timeout = setTimeout(() => {
         tempsEcouleBr(game, io);
       }, game.timeAfterFirstGuess);
-
       game.endTime = Date.now() + game.timeAfterFirstGuess;
       timeoutMap.set(gameId, timeout);
       io.to(gameId).emit("first_winning_player_br", game);
@@ -529,6 +528,7 @@ export const guessWordBrEvent = (
           //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
         } else {
           let newWord = get_word();
+          console.log("Mot à découvrir : ", newWord);
           idToWord.set(gameId, newWord);
           game.firstLetter = newWord.charAt(0);
           game.length = newWord.length;
@@ -540,9 +540,9 @@ export const guessWordBrEvent = (
 
           timeout = setTimeout(() => {
             tempsEcouleBr(game, io);
-          }, game.timeAfterFirstGuess);
+          }, game.globalTime);
 
-          game.endTime = Date.now() + game.timeAfterFirstGuess;
+          game.endTime = Date.now() + game.globalTime;
           timeoutMap.set(gameId, timeout);
           io.to(gameId).emit("next_word_br", game);
         }
@@ -562,9 +562,9 @@ export const guessWordBrEvent = (
           io.to(gameId).emit("winning_player_br", playerId);
           io.to(gameId).socketsLeave(gameId);
         } else if (game.playersLastNextRound === 1) {
-          //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
-        } else {
+          console.log("BO3");
           let newWord = get_word();
+          console.log("Mot à découvrir : ", newWord);
           idToWord.set(gameId, newWord);
           game.firstLetter = newWord.charAt(0);
           game.length = newWord.length;
@@ -574,16 +574,31 @@ export const guessWordBrEvent = (
           let timeout = timeoutMap.get(gameId);
           if (timeout !== undefined) clearTimeout(timeout);
 
-          if (
-            typeof game?.endTime !== "undefined" &&
-            game?.endTime - Date.now() > game.timeAfterFirstGuess
-          ) {
-            timeout = setTimeout(() => {
-              tempsEcouleBr(game, io);
-            }, game.timeAfterFirstGuess);
-            game.endTime = Date.now() + game.timeAfterFirstGuess;
-            timeoutMap.set(gameId, timeout);
-          }
+          timeout = setTimeout(() => {
+            tempsEcouleBr(game, io);
+          }, game.globalTime);
+          game.endTime = Date.now() + game.globalTime;
+          timeoutMap.set(gameId, timeout);
+
+          io.to(gameId).emit("next_word_br", game);
+          //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
+        } else {
+          let newWord = get_word();
+          console.log("Mot à découvrir : ", newWord);
+          idToWord.set(gameId, newWord);
+          game.firstLetter = newWord.charAt(0);
+          game.length = newWord.length;
+          game.playerList = game.playerFound;
+          game.playerFound = new Array();
+
+          let timeout = timeoutMap.get(gameId);
+          if (timeout !== undefined) clearTimeout(timeout);
+
+          timeout = setTimeout(() => {
+            tempsEcouleBr(game, io);
+          }, game.globalTime);
+          game.endTime = Date.now() + game.globalTime;
+          timeoutMap.set(gameId, timeout);
 
           io.to(gameId).emit("next_word_br", game);
         }
@@ -602,6 +617,7 @@ export const guessWordBrEvent = (
       game.numberOfDrawStreak++;
       io.to(gameId).emit("draw_br");
       let newWord = get_word();
+      console.log("Mot à découvrir : ", newWord);
       idToWord.set(gameId, newWord);
       game.firstLetter = newWord.charAt(0);
       game.length = newWord.length;
@@ -626,6 +642,7 @@ export const guessWordBrEvent = (
 const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
   if (game !== undefined) {
     let newWord = get_word();
+    console.log("Mot à découvrir : ", newWord);
     idToWord.set(game.id, newWord);
     game.firstLetter = newWord.charAt(0);
     game.length = newWord.length;

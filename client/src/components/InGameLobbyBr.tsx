@@ -40,6 +40,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 }) => {
   //The number of player in the game
   const [numberPlayer, setNumberPlayer] = useState(gameInfo.playerList.length);
+  //the word the player try
   const [word, setWord] = useState("");
 
   //Array of all the game state for each player
@@ -65,42 +66,36 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //start the game
   const startGame = () => {
-    setGameState([]);
     setNumberPlayer(gameInfo.playerList.length);
-    //Set the main player
-    setGameState((game) => [
-      ...game,
-      {
-        playerId: player.id,
-        firstLetter: gameInfo.firstLetter.toUpperCase(),
-        isFinished: false,
-        nbLife: 6,
-        triesHistory: [],
-        wordLength: gameInfo.length,
-        hasWon: false,
-        wordId: gameInfo.id,
-        isVisible: true,
-      },
-    ]);
-    //set the other player
+    let newGameState = [];
+    newGameState.push({
+      playerId: player.id,
+      firstLetter: gameInfo.firstLetter.toUpperCase(),
+      isFinished: false,
+      nbLife: 6,
+      triesHistory: [],
+      wordLength: gameInfo.length,
+      hasWon: false,
+      wordId: gameInfo.id,
+      isVisible: true,
+    });
+    setNumberPlayer(gameInfo.playerList.length);
     gameInfo.playerList.forEach((pl) => {
       if (player.id !== pl.id) {
-        setGameState((game) => [
-          ...game,
-          {
-            playerId: pl.id,
-            firstLetter: gameInfo.firstLetter.toUpperCase(),
-            isFinished: false,
-            nbLife: 6,
-            triesHistory: [],
-            wordLength: gameInfo.length,
-            hasWon: false,
-            wordId: gameInfo.id,
-            isVisible: true,
-          },
-        ]);
+        newGameState.push({
+          playerId: pl.id,
+          firstLetter: gameInfo.firstLetter.toUpperCase(),
+          isFinished: false,
+          nbLife: 6,
+          triesHistory: [],
+          wordLength: gameInfo.length,
+          hasWon: false,
+          wordId: gameInfo.id,
+          isVisible: true,
+        });
       }
     });
+    setGameState(newGameState);
     setWord(gameInfo.firstLetter.toUpperCase());
 
     //initialize the chrono
@@ -110,20 +105,21 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     }
     setCountRef(
       setInterval(() => {
-        console.log("enter intervale");
         setSecondsRemaining((timer) => timer - 1000);
       }, 1000)
     );
   };
 
-  //reset the game for the new word
-  //TODO
+  //load the new word
   const resetGame = (gameBr: BrGameInfo) => {
-    setGameState([]);
-    setNumberPlayer(gameBr.playerList.length);
-    setGameState((game) => [
-      ...game,
-      {
+    //check if the player win the previous word
+    let playerIn =
+      gameBr.playerList.find((pl) => {
+        return pl.id === player.id;
+      }) !== undefined;
+    if (playerIn) {
+      let newGameState = [];
+      newGameState.push({
         playerId: player.id,
         firstLetter: gameBr.firstLetter.toUpperCase(),
         isFinished: false,
@@ -133,13 +129,11 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         hasWon: false,
         wordId: gameBr.id,
         isVisible: true,
-      },
-    ]);
-    gameBr.playerList.forEach((pl) => {
-      if (player.id !== pl.id) {
-        setGameState((game) => [
-          ...game,
-          {
+      });
+      setNumberPlayer(gameBr.playerList.length);
+      gameBr.playerList.forEach((pl) => {
+        if (player.id !== pl.id) {
+          newGameState.push({
             playerId: pl.id,
             firstLetter: gameBr.firstLetter.toUpperCase(),
             isFinished: false,
@@ -149,22 +143,35 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             hasWon: false,
             wordId: gameBr.id,
             isVisible: true,
-          },
-        ]);
-      }
-    });
-    setWord(gameBr.firstLetter.toUpperCase());
+          });
+        }
+      });
+      setGameState(newGameState);
+      setWord(gameBr.firstLetter.toUpperCase());
 
-    //initialize the chrono
-    // clearInterval(countRef);
-    if (gameBr.endTime !== undefined) {
-      setSecondsRemaining(gameBr.endTime - Date.now());
+      //initialize the chrono
+      if (gameBr.endTime !== undefined) {
+        setSecondsRemaining(gameBr.endTime - Date.now());
+      }
+      setCountRef(
+        setInterval(() => {
+          setSecondsRemaining((timer) => timer - 1000);
+        }, 1000)
+      );
+    } else {
+      setGameState((gameSate) =>
+        gameSate.map((game) =>
+          game.playerId === player.id
+            ? { ...game, isFinished: true, hasWon: false }
+            : { ...game }
+        )
+      );
+      setCountRef(
+        setInterval(() => {
+          setSecondsRemaining((timer) => timer - 0);
+        }, 0)
+      );
     }
-    setCountRef(
-      setInterval(() => {
-        setSecondsRemaining((timer) => timer - 1000);
-      }, 1000)
-    );
   };
 
   //useEffect base of the game
@@ -232,6 +239,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     const { nbLife, triesHistory, wordLength } = gameState[0];
 
     const lowerCaseWord = word.toLowerCase();
+
+    //check the number of letter
     if (lowerCaseWord.length !== wordLength) {
       !toast.isActive(NOT_ENOUGH_LETTER) &&
         toast({
@@ -243,6 +252,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         });
       return;
     }
+
+    //check the word
     if (!dictionary.has(lowerCaseWord)) {
       !toast.isActive(NOT_IN_DICTIONARY) &&
         toast({
@@ -254,6 +265,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         });
       return;
     }
+
+    //check the word
     let result = await new Promise<number[]>((resolve) =>
       guessWordBr(lowerCaseWord, gameInfo.id, player.id, socket, (arg) => {
         if (arg.success) {
@@ -263,6 +276,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         }
       })
     );
+    //set the triesHistory
     let newState = {
       ...gameState?.[0],
       triesHistory: [
@@ -280,6 +294,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         game.playerId === player.id ? { ...newState } : { ...game }
       )
     );
+
+    //check if the word is find
     if (isWordCorrect(result)) {
       setGameState(
         gameState.map((game) =>
@@ -299,6 +315,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         clearInterval(countRef);
       }
     }
+
+    //check if the number of try exceed the nbLife
     if (triesHistory.length + 1 === nbLife) {
       setGameState(
         gameState.map((game) =>
@@ -345,10 +363,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const { hasWon, triesHistory, firstLetter, nbLife, wordLength, isFinished } =
     gameState[0];
 
-  //the component of the player
+  //the component of the player, any[] to use the pop function
   const grid = [];
-  // save the grid of player
-  const items: any[] = [];
+  // save the grid of player, any[] to use the pop function
+  const items = [];
   let j = 0;
   for (let i = 1; i < numberPlayer; ) {
     // 1 because 0 is the player
@@ -394,6 +412,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           {player.name}
         </Text>
         <Box as="span">
+          {/* the result of the game */}
           <Text
             color={
               !hasWon && minutesToDisplay <= 0 && secondsToDisplay <= 30
@@ -406,6 +425,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             {isFinished && hasWon && "GAGNER"}
             {isFinished && !hasWon && "PERDUE"}
           </Text>
+          {/* the timer of the game */}
           {!isFinished && !hasWon && (
             <Text
               color={

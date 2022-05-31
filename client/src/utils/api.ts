@@ -175,7 +175,6 @@ export const addSpecificLobbiesEvent = (
   });
   socket.on("starting_game_Br", (game: BrGameInfo) => {
     console.log("starting-game-Br");
-    setGameState(game);
     //FIXME : Mettre le statut du lobby en "in-game" côté serveur
     setLobby((lobby) => {
       if (lobby === null) {
@@ -184,6 +183,7 @@ export const addSpecificLobbiesEvent = (
         return { ...lobby, state: "in-game" };
       }
     });
+    setGameState(game);
   });
   socket.on(
     "lobbies_update_join",
@@ -217,7 +217,8 @@ export const addSpecificLobbiesEvent = (
 export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
-  socket?.removeListener("starting_game");
+  socket?.removeListener("starting_game_1vs1");
+  socket?.removeListener("starting_game_Br");
 };
 
 export const getSpecificLobby = (
@@ -330,7 +331,7 @@ export const addBrEvent = async (
     return;
   });
   socket?.on("next_word_br", (arg) => {
-    startGame(arg.data);
+    startGame(arg);
   });
   socket?.on("draw_br", (arg) => {
     console.log("draw_br");
