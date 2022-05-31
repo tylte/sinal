@@ -144,7 +144,7 @@ export const addLobbiesEvent = (
 
 export const addPreGameEvent = (socket: Socket | null) => {
   socket?.on("starting_game", (gameId: number) => {
-    console.log("starting game : " + gameId);
+    console.log("starting game : ", gameId);
   });
 };
 
@@ -396,7 +396,9 @@ export const lobbyOneVsOneAddEvents = (
 
   socket.on("update_word_broadcast", (req) => {
     if (req.playerId !== playerId) {
-      setWordP2(req.array.filter((tabElt: boolean) => tabElt).map(() => "●"));
+      setWordP2(
+        req.array.map((tabElt: boolean) => (tabElt ? "●" : " ")).join("")
+      );
     }
   });
 };

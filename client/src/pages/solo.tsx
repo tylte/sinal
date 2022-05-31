@@ -8,6 +8,7 @@ import { guessWord } from "../utils/api";
 import { useClassicWordInput, useDictionary } from "../utils/hooks";
 import {
   KeyboardSettings,
+  MyFocus,
   SoloGameState,
   StartGameResponse,
 } from "../utils/types";
@@ -21,6 +22,11 @@ const NOT_IN_DICTIONARY = "NODICTIONARY";
 const Solo: React.FC<SoloProps> = ({}) => {
   const [gameState, setGameState] = useState<SoloGameState | null>(null);
   const [word, setWord] = useState("");
+  const [focus, setFocus] = useState<MyFocus>({
+    index: 1,
+    isBorder: false,
+    focusMode: "overwrite",
+  });
 
   const dictionary = useDictionary();
 
@@ -79,6 +85,10 @@ const Solo: React.FC<SoloProps> = ({}) => {
         });
       return;
     }
+    // Guess will be counted
+    setFocus((focus) => {
+      return { ...focus, index: 1, isBorder: false };
+    });
 
     const result = await guessWord(lowerCaseWord, wordId);
 
@@ -124,6 +134,8 @@ const Solo: React.FC<SoloProps> = ({}) => {
     setWord,
     gameState?.wordLength ?? 0,
     onEnter,
+    focus,
+    setFocus,
     gameState?.isFinished
   );
 
@@ -141,6 +153,8 @@ const Solo: React.FC<SoloProps> = ({}) => {
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
     onEnter,
     setWord,
+    focus,
+    setFocus,
     wordLength
   );
 
@@ -153,13 +167,13 @@ const Solo: React.FC<SoloProps> = ({}) => {
         </Text>
         <PlayerGrid
           isFinished={isFinished}
-          isVisible={true}
           firstLetter={firstLetter}
           wordLength={wordLength}
           nbLife={nbLife}
           word={word}
           triesHistory={triesHistory}
           keyboardSetting={keyboardSettings}
+          focus={focus}
         />
         {isFinished && (
           <Box mt={6} mx="auto">
