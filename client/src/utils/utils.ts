@@ -191,8 +191,6 @@ export const writeWordWithFocus = (
     }
     newWord.splice(index, 0, newCharacter);
 
-    // newWord[index] = newCharacter;
-
     return newWord.slice(0, wordLength).join("");
   } else if (focusMode === "overwrite") {
     while (newWord.length < index) {
