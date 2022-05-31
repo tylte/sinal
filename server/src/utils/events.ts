@@ -349,8 +349,9 @@ export const guessWordEvent = (
         wordToGuess: word,
       };
       lobby.state = "pre-game";
+      io.to(gameId).emit("ending_game", { lobby });
     }
-    io.to(gameId).socketsLeave(lobbyId);
+    // io.to(gameId).socketsLeave(lobbyId);
   } else if (game.playerOne.nb_life === 0 && game.playerTwo.nb_life === 0) {
     io.to(gameId).emit("draw_1vs1");
     let lobby = lobbyMap.get(lobbyId);
@@ -362,7 +363,8 @@ export const guessWordEvent = (
         wordToGuess: word,
       };
       lobby.state = "pre-game";
+      io.to(gameId).emit("ending_game", { lobby });
     }
-    io.to(gameId).socketsLeave(lobbyId);
+    // io.to(gameId).socketsLeave(lobbyId);
   }
 };

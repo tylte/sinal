@@ -176,12 +176,17 @@ export const addSpecificLobbiesEvent = (
       setLobby(changedLobby);
     }
   );
+
+  socket.on("ending_game", (req) => {
+    setTimeout(() => setLobby(req.lobby), 5000);
+  });
 };
 
 export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
   socket?.removeListener("starting_game");
+  socket?.removeListener("ending_game");
 };
 
 export const getSpecificLobby = (

@@ -1,5 +1,4 @@
 import { Box, Flex, Text, useToast } from "@chakra-ui/react";
-import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
@@ -47,8 +46,6 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
 
   const [hasWon, setHasWon] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
-
-  const router = useRouter();
 
   const adversaire: { id: string; name: string; nb_life: number } =
     playerOne.id !== playerId ? playerOne : playerTwo;
@@ -128,7 +125,6 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
 
   return (
     <>
-      {/* {isFinished && router.push("/lobby")} */}
       <Box p={8}>
         <Flex height="100%" direction={"column"}>
           <Box m="auto">

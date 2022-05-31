@@ -42,28 +42,30 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
 
   return (
     <>
-      {lastGame != null && (
-        <Box pt={8} pl={8}>
-          <Text fontSize={"3xl"} fontWeight={"bold"}>
-            Dernière partie
-          </Text>
-          <Text>
-            <b>Mode de jeu :</b> {lastGame.gameMode}
-          </Text>
-          <Text>
-            <b>Liste des joueurs : </b>
-            {lastGame.playerList.map((player) => player.name + ", ")}
-          </Text>
-          <Text>
-            <b>Gagnant : </b>
-            {lastGame.winner}
-          </Text>
-          <Text>
-            <b>Mot à deviner : </b>
-            {lastGame.wordToGuess}
-          </Text>
-        </Box>
-      )}
+      <Box pt={8} pl={8} my={"auto"}>
+        {lastGame != null && (
+          <>
+            <Text fontSize={"3xl"} fontWeight={"bold"}>
+              Dernière partie
+            </Text>
+            <Text>
+              <b>Mode de jeu :</b> {lastGame.gameMode}
+            </Text>
+            <Text>
+              <b>Liste des joueurs : </b>
+              {lastGame.playerList.map((player) => player.name + ", ")}
+            </Text>
+            <Text>
+              <b>Gagnant : </b>
+              {lastGame.winner}
+            </Text>
+            <Text>
+              <b>Mot(s) à deviner : </b>
+              {lastGame.wordToGuess}
+            </Text>
+          </>
+        )}
+      </Box>
       <Flex direction={"column"} alignContent={"center"}>
         <Box mx="auto">
           <Text fontSize={"4xl"}>
@@ -71,7 +73,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           </Text>
         </Box>
 
-        <Text fontSize={"2xl"}>Players</Text>
+        <Text fontSize={"2xl"}>Joueurs</Text>
         <Divider />
         <List>
           {playerList.map((player) => {
@@ -82,14 +84,14 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
                     <ListIcon as={GiLaurelCrown} color="green.500" />
                   )}
                   <Text fontSize={"xl"}>
-                    {player.name} {player.id === playerId && "(You)"}
+                    {player.name} {player.id === playerId && "(Vous)"}
                   </Text>
                 </HStack>
               </ListItem>
             );
           })}
         </List>
-        <HStack mx="auto">
+        <HStack m="auto">
           <IconButton
             aria-label="quit lobby"
             icon={<ArrowBackIcon />}

@@ -83,29 +83,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   if (state === "pre-game") {
     return (
       <Layout variant="grid">
-        <PreGameLobby
-          player={player}
-          lobby={{
-            id: "test",
-            state: "pre-game",
-            name: "Name",
-            totalPlace: 2,
-            playerList: [], // id: "joueur 1", name:"Joueur 1", lobbyId:"test", id: "joueur 2", name:"Joueur 2", lobbyId:"test"
-            owner: "joueur 1",
-            isPublic: true,
-            mode: "1vs1",
-            currentGameId: "0",
-            lastGame: {
-              gameMode: "1vs1",
-              playerList: [
-                { id: "joueur 1", name: "Joueur 1", lobbyId: "test" },
-                { id: "joueur 2", name: "Joueur 2", lobbyId: "test" },
-              ],
-              winner: "Joueur 1",
-              wordToGuess: "Coucou",
-            },
-          }}
-        />
+        <PreGameLobby player={player} lobby={lobby} />
       </Layout>
     );
   } else if (state === "in-game" && gameState !== null && lobbyId !== null) {
