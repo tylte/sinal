@@ -42,7 +42,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
 
   return (
     <>
-      <Box pt={8} pl={8} my={"auto"}>
+      <Box pt={8} pl={8}>
         {lastGame != null && (
           <>
             <Text fontSize={"3xl"} fontWeight={"bold"}>
@@ -61,7 +61,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             </Text>
             <Text>
               <b>Mot(s) à deviner : </b>
-              {lastGame.wordsToGuess.map((word) => word + ", ")}
+              {lastGame.wordsToGuess.map((word) => word)}
             </Text>
           </>
         )}
@@ -91,7 +91,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             );
           })}
         </List>
-        <HStack m="auto">
+        <HStack mx="auto">
           <IconButton
             aria-label="quit lobby"
             icon={<ArrowBackIcon />}
