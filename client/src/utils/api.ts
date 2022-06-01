@@ -320,16 +320,6 @@ export const addBrEvent = async (
             : { ...game }
         )
       );
-      // setGameState((gameState) => {
-      //   let playerStateIndex = gameState.findIndex(
-      //     (state) => state.playerId === playerId
-      //   );
-
-      //   gameState[playerStateIndex].isFinished = true;
-      //   gameState[playerStateIndex].hasWon = false;
-
-      //   return gameState;
-      // });
     }
     if (countRef !== null) {
       clearTimeout(countRef);

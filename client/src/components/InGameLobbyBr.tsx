@@ -61,9 +61,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const minutesRemaining = msRemaining / 1000 / 60;
   const minutesToDisplay = Math.trunc(minutesRemaining);
 
-  //check if the time is finished
-  const looseByTime = msRemaining <= 0;
-
   //the focus in the grid
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
@@ -107,7 +104,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     //initialize the chrono
     if (gameInfo.endTime !== undefined) {
       setMsRemaining(gameInfo.endTime - Date.now());
-      // setMsRemaining(5000);
     }
     setCountRef(
       setInterval(() => {
@@ -169,24 +165,14 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         }, 1000)
       );
     } else {
-      //set the game for the looser
-      // setGameState((gameSate) =>
-      //   gameSate.map((game) =>
-      //     game.playerId === player.id
-      //       ? { ...game, isFinished: true, hasWon: false }
-      //       : { ...game }
-      //   )
-      // );
-      setGameState((gameState) => {
-        let playerStateIndex = gameState.findIndex(
-          (state) => state.playerId === player.id
-        );
-
-        gameState[playerStateIndex].isFinished = true;
-        gameState[playerStateIndex].hasWon = false;
-
-        return gameState;
-      });
+      // set the game for the looser
+      setGameState((gameSate) =>
+        gameSate.map((game) =>
+          game.playerId === player.id
+            ? { ...game, isFinished: true, hasWon: false }
+            : { ...game }
+        )
+      );
       //set the interval to 0 because the clear is not taken into account
       setCountRef(
         setInterval(() => {
@@ -234,43 +220,27 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   const toast = useToast();
 
-  //useEffect for the timer
-  useEffect(() => {
-    //check if the time is over
-    if (looseByTime) {
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
-      toast({
-        title: "perdu, le temps est dépassé",
-        status: "error",
-        isClosable: true,
-        duration: 2500,
-      });
-      // setGameState(
-      //   gameState.map((game) =>
-      //     game.playerId === player.id
-      //       ? { ...game, isFinished: true, hasWon: false }
-      //       : { ...game }
-      //   )
-      // );
-      setGameState((gameState) => {
-        let playerStateIndex = gameState.findIndex(
-          (state) => state.playerId === player.id
-        );
-
-        gameState[playerStateIndex].isFinished = true;
-        gameState[playerStateIndex].hasWon = false;
-
-        return gameState;
-      });
+  //check if the time is finished
+  if (msRemaining <= 0) {
+    if (countRef !== null) {
+      clearInterval(countRef);
+      //set 1 ms to avoid re-entering the if
+      setMsRemaining(1);
     }
-    return () => {
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
-    };
-  }, [looseByTime]);
+    toast({
+      title: "perdu, le temps est dépassé",
+      status: "error",
+      isClosable: true,
+      duration: 2500,
+    });
+    setGameState(
+      gameState.map((game) =>
+        game.playerId === player.id
+          ? { ...game, isFinished: true, hasWon: false }
+          : { ...game }
+      )
+    );
+  }
 
   useEffect(() => {
     return () => {
@@ -349,35 +319,16 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         game.playerId === player.id ? { ...newState } : { ...game }
       )
     );
-    // setGameState((gameState) => {
-    //   let playerStateIndex = gameState.findIndex(
-    //     (state) => state.playerId === player.id
-    //   );
-
-    //   gameState[playerStateIndex] = newState;
-
-    //   return gameState;
-    // });
 
     //check if the word is find
     if (isWordCorrect(result)) {
-      // setGameState(
-      //   gameState.map((game) =>
-      //     game.playerId === player.id
-      //       ? { ...newState, isFinished: true, hasWon: true }
-      //       : { ...game }
-      //   )
-      // );
-      setGameState((gameState) => {
-        let playerStateIndex = gameState.findIndex(
-          (state) => state.playerId === player.id
-        );
-
-        gameState[playerStateIndex].isFinished = true;
-        gameState[playerStateIndex].hasWon = true;
-
-        return gameState;
-      });
+      setGameState(
+        gameState.map((game) =>
+          game.playerId === player.id
+            ? { ...newState, isFinished: true, hasWon: true }
+            : { ...game }
+        )
+      );
       toast({
         title: "GGEZ 😎",
         status: "success",
@@ -392,23 +343,13 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
     //check if the number of try exceed the nbLife
     if (triesHistory.length + 1 === nbLife) {
-      // setGameState(
-      //   gameState.map((game) =>
-      //     game.playerId === player.id
-      //       ? { ...newState, isFinished: true, hasWon: false }
-      //       : { ...game }
-      //   )
-      // );
-      setGameState((gameState) => {
-        let playerStateIndex = gameState.findIndex(
-          (state) => state.playerId === player.id
-        );
-
-        gameState[playerStateIndex].isFinished = true;
-        gameState[playerStateIndex].hasWon = false;
-
-        return gameState;
-      });
+      setGameState(
+        gameState.map((game) =>
+          game.playerId === player.id
+            ? { ...newState, isFinished: true, hasWon: false }
+            : { ...game }
+        )
+      );
       toast({
         title: "Perdu ! Sadge",
         status: "error",
