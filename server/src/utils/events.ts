@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { get_dictionary } from "../Endpoint/dictionary";
+import { dicoHasWord } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
 import { idToWord } from "./server";
@@ -335,12 +335,7 @@ export const guessWord1vs1Event = (
     return;
   }
 
-  let dico = get_dictionary();
-  let correctWord = false;
-  dico.forEach((w) => {
-    if (w === word) correctWord = true;
-  });
-  if (!correctWord) {
+  if (!dicoHasWord(word)) {
     console.log("guess_word_1vs1 : this word isn't in the dictionary");
     return;
   }
