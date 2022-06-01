@@ -39,16 +39,21 @@ export const Game1vs1 = z.object({
   playerOne: z.object({
     id: z.string(),
     name: z.string(),
-    nb_life: z.number(),
+    nbLife: z.number(),
+    hasWon: z.boolean(),
   }),
   playerTwo: z.object({
     id: z.string(),
     name: z.string(),
-    nb_life: z.number(),
+    nbLife: z.number(),
+    hasWon: z.boolean(),
   }),
   id: z.string(),
   length: z.number(),
   first_letter: z.string(),
+  endTime: z.optional(z.number()),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;
@@ -81,6 +86,8 @@ export const ArgUpdateWord = z.object({
 export const ArgStartGame = z.object({
   lobbyId: z.string(),
   playerId: z.string(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
 });
 export const ReceivedChatMessage = z.object({
   content: z.string(),
@@ -100,6 +107,8 @@ export let lobbyMap: Map<string, LobbyType> = new Map();
 export let playerMap: Map<string, Player> = new Map();
 
 export let game1vs1Map: Map<string, Game1vs1> = new Map();
+
+export let timeoutMap: Map<string, NodeJS.Timeout> = new Map();
 
 export type JoinLobbyResponse = (payload: {
   success: boolean;

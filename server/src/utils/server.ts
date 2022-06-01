@@ -9,7 +9,7 @@ import { get_id, get_word } from "../Endpoint/start_game";
 import {
   createLobbyEvent,
   createPlayerEvent,
-  guessWordEvent,
+  guessWord1vs1Event,
   joinLobbyEvent,
   leaveLobbyEvent,
   sendChatMessage,
@@ -175,7 +175,7 @@ export const getServer = () => {
 
     /**
      * start_game_1vs1
-     * @param { lobbyId, playerId }
+     * @param { lobbyId, playerId, globalTime, timeAfterFirstGuess }
      * no response,
      * broadcast "starting_game" on all player in the lobby
      */
@@ -221,7 +221,7 @@ export const getServer = () => {
 
         let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
         if (check.success) {
-          guessWordEvent(io, response, check.data);
+          guessWord1vs1Event(io, response, check.data);
         } else {
           console.log("guess_word_1vs1 payload : ", req);
           console.log("guess_word_1vs1 : ", check);
