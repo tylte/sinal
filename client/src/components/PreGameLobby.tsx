@@ -1,4 +1,4 @@
-import { ArrowBackIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, SettingsIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -70,6 +70,11 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
         <IconButton
           aria-label="quit lobby"
           icon={<ArrowBackIcon />}
+          onClick={() => router.push("/lobby")}
+        />
+        <IconButton
+          aria-label="option lobby"
+          icon={<SettingsIcon />}
           onClick={() => router.push("/lobby")}
         />
         <Button
