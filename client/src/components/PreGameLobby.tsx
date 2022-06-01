@@ -9,6 +9,7 @@ import {
   List,
   ListIcon,
   ListItem,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
@@ -45,24 +46,30 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
       <Box pt={8} pl={8}>
         {lastGame != null && (
           <>
-            <Text fontSize={"3xl"} fontWeight={"bold"}>
+            <Box fontSize={"3xl"} fontWeight={"bold"}>
               Dernière partie
-            </Text>
-            <Text>
-              <b>Mode de jeu :</b> {lastGame.gameMode}
-            </Text>
-            <Text>
-              <b>Liste des joueurs : </b>
+            </Box>
+            <Box>
+              <Text fontWeight={"bold"}>Mode de jeu :</Text> {lastGame.gameMode}
+            </Box>
+            <Box>
+              <Text fontWeight={"bold"}>Liste des joueurs :</Text>
               {lastGame.playerList.map((player) => player.name + ", ")}
-            </Text>
-            <Text>
-              <b>Gagnant : </b>
+            </Box>
+            <Box>
+              <Text fontWeight={"bold"}>Gagnant : </Text>
               {lastGame.winner ? lastGame.winner : "Egalité"}
-            </Text>
-            <Text>
-              <b>Mot(s) à deviner : </b>
-              {lastGame.wordsToGuess.map((word) => word)}
-            </Text>
+            </Box>
+            <Box>
+              <Text fontWeight={"bold"}>Mot(s) à deviner : </Text>
+              <Stack spacing={1}>
+                {lastGame.wordsToGuess.map((word, index) => (
+                  <Text key={index}>
+                    {word[0].toUpperCase() + word.slice(1)}
+                  </Text>
+                ))}
+              </Stack>
+            </Box>
           </>
         )}
       </Box>
