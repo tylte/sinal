@@ -432,8 +432,8 @@ describe("Web socket testing", () => {
                     fail("partie nulle :/");
                   });
 
-                  clientSocket.on("winning_player_br", (winningPlayer) => {
-                    expect(winningPlayer.id).toBe(playerOne.data.id);
+                  clientSocket.on("winning_player_br", (winningPlayerId) => {
+                    expect(winningPlayerId).toBe(playerOne.data.id);
                     done();
                   });
 
@@ -450,7 +450,7 @@ describe("Web socket testing", () => {
                             playerId: playerOne.data.id,
                             eliminationRate: 10,
                             globalTime: 1000,
-                            timeAfterFirstGuess: 1000,
+                            timeAfterFirstGuess: 500,
                           });
                         }
                       );

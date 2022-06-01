@@ -262,7 +262,7 @@ export const getServer = () => {
      * no response,
      * broadcast "starting_game" on all player in the lobby
      */
-    socket.on("start_game_br", (request, response) => {
+    socket.on("start_game_br", (request) => {
       let check = ArgStartGameBr.safeParse(request);
       if (check.success) {
         startGameBrEvent(io, check.data);
