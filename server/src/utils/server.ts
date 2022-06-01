@@ -178,7 +178,7 @@ export const getServer = () => {
 
     /**
      * start_game_1vs1
-     * @param { lobbyId, playerId }
+     * @param { lobbyId, playerId, globalTime, timeAfterFirstGuess }
      * no response,
      * broadcast "starting_game" on all player in the lobby
      */
