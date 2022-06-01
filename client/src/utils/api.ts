@@ -164,7 +164,6 @@ export const addSpecificLobbiesEvent = (
   socket.on("starting_game_1vs1", (game: Game1vs1) => {
     console.log("starting-game-1vs1");
     setGameState(game);
-    //FIXME : Mettre le statut du lobby en "in-game" côté serveur
     setLobby((lobby) => {
       if (lobby === null) {
         return null;
@@ -173,9 +172,8 @@ export const addSpecificLobbiesEvent = (
       }
     });
   });
-  socket.on("starting_game_Br", (game: BrGameInfo) => {
-    console.log("starting-game-Br");
-    //FIXME : Mettre le statut du lobby en "in-game" côté serveur
+  socket.on("starting_game_br", (game: BrGameInfo) => {
+    console.log("starting-game-br");
     setLobby((lobby) => {
       if (lobby === null) {
         return null;
@@ -218,7 +216,7 @@ export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
   socket?.removeListener("starting_game_1vs1");
-  socket?.removeListener("starting_game_Br");
+  socket?.removeListener("starting_game_br");
 };
 
 export const getSpecificLobby = (
@@ -271,35 +269,31 @@ export const removeChatEvents = (socket: Socket) => {
   socket.emit("leave_chat_global");
 };
 export const addGuessWordBrBroadcast = async (
-  socket: Socket | null,
+  socket: Socket,
   playerId: string,
   setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
 ) => {
   socket?.on("guess_word_broadcast", (arg) => {
     if (arg.playerId !== playerId) {
-      setGameState((gameState) =>
-        gameState.map((game) =>
-          game.playerId === arg.playerId
-            ? {
-                ...game,
-                triesHistory: [
-                  ...game.triesHistory,
-                  {
-                    result: arg.tab_res,
-                    wordTried: arg.word,
-                  },
-                ],
-              }
-            : { ...game }
-        )
-      );
+      setGameState((gameState) => {
+        let playerStateIndex = gameState.findIndex(
+          (state) => state.playerId === arg.playerId
+        );
+
+        gameState[playerStateIndex].triesHistory.push({
+          result: arg.tab_res,
+          wordTried: arg.word,
+        });
+
+        return gameState;
+      });
     }
   });
 };
 
 export const addBrEvent = async (
   startGame: (gameBr: BrGameInfo) => void,
-  socket: Socket | null,
+  socket: Socket,
   playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
   setSecondsRemaining: React.Dispatch<React.SetStateAction<number>>,
@@ -310,7 +304,9 @@ export const addBrEvent = async (
     setSecondsRemaining(arg.endTime - Date.now());
   });
   socket?.on("winning_player_br", (arg) => {
-    if (arg !== playerId) {
+    if (arg.id !== playerId) {
+      console.log("argument of winning_player : ", arg);
+      console.log("id of player : ", playerId);
       toast({
         title: "Perdu ! Sadge",
         status: "error",
@@ -324,17 +320,47 @@ export const addBrEvent = async (
             : { ...game }
         )
       );
+      // setGameState((gameState) => {
+      //   let playerStateIndex = gameState.findIndex(
+      //     (state) => state.playerId === playerId
+      //   );
+
+      //   gameState[playerStateIndex].isFinished = true;
+      //   gameState[playerStateIndex].hasWon = false;
+
+      //   return gameState;
+      // });
     }
-    if(countRef !== null) {
-      clearTimeout(countRef)
+    if (countRef !== null) {
+      clearTimeout(countRef);
     }
     return;
   });
   socket?.on("next_word_br", (arg) => {
     startGame(arg);
   });
-  socket?.on("draw_br", (arg) => {
-    console.log("draw_br");
+  socket?.on("draw_br", () => {
+    toast({
+      title: "égalité un autre mot est choisie",
+      status: "success",
+      isClosable: true,
+      duration: 2500,
+    });
+  });
+  socket?.on("end_of_game_draw", (arg) => {
+    toast({
+      title: "Perdu egalité",
+      status: "error",
+      isClosable: true,
+      duration: 2500,
+    });
+    setGameState((gameSate) =>
+      gameSate.map((game) =>
+        game.playerId !== arg
+          ? { ...game, isFinished: true, hasWon: false }
+          : { ...game }
+      )
+    );
   });
 };
 
@@ -344,6 +370,7 @@ export const removeBrEvent = (socket: Socket | null) => {
   socket?.removeListener("winning_player_br");
   socket?.removeListener("next_word_br");
   socket?.removeListener("draw_br");
+  socket?.removeListener("end_of_game_draw");
 };
 
 export const lobbyOneVsOneAddEvents = (

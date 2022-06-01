@@ -20,6 +20,7 @@ import {
   BrGameInfo,
   KeyboardSettings,
   MyFocus,
+  twoDigits,
 } from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
@@ -32,8 +33,6 @@ interface InGameLobbyBrProps {
 
 const NOT_ENOUGH_LETTER = "NOLETTER";
 const NOT_IN_DICTIONARY = "NODICTIONARY";
-//to display the timer
-const twoDigits = (num: number) => String(num).padStart(2, "0");
 
 export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
@@ -86,10 +85,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       wordLength: gameInfo.length,
       hasWon: false,
       wordId: gameInfo.id,
-      isVisible: true,
     });
     //the other player
-    setNumberPlayer(gameInfo.playerList.length);
     gameInfo.playerList.forEach((pl) => {
       if (player.id !== pl.id) {
         newGameState.push({
@@ -101,7 +98,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           wordLength: gameInfo.length,
           hasWon: false,
           wordId: gameInfo.id,
-          isVisible: true,
         });
       }
     });
@@ -111,6 +107,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     //initialize the chrono
     if (gameInfo.endTime !== undefined) {
       setMsRemaining(gameInfo.endTime - Date.now());
+      // setMsRemaining(5000);
     }
     setCountRef(
       setInterval(() => {
@@ -173,13 +170,23 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       );
     } else {
       //set the game for the looser
-      setGameState((gameSate) =>
-        gameSate.map((game) =>
-          game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: false }
-            : { ...game }
-        )
-      );
+      // setGameState((gameSate) =>
+      //   gameSate.map((game) =>
+      //     game.playerId === player.id
+      //       ? { ...game, isFinished: true, hasWon: false }
+      //       : { ...game }
+      //   )
+      // );
+      setGameState((gameState) => {
+        let playerStateIndex = gameState.findIndex(
+          (state) => state.playerId === player.id
+        );
+
+        gameState[playerStateIndex].isFinished = true;
+        gameState[playerStateIndex].hasWon = false;
+
+        return gameState;
+      });
       //set the interval to 0 because the clear is not taken into account
       setCountRef(
         setInterval(() => {
@@ -193,18 +200,29 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   useEffect(() => {
     //start the game
     startGame();
-    //the broadcast of the gessWordBr
-    addGuessWordBrBroadcast(socket, player.id, setGameState);
-    //all the other event
-    addBrEvent(
-      resetGame,
-      socket,
-      player.id,
-      toast,
-      setMsRemaining,
-      countRef,
-      setGameState
-    );
+    return () => {
+      if (countRef !== null) {
+        clearInterval(countRef);
+      }
+    };
+  }, []);
+
+  //use effect for the socket exchange
+  useEffect(() => {
+    if (socket) {
+      //the broadcast of the gessWordBr
+      addGuessWordBrBroadcast(socket, player.id, setGameState);
+      //all the other event
+      addBrEvent(
+        resetGame,
+        socket,
+        player.id,
+        toast,
+        setMsRemaining,
+        countRef,
+        setGameState
+      );
+    }
     return () => {
       //remove all the event
       removeBrEvent(socket);
@@ -212,7 +230,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         clearInterval(countRef);
       }
     };
-  }, []);
+  }, [socket]);
 
   const toast = useToast();
 
@@ -229,13 +247,23 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isClosable: true,
         duration: 2500,
       });
-      setGameState(
-        gameState.map((game) =>
-          game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: false }
-            : { ...game }
-        )
-      );
+      // setGameState(
+      //   gameState.map((game) =>
+      //     game.playerId === player.id
+      //       ? { ...game, isFinished: true, hasWon: false }
+      //       : { ...game }
+      //   )
+      // );
+      setGameState((gameState) => {
+        let playerStateIndex = gameState.findIndex(
+          (state) => state.playerId === player.id
+        );
+
+        gameState[playerStateIndex].isFinished = true;
+        gameState[playerStateIndex].hasWon = false;
+
+        return gameState;
+      });
     }
     return () => {
       if (countRef !== null) {
@@ -321,16 +349,35 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         game.playerId === player.id ? { ...newState } : { ...game }
       )
     );
+    // setGameState((gameState) => {
+    //   let playerStateIndex = gameState.findIndex(
+    //     (state) => state.playerId === player.id
+    //   );
+
+    //   gameState[playerStateIndex] = newState;
+
+    //   return gameState;
+    // });
 
     //check if the word is find
     if (isWordCorrect(result)) {
-      setGameState(
-        gameState.map((game) =>
-          game.playerId === player.id
-            ? { ...newState, isFinished: true, hasWon: true }
-            : { ...game }
-        )
-      );
+      // setGameState(
+      //   gameState.map((game) =>
+      //     game.playerId === player.id
+      //       ? { ...newState, isFinished: true, hasWon: true }
+      //       : { ...game }
+      //   )
+      // );
+      setGameState((gameState) => {
+        let playerStateIndex = gameState.findIndex(
+          (state) => state.playerId === player.id
+        );
+
+        gameState[playerStateIndex].isFinished = true;
+        gameState[playerStateIndex].hasWon = true;
+
+        return gameState;
+      });
       toast({
         title: "GGEZ 😎",
         status: "success",
@@ -345,13 +392,23 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
     //check if the number of try exceed the nbLife
     if (triesHistory.length + 1 === nbLife) {
-      setGameState(
-        gameState.map((game) =>
-          game.playerId === player.id
-            ? { ...newState, isFinished: true, hasWon: false }
-            : { ...game }
-        )
-      );
+      // setGameState(
+      //   gameState.map((game) =>
+      //     game.playerId === player.id
+      //       ? { ...newState, isFinished: true, hasWon: false }
+      //       : { ...game }
+      //   )
+      // );
+      setGameState((gameState) => {
+        let playerStateIndex = gameState.findIndex(
+          (state) => state.playerId === player.id
+        );
+
+        gameState[playerStateIndex].isFinished = true;
+        gameState[playerStateIndex].hasWon = false;
+
+        return gameState;
+      });
       toast({
         title: "Perdu ! Sadge",
         status: "error",
@@ -403,22 +460,13 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   for (let i = 1; i < numberPlayer; ) {
     // 1 because 0 is the player
     for (j = 0; j < 6 && i < numberPlayer; j++) {
-      const {
-        triesHistory,
-        firstLetter,
-        nbLife,
-        wordLength,
-        isVisible,
-        playerId,
-      } = gameState?.[i] || {};
+      const { triesHistory, nbLife, wordLength, playerId } =
+        gameState?.[i] || {};
       items.push(
         <SmallPlayerGrid
           key={playerId}
-          isVisible={isVisible}
-          firstLetter={firstLetter}
           wordLength={wordLength}
           nbLife={nbLife}
-          word={word}
           triesHistory={triesHistory}
           nbPlayer={numberPlayer}
         />
@@ -443,11 +491,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         <Text align="center" fontSize="large">
           {player.name}
         </Text>
-        <Box as="span">
+        <Box>
           {/* the result of the game */}
           <Text
             color={
-              !hasWon && minutesToDisplay <= 0 && secondsToDisplay <= 30
+              (!hasWon && minutesToDisplay <= 0 && secondsToDisplay <= 30) ||
+              (isFinished && !hasWon)
                 ? "red"
                 : "white"
             }

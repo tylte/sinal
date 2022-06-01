@@ -440,7 +440,6 @@ export const startGameBrEvent = (
 
   gameBrMap.set(gameId, game);
   io.to(lobbyId).emit("starting_game_br", game);
-  io.to(lobbyId).emit("starting_game_Br", game);
   io.to(lobbyId).socketsJoin(gameId);
 
   let timeout = setTimeout(() => {
@@ -517,35 +516,8 @@ export const guessWordBrEvent = (
       timeoutMap.set(gameId, timeout);
       io.to(gameId).emit("first_winning_player_br", game);
       if (game.playerFound.length === game.playersLastNextRound) {
-        game.playersLastNextRound = Math.floor(
-          game.playersLastNextRound * (1 - game.eliminationRate / 100)
-        );
-
-        if (game.playersLastNextRound === 0) {
-          io.to(gameId).emit("winning_player_br", playerId);
-          io.to(gameId).socketsLeave(gameId);
-        } else if (game.playersLastNextRound === 1) {
-          //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
-        } else {
-          let newWord = get_word();
-          console.log("Mot à découvrir : ", newWord);
-          idToWord.set(gameId, newWord);
-          game.firstLetter = newWord.charAt(0);
-          game.length = newWord.length;
-          game.playerList = game.playerFound;
-          game.playerFound = new Array();
-
-          let timeout = timeoutMap.get(gameId);
-          if (timeout !== undefined) clearTimeout(timeout);
-
-          timeout = setTimeout(() => {
-            tempsEcouleBr(game, io);
-          }, game.globalTime);
-
-          game.endTime = Date.now() + game.globalTime;
-          timeoutMap.set(gameId, timeout);
-          io.to(gameId).emit("next_word_br", game);
-        }
+        io.to(gameId).emit("winning_player_br", playerId);
+        io.to(gameId).socketsLeave(gameId);
       }
     } else if (game.playerFound.length >= game.playersLastNextRound) {
       console.log("guess_word_br : player guessed too late");
@@ -651,7 +623,6 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
       io.to(game.id).emit("draw_br");
       io.to(game.id).emit("next_word_br", game);
     } else if (game.playerFound.length === 1) {
-      console.log("status de la game : ", game);
       io.to(game.id).emit("winning_player_br", game.playerFound[0]);
       io.to(game.id).socketsLeave(game.id);
     } else {

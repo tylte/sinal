@@ -76,7 +76,6 @@ export type BrGameState = {
   triesHistory: TriesHistory[];
   isFinished: boolean;
   hasWon: boolean;
-  isVisible: boolean;
 };
 export type PlayerBr = {
   id: string,
@@ -116,3 +115,5 @@ export type MyFocus = {
 };
 
 export type FocusMode = "overwrite" | "insert";
+
+export const twoDigits = (num: number) => String(num).padStart(2, "0");
