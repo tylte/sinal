@@ -37,7 +37,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   const startGame = () => {
     if(gameMode === "battle-royale") {
       socket?.emit("start_game_br", { lobbyId: id, playerId, eliminationRate:10, globalTime:180000, timeAfterFirstGuess:30000 });
-    } else {
+    } else if(gameMode === "1vs1") {
       socket?.emit("start_game_1vs1", { lobbyId: id, playerId });
     }
   };

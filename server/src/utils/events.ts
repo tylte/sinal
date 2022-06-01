@@ -490,7 +490,6 @@ export const guessWordBrEvent = (
       setNouveauTimeout(io, game, game.timeAfterFirstGuess);
 
       io.to(gameId).emit("first_winning_player_br", game);
-
       if (game.playerFound.length === game.playersLastNextRound) {
         io.to(gameId).emit("winning_player_br", playerId);
         io.to(gameId).socketsLeave(gameId);

@@ -20,6 +20,7 @@ import {
   BrGameInfo,
   KeyboardSettings,
   MyFocus,
+  twoDigits,
 } from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
@@ -32,8 +33,6 @@ interface InGameLobbyBrProps {
 
 const NOT_ENOUGH_LETTER = "NOLETTER";
 const NOT_IN_DICTIONARY = "NODICTIONARY";
-//to display the timer
-const twoDigits = (num: number) => String(num).padStart(2, "0");
 
 export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
@@ -62,9 +61,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const minutesRemaining = msRemaining / 1000 / 60;
   const minutesToDisplay = Math.trunc(minutesRemaining);
 
-  //check if the time is finished
-  const looseByTime = msRemaining <= 0;
-
   //the focus in the grid
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
@@ -86,10 +82,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       wordLength: gameInfo.length,
       hasWon: false,
       wordId: gameInfo.id,
-      isVisible: true,
     });
     //the other player
-    setNumberPlayer(gameInfo.playerList.length);
     gameInfo.playerList.forEach((pl) => {
       if (player.id !== pl.id) {
         newGameState.push({
@@ -101,7 +95,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           wordLength: gameInfo.length,
           hasWon: false,
           wordId: gameInfo.id,
-          isVisible: true,
         });
       }
     });
@@ -172,7 +165,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         }, 1000)
       );
     } else {
-      //set the game for the looser
+      // set the game for the looser
       setGameState((gameSate) =>
         gameSate.map((game) =>
           game.playerId === player.id
@@ -193,18 +186,29 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   useEffect(() => {
     //start the game
     startGame();
-    //the broadcast of the gessWordBr
-    addGuessWordBrBroadcast(socket, player.id, setGameState);
-    //all the other event
-    addBrEvent(
-      resetGame,
-      socket,
-      player.id,
-      toast,
-      setMsRemaining,
-      countRef,
-      setGameState
-    );
+    return () => {
+      if (countRef !== null) {
+        clearInterval(countRef);
+      }
+    };
+  }, []);
+
+  //use effect for the socket exchange
+  useEffect(() => {
+    if (socket) {
+      //the broadcast of the gessWordBr
+      addGuessWordBrBroadcast(socket, player.id, setGameState);
+      //all the other event
+      addBrEvent(
+        resetGame,
+        socket,
+        player.id,
+        toast,
+        setMsRemaining,
+        countRef,
+        setGameState
+      );
+    }
     return () => {
       //remove all the event
       removeBrEvent(socket);
@@ -212,37 +216,31 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         clearInterval(countRef);
       }
     };
-  }, []);
+  }, [socket]);
 
   const toast = useToast();
 
-  //useEffect for the timer
-  useEffect(() => {
-    //check if the time is over
-    if (looseByTime) {
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
-      toast({
-        title: "perdu, le temps est dépassé",
-        status: "error",
-        isClosable: true,
-        duration: 2500,
-      });
-      setGameState(
-        gameState.map((game) =>
-          game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: false }
-            : { ...game }
-        )
-      );
+  //check if the time is finished
+  if (msRemaining <= 0) {
+    if (countRef !== null) {
+      clearInterval(countRef);
+      //set 1 ms to avoid re-entering the if
+      setMsRemaining(1);
     }
-    return () => {
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
-    };
-  }, [looseByTime]);
+    toast({
+      title: "perdu, le temps est dépassé",
+      status: "error",
+      isClosable: true,
+      duration: 2500,
+    });
+    setGameState(
+      gameState.map((game) =>
+        game.playerId === player.id
+          ? { ...game, isFinished: true, hasWon: false }
+          : { ...game }
+      )
+    );
+  }
 
   useEffect(() => {
     return () => {
@@ -403,22 +401,13 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   for (let i = 1; i < numberPlayer; ) {
     // 1 because 0 is the player
     for (j = 0; j < 6 && i < numberPlayer; j++) {
-      const {
-        triesHistory,
-        firstLetter,
-        nbLife,
-        wordLength,
-        isVisible,
-        playerId,
-      } = gameState?.[i] || {};
+      const { triesHistory, nbLife, wordLength, playerId } =
+        gameState?.[i] || {};
       items.push(
         <SmallPlayerGrid
           key={playerId}
-          isVisible={isVisible}
-          firstLetter={firstLetter}
           wordLength={wordLength}
           nbLife={nbLife}
-          word={word}
           triesHistory={triesHistory}
           nbPlayer={numberPlayer}
         />
@@ -443,11 +432,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         <Text align="center" fontSize="large">
           {player.name}
         </Text>
-        <Box as="span">
+        <Box>
           {/* the result of the game */}
           <Text
             color={
-              !hasWon && minutesToDisplay <= 0 && secondsToDisplay <= 30
+              (!hasWon && minutesToDisplay <= 0 && secondsToDisplay <= 30) ||
+              (isFinished && !hasWon)
                 ? "red"
                 : "white"
             }
