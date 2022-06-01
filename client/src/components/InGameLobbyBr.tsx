@@ -50,6 +50,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   const isChatting = useIsChatting();
 
+  const [endTime, setEndTime] = useState(gameInfo?.endTime);
   //The time remaining for the timer in ms
   const [msRemaining, setMsRemaining] = useState(1);
 
@@ -103,11 +104,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
     //initialize the chrono
     if (gameInfo.endTime !== undefined) {
-      setMsRemaining(gameInfo.endTime - Date.now());
+      setEndTime(gameInfo.endTime); 
+      console.log(gameInfo.endTime - Date.now());
     }
     setCountRef(
       setInterval(() => {
-        setMsRemaining((timer) => timer - 1000);
+        setMsRemaining((timer) => gameInfo.endTime - Date.now());
       }, 1000)
     );
   };
@@ -156,12 +158,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       //initialize the chrono
       if (gameBr.endTime !== undefined) {
         //set the time
-        setMsRemaining(gameBr.endTime - Date.now());
+        setEndTime(gameBr.endTime);
       }
       //set the interval
       setCountRef(
         setInterval(() => {
-          setMsRemaining((timer) => timer - 1000);
+          setMsRemaining(() => endTime - Date.now());
         }, 1000)
       );
     } else {
@@ -176,7 +178,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       //set the interval to 0 because the clear is not taken into account
       setCountRef(
         setInterval(() => {
-          setMsRemaining((timer) => timer - 0);
+          setMsRemaining((timer) => endTime - 0);
         }, 0)
       );
     }
@@ -204,9 +206,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         socket,
         player.id,
         toast,
-        setMsRemaining,
+        setEndTime,
         countRef,
-        setGameState
+        setGameState,
+        msRemaining
       );
     }
     return () => {
@@ -222,17 +225,18 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //check if the time is finished
   if (msRemaining <= 0) {
+    console.log("reset ms");
     if (countRef !== null) {
       clearInterval(countRef);
       //set 1 ms to avoid re-entering the if
       setMsRemaining(1);
     }
-    toast({
-      title: "perdu, le temps est dépassé",
-      status: "error",
-      isClosable: true,
-      duration: 2500,
-    });
+    // toast({
+    //   title: "Perdu ! Sadge",
+    //   status: "error",
+    //   isClosable: true,
+    //   duration: 2500,
+    // });
     setGameState(
       gameState.map((game) =>
         game.playerId === player.id

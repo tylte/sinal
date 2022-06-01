@@ -623,7 +623,7 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
       io.to(game.id).emit("draw_br");
       io.to(game.id).emit("next_word_br", game);
     } else if (game.playerFound.length === 1) {
-      io.to(game.id).emit("winning_player_br", game.playerFound[0]);
+      io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
       io.to(game.id).socketsLeave(game.id);
     } else {
       game.playersLastNextRound = Math.floor(

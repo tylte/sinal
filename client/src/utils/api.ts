@@ -296,17 +296,17 @@ export const addBrEvent = async (
   socket: Socket,
   playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
-  setSecondsRemaining: React.Dispatch<React.SetStateAction<number>>,
+  setEndTime: React.Dispatch<React.SetStateAction<number>>,
   countRef: NodeJS.Timeout | null,
-  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
+  msRemaining: number
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
-    setSecondsRemaining(arg.endTime - Date.now());
+    console.log("msRemaining : ", msRemaining, " endTime : ", arg.endTime);
+    setEndTime((time) => (time - Date.now() > 30000 ? arg.endTime : time));
   });
   socket?.on("winning_player_br", (arg) => {
-    if (arg.id !== playerId) {
-      console.log("argument of winning_player : ", arg);
-      console.log("id of player : ", playerId);
+    if (arg !== playerId) {
       toast({
         title: "Perdu ! Sadge",
         status: "error",

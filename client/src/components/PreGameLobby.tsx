@@ -21,7 +21,7 @@ import { useSocket } from "../utils/hooks";
 interface PreGameLobbyProps {
   lobby: Lobby;
   player: Player;
-  gameMode:GameMode;
+  gameMode: GameMode;
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
@@ -35,9 +35,15 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   const currentPlace = playerList.length;
 
   const startGame = () => {
-    if(gameMode === "battle-royale") {
-      socket?.emit("start_game_br", { lobbyId: id, playerId, eliminationRate:10, globalTime:180000, timeAfterFirstGuess:30000 });
-    } else if(gameMode === "1vs1") {
+    if (gameMode === "battle-royale") {
+      socket?.emit("start_game_br", {
+        lobbyId: id,
+        playerId,
+        eliminationRate: 10,
+        globalTime: 180000,
+        timeAfterFirstGuess: 30000,
+      });
+    } else if (gameMode === "1vs1") {
       socket?.emit("start_game_1vs1", { lobbyId: id, playerId });
     }
   };
@@ -79,7 +85,10 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           onClick={() => router.push("/lobby")}
         />
         <Button
-          isDisabled={playerId !== owner || playerList.length < totalPlace}
+          isDisabled={
+            playerId !== owner ||
+            (playerList.length < totalPlace && gameMode !== "battle-royale")
+          }
           colorScheme={"green"}
           onClick={startGame}
         >
