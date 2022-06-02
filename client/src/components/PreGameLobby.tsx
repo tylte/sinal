@@ -26,7 +26,18 @@ interface PreGameLobbyProps {
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
-  lobby: { name, totalPlace, state, playerList, id, owner, mode },
+  lobby: {
+    name,
+    totalPlace,
+    state,
+    playerList,
+    id,
+    owner,
+    mode,
+    nbLifePerPlayer,
+    isPublic,
+    currentGameId,
+  },
   player: { id: playerId },
 }) => {
   const socket = useSocket();
@@ -81,7 +92,23 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           icon={<SettingsIcon />}
           onClick={onOpen}
         />
-        <CreateLobbyModal isOpen={isOpen} onClose={onClose} />
+        <CreateLobbyModal
+          isOpen={isOpen}
+          onClose={onClose}
+          mode="Update"
+          lobby={{
+            name,
+            totalPlace,
+            state,
+            playerList,
+            id,
+            owner,
+            mode,
+            nbLifePerPlayer,
+            isPublic,
+            currentGameId,
+          }}
+        />
         <Button
           isDisabled={playerId !== owner || playerList.length < totalPlace}
           colorScheme={"green"}

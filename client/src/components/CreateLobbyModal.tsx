@@ -28,23 +28,31 @@ import React from "react";
 import { useState } from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
-import { Packet, Player } from "src/utils/types";
+import { GameMode, Lobby, Packet, Player } from "src/utils/types";
 
 interface CreateLobbyModalProps {
   isOpen: boolean;
   onClose: () => void;
+  mode: string;
+  lobby?: Lobby;
 }
 
 export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   isOpen,
   onClose,
+  mode,
+  lobby,
 }) => {
-  const [gameMode, setGameMode] = React.useState("1vs1");
-  const [isPublic, setIsPublic] = React.useState(true);
-  const [lobbyName, setLobbyName] = React.useState("Nouveau Lobby");
-  const [nbPlaces, setNbPlaces] = React.useState(2);
-  const [maxPlaces, setmaxPlaces] = React.useState(2);
-  const [nbLife, setNbLife] = useState(6);
+  const [gameMode, setGameMode] = React.useState(lobby ? lobby.mode : "1vs1");
+  const [isPublic, setIsPublic] = React.useState(lobby ? lobby.isPublic : true);
+  const [lobbyName, setLobbyName] = React.useState(
+    lobby ? lobby.name : "Nouveau Lobby"
+  );
+  const [nbPlaces, setNbPlaces] = React.useState(lobby ? lobby.totalPlace : 2);
+  const [maxPlaces, setmaxPlaces] = React.useState(
+    lobby ? lobby.totalPlace : 2
+  );
+  const [nbLife, setNbLife] = useState(lobby ? lobby.nbLifePerPlayer : 6);
   const [nbRounds, setNbRounds] = useState(1);
   const { isOpen: openFade, onToggle } = useDisclosure({
     isOpen: gameMode === "1vs1",
@@ -53,10 +61,10 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const [owner] = usePlayer();
   const router = useRouter();
 
-  const createLobby = (socket: Socket | null, owner: Player | null) => {
-    socket?.emit(
-      "create_lobby",
-      {
+  const handleButton = (socket: Socket | null, owner: Player | null) => {
+    if (mode === "Update" && lobby !== undefined) {
+      socket?.emit("update_lobby", {
+        lobbyId: lobby.id,
         mode: gameMode,
         place: nbPlaces,
         isPublic,
@@ -64,22 +72,35 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         name: lobbyName,
         nbRounds,
         nbLife,
-      },
-      (response: Packet) => {
-        if (response.success) {
-          router.push(`/lobby/${response.data}`);
-        } else {
-          console.log("createLobby client error : " + response.message);
+      });
+    } else if (mode === "Create") {
+      socket?.emit(
+        "create_lobby",
+        {
+          mode: gameMode,
+          place: nbPlaces,
+          isPublic,
+          owner,
+          name: lobbyName,
+          nbRounds,
+          nbLife,
+        },
+        (response: Packet) => {
+          if (response.success) {
+            router.push(`/lobby/${response.data}`);
+          } else {
+            console.log("createLobby client error : " + response.message);
+          }
         }
-      }
-    );
+      );
+    }
 
     onClose();
   };
 
   const handleKeyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      createLobby(socket, owner);
+      handleButton(socket, owner);
     }
   };
 
@@ -87,7 +108,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     setLobbyName(event.target.value);
   };
 
-  const handleGameMode = (value: string) => {
+  const handleGameMode = (value: GameMode) => {
     setGameMode(value);
     if (value == "battle-royale") {
       setmaxPlaces(50);
@@ -107,7 +128,9 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Création de lobby</ModalHeader>
+        <ModalHeader>
+          {mode === "Create" ? "Création de lobby" : "Modifier le lobby"}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Box onKeyDown={handleKeyPressed}>
@@ -195,9 +218,9 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
           <Button
             colorScheme="blue"
             mr={3}
-            onClick={() => createLobby(socket, owner)}
+            onClick={() => handleButton(socket, owner)}
           >
-            Créer lobby
+            {mode === "Create" ? "Créer le lobby" : "Modifier"}
           </Button>
         </ModalFooter>
       </ModalContent>

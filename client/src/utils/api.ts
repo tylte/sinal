@@ -150,6 +150,10 @@ export const addSpecificLobbiesEvent = (
       }
     });
   });
+
+  socket.on("updating_lobby", (lobby: Lobby) => {
+    setLobby(lobby);
+  });
   socket.on(
     "lobbies_update_join",
     ({ lobby: changedLobby }: UpdateLobbyJoinPayload) => {

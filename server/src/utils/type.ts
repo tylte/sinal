@@ -65,6 +65,16 @@ export const ArgCreateLobby = z.object({
   nbLife: z.number(),
 });
 
+export const ArgUpdateLobby = z.object({
+  lobbyId: z.string(),
+  mode: GameMode,
+  place: z.number(),
+  isPublic: z.boolean(),
+  name: z.string(),
+  nbRounds: z.number(),
+  nbLife: z.number(),
+});
+
 export const ArgJoinLobby = z.object({
   lobbyId: z.string(),
   playerId: z.string(),

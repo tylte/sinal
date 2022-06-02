@@ -62,7 +62,7 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
         </SimpleGrid>
       </Flex>
       <CreatePlayerModal isOpen={!player} onClose={createPlayerOnClose} />
-      <CreateLobbyModal isOpen={isOpen} onClose={onClose} />
+      <CreateLobbyModal isOpen={isOpen} onClose={onClose} mode="Create" />
     </Layout>
   );
 };

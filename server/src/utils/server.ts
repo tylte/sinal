@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { createServer } from "http";
+import { createServer, request } from "http";
 import { Server } from "socket.io";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
@@ -20,8 +20,11 @@ import {
   ArgCreateLobby,
   ArgJoinLobby,
   ArgStartGame,
+  ArgUpdateLobby,
   ArgUpdateWord,
   EventResponseFn,
+  lobbyMap,
+  LobbyType,
   PacketType,
   ReceivedChatMessage,
 } from "./type";
@@ -108,6 +111,44 @@ export const getServer = () => {
         }
       }
     );
+
+    socket.on("update_lobby", (request) => {
+      /**
+       * @param request.lobbyId - Lobby of the ID
+       * @param request.mode - GameMode of the Lobby
+       * @param request.place - Number of places in the Lobby
+       * @param request.isPublic - Visibility of the Lobby
+       * @param request.name - Name of the Lobby
+       * @param request.nbRounds - Number of rounds (only for 1vs1 Mode)
+       * @param request.nbLife - Number of lifes
+       */
+
+      let check = ArgUpdateLobby.safeParse(request);
+      if (check.success) {
+        // check.data : {
+        //     isPublic,
+        //     mode,
+        //     name,
+        //     owner,
+        //     place: totalPlace,
+        //     nbRounds,
+        //     nbLife,
+        // };
+        let lobby = lobbyMap.get(request.lobbyId);
+        if (lobby !== undefined) {
+          lobby = {
+            ...lobby,
+            isPublic: check.data.isPublic,
+            mode: check.data.mode,
+            name: check.data.name,
+            nbLifePerPlayer: check.data.nbLife,
+            totalPlace: check.data.place,
+          };
+          lobbyMap.set(check.data.lobbyId, lobby);
+          io.to(check.data.lobbyId).emit("updating_lobby", lobby);
+        }
+      }
+    });
 
     socket.on("join_lobby", (result, response: EventResponseFn) => {
       if (typeof response !== "function") {
