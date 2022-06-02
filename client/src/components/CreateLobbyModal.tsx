@@ -20,7 +20,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { Packet, Player } from "src/utils/types";
@@ -114,9 +114,16 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
             </RadioGroup>
             {/* PLACE */}
             <Text my={2}>Places</Text>
+            <Text> min : {2}</Text>
+            <Text>max : {maxPlaces}</Text>
             <NumberInput
               onChange={(valueString: string) =>
-                setNbPlaces(parseInt(valueString))
+                setNbPlaces(() => {
+                  let result = parseInt(valueString === "" ? "0" : valueString);
+                  if (result > maxPlaces) result = maxPlaces;
+
+                  return result;
+                })
               }
               value={nbPlaces}
               min={2}
