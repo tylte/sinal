@@ -1,4 +1,4 @@
-import { Box, Flex, Text, useToast } from "@chakra-ui/react";
+import { Box, Flex, Text, useDisclosure, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
@@ -19,6 +19,7 @@ import {
   TriesHistory,
 } from "../utils/types";
 import { getClassicKeyboardSettings } from "../utils/utils";
+import { LinkAfterGame1vs1 } from "./LinkPostGame1vs1";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 
 interface OneVsOneGameLobbyProps {
@@ -51,6 +52,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
 
   const [hasWon, setHasWon] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
@@ -147,6 +149,14 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     game_length
   );
 
+  let tempGame = {
+    playerOne: { id: "1", name: "bob", nb_life: 5 },
+    playerTwo: { id: "2", name: "bonjour", nb_life: 2 },
+    id: "21",
+    length: 7,
+    first_letter: "A",
+  };
+
   return (
     <>
       <Box p={8}>
@@ -169,6 +179,12 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
       </Box>
       <Box>
         {hasWon && <Confetti />}
+        <LinkAfterGame1vs1
+          game={tempGame}
+          isWinner={true}
+          isOpen={isFinished}
+          onClose={onClose}
+        />
         <Text mb="4" align={"center"}>
           {name}
         </Text>
