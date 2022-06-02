@@ -21,11 +21,9 @@ export const Chrono: React.FC<ChronoProps> = ({ endPoint, onTimeFinish }) => {
   );
 
   if (msRemaining <= 0) {
-    if (countRef !== null) {
-      clearInterval(countRef.current);
-      //set 1 ms to avoid re-entering the if
-      setMsRemaining(1);
-    }
+    clearInterval(countRef.current);
+    //set 1 ms to avoid re-entering the if
+    setMsRemaining(1);
     onTimeFinish();
   }
 
