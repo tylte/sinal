@@ -462,7 +462,7 @@ export const startGameBrEvent = (
     numberOfDrawStreak: 0,
   };
 
-  nouveauMotBr(io, game, globalTime);
+  newWordBr(io, game, globalTime);
 
   gameBrMap.set(gameId, game);
   io.to(lobbyId).emit("starting_game_br", game);
@@ -517,7 +517,7 @@ export const guessWordBrEvent = (
       game.playerFound.push(player);
       game.numberOfDrawStreak = 0;
 
-      setNouveauTimeout(io, game, game.timeAfterFirstGuess);
+      setNewTimeout(io, game, game.timeAfterFirstGuess);
 
       io.to(gameId).emit("first_winning_player_br", game);
       if (game.playerFound.length === game.playersLastNextRound) {
@@ -543,14 +543,14 @@ export const guessWordBrEvent = (
 
           game.playerList = game.playerFound;
           game.playerFound = new Array();
-          nouveauMotBr(io, game, game.globalTime);
+          newWordBr(io, game, game.globalTime);
 
           io.to(gameId).emit("next_word_br", game);
           //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
         } else {
           game.playerList = game.playerFound;
           game.playerFound = new Array();
-          nouveauMotBr(io, game, game.globalTime);
+          newWordBr(io, game, game.globalTime);
 
           io.to(gameId).emit("next_word_br", game);
         }
@@ -571,7 +571,7 @@ export const guessWordBrEvent = (
 
       game.playerFound = new Array();
 
-      nouveauMotBr(io, game, game.globalTime);
+      newWordBr(io, game, game.globalTime);
 
       io.to(gameId).emit("next_word_br", game);
     } else {
@@ -614,11 +614,7 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
   }
 };
 
-const nouveauMotBr = (
-  io: Server,
-  game: GameBr | undefined,
-  newTime: number
-) => {
+const newWordBr = (io: Server, game: GameBr | undefined, newTime: number) => {
   if (game !== undefined) {
     let time = timeoutMap.get(game.id);
     if (time !== undefined) {
@@ -635,11 +631,11 @@ const nouveauMotBr = (
       p.nbLife = NBLIFE;
     });
 
-    setNouveauTimeout(io, game, newTime);
+    setNewTimeout(io, game, newTime);
   }
 };
 
-const setNouveauTimeout = (
+const setNewTimeout = (
   io: Server,
   game: GameBr | undefined,
   newTime: number
