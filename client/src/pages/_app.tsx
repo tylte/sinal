@@ -1,5 +1,4 @@
 import { ChakraProvider } from "@chakra-ui/react";
-
 import theme from "../theme";
 import { AppProps } from "next/app";
 import { useEffect, useState } from "react";
@@ -10,6 +9,8 @@ import { addSocketConnectionEvent } from "src/utils/api";
 import { Player } from "../utils/types";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  console.log(process.env.SERVER_URL);
+
   const [dictionary, setDictionnary] = useState<Set<string>>(new Set());
   const [socket, setSocket] = useState<Socket | null>(null);
   const [player, setPlayer] = useState<Player | null>(null);

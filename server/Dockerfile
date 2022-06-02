@@ -9,6 +9,7 @@ RUN yarn
 # Copy sources
 COPY data/. data/.
 COPY src/. src/.
+COPY .docker.env ./.env
 COPY tsconfig.json ./
 
 RUN yarn build
