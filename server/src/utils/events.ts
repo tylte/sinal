@@ -234,7 +234,7 @@ export const willNoLongerLeaveLobbyOnDisconnect = (
 
 export const startGame1vs1Event = (
   io: Server,
-  { lobbyId, playerId }: ArgStartGame1vs1Type
+  { lobbyId, playerId, globalTime, timeAfterFirstGuess }: ArgStartGame1vs1Type
 ) => {
   console.log("startGame1vs1Event");
   let lobby = lobbyMap.get(lobbyId);
@@ -280,16 +280,25 @@ export const startGame1vs1Event = (
       id: playerOne.id,
       name: playerOne.name,
       nbLife: NBLIFE,
+      hasWon: false,
     },
     playerTwo: {
       id: playerTwo.id,
       name: playerTwo.name,
       nbLife: NBLIFE,
+      hasWon: false,
     },
     id: gameId,
     firstLetter: word.charAt(0),
     length: word.length,
+    globalTime: globalTime,
+    timeAfterFirstGuess: timeAfterFirstGuess,
   };
+
+  let timeout = setTimeout(() => {
+    tempsEcoule1vs1(io, game);
+  }, globalTime);
+  timeoutMap.set(gameId, timeout);
 
   game1vs1Map.set(gameId, game);
   io.to(lobbyId).emit("starting_game_1vs1", game);
@@ -321,9 +330,14 @@ export const guessWord1vs1Event = (
   }
 
   let player;
-  if (game.playerOne.id === playerId) player = game.playerOne;
-  else if (game.playerTwo.id === playerId) player = game.playerTwo;
-  else {
+  let otherPlayer;
+  if (game.playerOne.id === playerId) {
+    player = game.playerOne;
+    otherPlayer = game.playerTwo;
+  } else if (game.playerTwo.id === playerId) {
+    player = game.playerTwo;
+    otherPlayer = game.playerOne;
+  } else {
     console.log(
       "guess_word_1vs1 : there is no player in the game with this playerId"
     );
@@ -355,9 +369,25 @@ export const guessWord1vs1Event = (
   });
 
   if (win) {
-    io.to(gameId).emit("wining_player_1vs1", playerId);
-    io.to(gameId).socketsLeave(gameId);
-    game1vs1Map.delete(gameId);
+    player.hasWon = true;
+    if (otherPlayer.hasWon) {
+      if (player.nbLife > otherPlayer.nbLife) {
+        io.to(gameId).emit("wining_player_1vs1", player.id);
+        io.to(gameId).socketsLeave(gameId);
+      } else {
+        io.to(gameId).emit("wining_player_1vs1", otherPlayer.id);
+        io.to(gameId).socketsLeave(gameId);
+      }
+    } else {
+      let timeout = timeoutMap.get(gameId);
+      if (timeout !== undefined) clearTimeout(timeout);
+
+      timeout = setTimeout(() => {
+        tempsEcoule1vs1(io, game);
+      }, game.timeAfterFirstGuess);
+
+      timeoutMap.set(gameId, timeout);
+    }
   } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
     io.to(gameId).emit("draw_1vs1");
     io.to(gameId).socketsLeave(gameId);
@@ -620,6 +650,18 @@ const setNouveauTimeout = (
       game.endTime = Date.now() + newTime;
       timeoutMap.set(game.id, timeout);
     }
+  }
+};
+
+const tempsEcoule1vs1 = (io: Server, game: Game1vs1 | undefined) => {
+  if (game !== undefined) {
+    if (game.playerOne.hasWon && !game.playerTwo.hasWon)
+      io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
+    else if (!game.playerOne.hasWon && game.playerTwo.hasWon)
+      io.to(game.id).emit("wining_player_1vs1", game.playerTwo.id);
+    else io.to(game.id).emit("draw_1vs1");
+
+    io.to(game.id).socketsLeave(game.id);
   }
 };
 

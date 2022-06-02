@@ -40,15 +40,20 @@ export const Game1vs1 = z.object({
     id: z.string(),
     name: z.string(),
     nbLife: z.number(),
+    hasWon: z.boolean(),
   }),
   playerTwo: z.object({
     id: z.string(),
     name: z.string(),
     nbLife: z.number(),
+    hasWon: z.boolean(),
   }),
   id: z.string(),
   length: z.number(),
   firstLetter: z.string(),
+  endTime: z.optional(z.number()),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;
@@ -105,6 +110,8 @@ export const ArgUpdateWord = z.object({
 export const ArgStartGame1vs1 = z.object({
   lobbyId: z.string(),
   playerId: z.string(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
 });
 
 export const ArgStartGameBr = z.object({
