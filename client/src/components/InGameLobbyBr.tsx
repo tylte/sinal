@@ -367,7 +367,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             fontSize="larger"
           >
             {hasWon && "GAGNER"}
-            {!hasWon && "PERDUE"}
+            {!hasWon && "PERDU"}
           </Text>
         )}
         {!isFinished && (

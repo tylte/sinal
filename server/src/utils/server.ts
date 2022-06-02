@@ -63,7 +63,7 @@ export const getServer = () => {
     console.log("word of the game : ", word);
     res.send({
       length: word.length,
-      first_letter: word.charAt(0),
+      firstLetter: word.charAt(0),
       id: id,
       nb_life: 6,
     });
