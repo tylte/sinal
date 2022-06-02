@@ -2,7 +2,7 @@ import { ToastId, UseToastOptions } from "@chakra-ui/react";
 import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
-import { serverUrl } from "./Const";
+import { serverHttpUrl } from "./Const";
 import {
   BrGameInfo,
   BrGameState,
@@ -22,10 +22,13 @@ export const guessWord = async (
   id: string
 ): Promise<LetterResult[]> => {
   try {
-    const { data } = await axios.post<LetterResult[]>(`${serverUrl}/guess`, {
-      word,
-      id,
-    });
+    const { data } = await axios.post<LetterResult[]>(
+      `${serverHttpUrl}/guess`,
+      {
+        word,
+        id,
+      }
+    );
 
     return data;
   } catch (e) {
@@ -227,29 +230,31 @@ export const getSpecificLobby = (
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
   player: Player
 ) => {
-  axios.get<Lobby>(`${serverUrl}/list_lobbies/${lobbyId}`).then(({ data }) => {
-    if (data !== null) {
-      setLobby(data);
+  axios
+    .get<Lobby>(`${serverHttpUrl}/list_lobbies/${lobbyId}`)
+    .then(({ data }) => {
+      if (data !== null) {
+        setLobby(data);
 
-      if (player.id !== data.owner) {
-        socket.emit(
-          "join_lobby",
-          {
-            lobbyId: lobbyId,
-            playerId: player?.id,
-          },
-          (response: Packet) => {
-            toast({
-              description: response.message,
-              status: response.success ? "success" : "error",
-              duration: 3000,
-              isClosable: true,
-            });
-          }
-        );
+        if (player.id !== data.owner) {
+          socket.emit(
+            "join_lobby",
+            {
+              lobbyId: lobbyId,
+              playerId: player?.id,
+            },
+            (response: Packet) => {
+              toast({
+                description: response.message,
+                status: response.success ? "success" : "error",
+                duration: 3000,
+                isClosable: true,
+              });
+            }
+          );
+        }
       }
-    }
-  });
+    });
 };
 
 export const addChatEvents = (

@@ -1,4 +1,7 @@
-export const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+export const serverHttpUrl =
+  process.env.NEXT_PUBLIC_SERVER_HTTP_URL || "http://localhost:4000";
+export const serverWsUrl =
+  process.env.NEXT_PUBLIC_SERVER_WS_URL || "ws://localhost:4000";
 export const maxPlayerBr = 50;
 export const minPlayerBr = 2;
 

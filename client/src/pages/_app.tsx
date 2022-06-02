@@ -7,11 +7,9 @@ import { SinalContext } from "../utils/context";
 import { io, Socket } from "socket.io-client";
 import { addSocketConnectionEvent } from "src/utils/api";
 import { Player } from "../utils/types";
-import { serverUrl } from "../utils/Const";
+import { serverHttpUrl, serverWsUrl } from "../utils/Const";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  console.log(process.env.SERVER_URL);
-
   const [dictionary, setDictionnary] = useState<Set<string>>(new Set());
   const [socket, setSocket] = useState<Socket | null>(null);
   const [player, setPlayer] = useState<Player | null>(null);
@@ -19,14 +17,14 @@ function MyApp({ Component, pageProps }: AppProps) {
   const [isChatting, setIsChatting] = useState<boolean>(false);
 
   useEffect(() => {
-    axios.get<string[]>(`${serverUrl}/dictionary`).then(({ data }) => {
+    axios.get<string[]>(`${serverHttpUrl}/dictionary`).then(({ data }) => {
       const set: Set<string> = new Set();
       data.forEach((word) => {
         set.add(word);
       });
       setDictionnary(set);
     });
-    let socket = io(`ws://${serverUrl}`);
+    let socket = io(serverWsUrl);
     setSocket(socket);
     addSocketConnectionEvent(socket, setIsConnected);
   }, []);
