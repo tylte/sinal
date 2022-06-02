@@ -13,6 +13,7 @@ import { CreateLobbyModal } from "../components/CreateLobbyModal";
 import { CreatePlayerModal } from "../components/CreatePlayerModal";
 import { Layout } from "../components/Layout";
 import { LobbyProfile } from "../components/LobbyProfile";
+import { serverUrl } from "../utils/Const";
 import { usePlayer, useSocket } from "../utils/hooks";
 import { Lobby } from "../utils/types";
 
@@ -26,11 +27,9 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
 
   useEffect(() => {
-    axios
-      .get<Lobby[]>("http://localhost:4000/list_lobbies")
-      .then(({ data }) => {
-        setLobbies(data);
-      });
+    axios.get<Lobby[]>(`${serverUrl}/list_lobbies`).then(({ data }) => {
+      setLobbies(data);
+    });
   }, []);
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import Confetti from "react-confetti";
 import { Layout } from "../components/Layout";
 import { PlayerGrid } from "../components/player-grid/PlayerGrid";
 import { guessWord } from "../utils/api";
+import { serverUrl } from "../utils/Const";
 import { useClassicWordInput, useDictionary } from "../utils/hooks";
 import {
   KeyboardSettings,
@@ -32,7 +33,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
 
   const startGame = () => {
     axios
-      .post<StartGameResponse>("http://localhost:4000/start_game", {
+      .post<StartGameResponse>(`${serverUrl}/start_game`, {
         mode: "solo",
       })
       .then(({ data: { firstLetter, id, length, nb_life } }) => {
