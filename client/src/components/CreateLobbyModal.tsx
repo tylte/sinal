@@ -122,7 +122,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
             </RadioGroup>
             {/* PLACE */}
             <Text my={2}>Places</Text>
-            <Text> min : {2} </Text>
+            <Text> min : {minPlaces} </Text>
             <Text>max : {maxPlaces} </Text>
             <NumberInput
               onChange={(valueString: string) =>
