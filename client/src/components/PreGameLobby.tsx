@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
-import { Lobby, Player } from "../utils/types";
+import { GameMode, Lobby, Player } from "../utils/types";
 import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
 import { useSocket } from "../utils/hooks";
@@ -21,11 +21,13 @@ import { useSocket } from "../utils/hooks";
 interface PreGameLobbyProps {
   lobby: Lobby;
   player: Player;
+  gameMode: GameMode;
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   lobby: { name, totalPlace, state, playerList, id, owner, mode },
   player: { id: playerId },
+  gameMode,
 }) => {
   const socket = useSocket();
   const router = useRouter();
@@ -33,7 +35,17 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   const currentPlace = playerList.length;
 
   const startGame = () => {
-    socket?.emit("start_game_1vs1", { lobbyId: id, playerId });
+    if (gameMode === "battle-royale") {
+      socket?.emit("start_game_br", {
+        lobbyId: id,
+        playerId,
+        eliminationRate: 10,
+        globalTime: 180000,
+        timeAfterFirstGuess: 30000,
+      });
+    } else if (gameMode === "1vs1") {
+      socket?.emit("start_game_1vs1", { lobbyId: id, playerId });
+    }
   };
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
@@ -73,7 +85,10 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           onClick={() => router.push("/lobby")}
         />
         <Button
-          isDisabled={playerId !== owner || playerList.length < totalPlace}
+          isDisabled={
+            playerId !== owner ||
+            (playerList.length < totalPlace && gameMode !== "battle-royale")
+          }
           colorScheme={"green"}
           onClick={startGame}
         >

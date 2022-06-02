@@ -23,6 +23,7 @@ const uuidValidateV4 = (uuid: string) => {
 describe("Web socket testing", () => {
   let clientSocket: ClientSocket, httpServer: HTTPServer;
   let otherClientSocket: ClientSocket;
+  let thirdClientSocket: ClientSocket;
 
   beforeAll((done) => {
     httpServer = getServer();
@@ -32,9 +33,11 @@ describe("Web socket testing", () => {
     httpServer.listen(port, () => {
       clientSocket = connect(`http://localhost:${port}`);
       otherClientSocket = connect(`http://localhost:${port}`);
+      thirdClientSocket = connect(`http://localhost:${port}`);
 
       clientSocket.on("connect", done);
       otherClientSocket.on("connect", done);
+      thirdClientSocket.on("connect", done);
     });
   });
 
@@ -42,6 +45,7 @@ describe("Web socket testing", () => {
     httpServer.close();
     clientSocket.close();
     otherClientSocket.close();
+    thirdClientSocket.close();
   });
   test("Create lobby + create player success case", (done) => {
     let playerId: string = "";

@@ -62,13 +62,13 @@ describe("testing 1vs1", () => {
                 clientSocket.emit("start_game_1vs1", {
                   lobbyId: lobby.data,
                   playerId: playerOne.data.id,
-                  globalTime: 5000,
-                  timeAfterFirstGuess: 1000,
+                  globalTime: 1000,
+                  timeAfterFirstGuess: 500,
                 });
               }
             );
 
-            clientSocket.on("starting_game", (game) => {
+            clientSocket.on("starting_game_1vs1", (game) => {
               clientSocket.emit("get_word", game.id, (soluce: PacketType) => {
                 let testWord: string = soluce.data;
                 if (testWord[testWord.length - 1] !== "W")

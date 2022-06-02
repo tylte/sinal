@@ -1,6 +1,6 @@
 export interface StartGameResponse {
   length: number;
-  first_letter: string;
+  firstLetter: string;
   id: string;
   nb_life: number;
 }
@@ -54,7 +54,7 @@ export type Game1vs1 = {
   playerTwo: { id: string; name: string; nb_life: number };
   id: string;
   length: number;
-  first_letter: string;
+  firstLetter: string;
 };
 
 export type SoloGameState = {
@@ -66,6 +66,35 @@ export type SoloGameState = {
   isFinished: boolean;
   hasWon: boolean;
 };
+
+export type BrGameState = {
+  playerId:string;
+  wordLength: number;
+  wordId: string;
+  firstLetter: string;
+  nbLife: number;
+  triesHistory: TriesHistory[];
+  isFinished: boolean;
+  hasWon: boolean;
+};
+export type PlayerBr = {
+  id: string,
+  name: string,
+  nbLife: number,
+};
+
+export type BrGameInfo = {
+  endTime: number;
+  playerList: PlayerBr[],
+  playerFound: PlayerBr[],
+  playersLastNextRound: number,
+  id: string,
+  length: number,
+  firstLetter: string,
+  eliminationRate: number,
+  globalTime: number,
+  timeAfterFirstGuess: number,
+}
 
 export type KeyboardSettings = {
   onEnter: () => void;
@@ -86,3 +115,5 @@ export type MyFocus = {
 };
 
 export type FocusMode = "overwrite" | "insert";
+
+export const twoDigits = (num: number) => String(num).padStart(2, "0");

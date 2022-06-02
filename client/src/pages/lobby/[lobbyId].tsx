@@ -13,7 +13,7 @@ import {
   getSpecificLobby,
   removeSpecificLobbyEvent,
 } from "../../utils/api";
-import { Game1vs1, Lobby } from "../../utils/types";
+import { Game1vs1, Lobby, BrGameInfo } from "../../utils/types";
 import { getIdFromPage } from "../../utils/utils";
 
 interface LobbyProps {}
@@ -24,7 +24,9 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   const [player] = usePlayer();
   const { onClose } = useDisclosure();
   const toast = useToast();
-  const [gameState, setGameState] = useState<Game1vs1 | null>(null);
+  const [gameState, setGameState] = useState<Game1vs1 | BrGameInfo | null>(
+    null
+  );
 
   let lobbyId = getIdFromPage(router.query.lobbyId);
   const [lobby, setLobby] = useState<Lobby | null>(null);
@@ -83,19 +85,38 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
   if (state === "pre-game") {
     return (
       <Layout>
-        <PreGameLobby player={player} lobby={lobby} />
+        <PreGameLobby player={player} lobby={lobby} gameMode={lobby?.mode} />
       </Layout>
     );
   } else if (state === "in-game" && gameState !== null) {
-    return (
-      <Layout variant="grid">
-        <InGameLobby
-          GameMode={lobby.mode}
-          player={player}
-          gameState={gameState}
-        />
-      </Layout>
-    );
+    if (lobby.mode === "1vs1") {
+      return (
+        <Layout variant="grid">
+          <InGameLobby
+            gameMode={lobby.mode}
+            player={player}
+            gameState={gameState}
+          />
+        </Layout>
+      );
+    } else if (lobby.mode === "battle-royale") {
+      return (
+        <Layout variant="grid">
+          <InGameLobby
+            gameMode={lobby.mode}
+            player={player}
+            gameState={gameState}
+          />
+        </Layout>
+      );
+    } else {
+      // Its supposed to have a state
+      return (
+        <Layout>
+          <Spinner />
+        </Layout>
+      );
+    }
   } else if (state === "finished") {
     return (
       <Layout>

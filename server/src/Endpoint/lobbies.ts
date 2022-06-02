@@ -1,4 +1,5 @@
-import { lobbyMap, LobbyType } from "../utils/type";
+import { lobbyMap } from "../utils/maps";
+import { LobbyType } from "../utils/type";
 
 export function get_lobbies() {
   let ret: LobbyType[] = new Array();

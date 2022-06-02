@@ -1,4 +1,4 @@
-import { number, z } from "zod";
+import { number, object, z } from "zod";
 
 export const Player = z.object({
   id: z.string(),
@@ -50,13 +50,37 @@ export const Game1vs1 = z.object({
   }),
   id: z.string(),
   length: z.number(),
-  first_letter: z.string(),
+  firstLetter: z.string(),
   endTime: z.optional(z.number()),
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;
+
+export const PlayerBr = z.object({
+  id: z.string(),
+  name: z.string(),
+  nbLife: z.number(),
+});
+
+export type PlayerBr = z.infer<typeof PlayerBr>;
+
+export const GameBr = z.object({
+  playerList: PlayerBr.array(),
+  playerFound: PlayerBr.array(),
+  playersLastNextRound: z.number(),
+  id: z.string(),
+  length: z.number(),
+  firstLetter: z.string(),
+  eliminationRate: z.number(),
+  globalTime: z.number(),
+  endTime: z.optional(z.number()),
+  timeAfterFirstGuess: z.number(),
+  numberOfDrawStreak: z.number(),
+});
+
+export type GameBr = z.infer<typeof GameBr>;
 
 //use in create_lobby
 export const ArgCreateLobby = z.object({
@@ -83,9 +107,17 @@ export const ArgUpdateWord = z.object({
   playerId: z.string(),
 });
 
-export const ArgStartGame = z.object({
+export const ArgStartGame1vs1 = z.object({
   lobbyId: z.string(),
   playerId: z.string(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
+});
+
+export const ArgStartGameBr = z.object({
+  lobbyId: z.string(),
+  playerId: z.string(),
+  eliminationRate: z.number(),
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
 });
@@ -98,17 +130,10 @@ export type LobbyType = z.infer<typeof Lobby>;
 export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
 export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
 export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
-export type ArgStartGameType = z.infer<typeof ArgStartGame>;
+export type ArgStartGame1vs1Type = z.infer<typeof ArgStartGame1vs1>;
 export type ArgUpdateWord = z.infer<typeof ArgUpdateWord>;
+export type ArgStartGameBrType = z.infer<typeof ArgStartGameBr>;
 export type ReceivedChatMessageType = z.infer<typeof ReceivedChatMessage>;
-
-export let lobbyMap: Map<string, LobbyType> = new Map();
-
-export let playerMap: Map<string, Player> = new Map();
-
-export let game1vs1Map: Map<string, Game1vs1> = new Map();
-
-export let timeoutMap: Map<string, NodeJS.Timeout> = new Map();
 
 export type JoinLobbyResponse = (payload: {
   success: boolean;
