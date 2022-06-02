@@ -10,6 +10,7 @@ import {
   ListIcon,
   ListItem,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
@@ -17,6 +18,7 @@ import { Lobby, Player } from "../utils/types";
 import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
 import { useSocket } from "../utils/hooks";
+import { CreateLobbyModal } from "./CreateLobbyModal";
 
 interface PreGameLobbyProps {
   lobby: Lobby;
@@ -29,6 +31,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
 }) => {
   const socket = useSocket();
   const router = useRouter();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const currentPlace = playerList.length;
 
@@ -73,10 +76,12 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           onClick={() => router.push("/lobby")}
         />
         <IconButton
+          isDisabled={playerId !== owner}
           aria-label="option lobby"
           icon={<SettingsIcon />}
-          onClick={() => router.push("/lobby")}
+          onClick={onOpen}
         />
+        <CreateLobbyModal isOpen={isOpen} onClose={onClose} />
         <Button
           isDisabled={playerId !== owner || playerList.length < totalPlace}
           colorScheme={"green"}

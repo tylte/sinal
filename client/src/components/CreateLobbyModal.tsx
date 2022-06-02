@@ -1,6 +1,8 @@
 import {
   Box,
   Button,
+  Fade,
+  HStack,
   Input,
   Modal,
   ModalBody,
@@ -18,9 +20,12 @@ import {
   RadioGroup,
   Stack,
   Text,
+  useDisclosure,
+  VStack,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
+import { useState } from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { Packet, Player } from "src/utils/types";
@@ -39,6 +44,11 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const [lobbyName, setLobbyName] = React.useState("Nouveau Lobby");
   const [nbPlaces, setNbPlaces] = React.useState(2);
   const [maxPlaces, setmaxPlaces] = React.useState(2);
+  const [nbLife, setNbLife] = useState(6);
+  const [nbRounds, setNbRounds] = useState(1);
+  const { isOpen: openFade, onToggle } = useDisclosure({
+    isOpen: gameMode === "1vs1",
+  });
   const socket = useSocket();
   const [owner] = usePlayer();
   const router = useRouter();
@@ -52,6 +62,8 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         isPublic,
         owner,
         name: lobbyName,
+        nbRounds,
+        nbLife,
       },
       (response: Packet) => {
         if (response.success) {
@@ -81,6 +93,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
       setmaxPlaces(50);
       setNbPlaces(50);
     } else if (value == "1vs1") {
+      onToggle();
       setmaxPlaces(2);
       setNbPlaces(2);
     }
@@ -113,21 +126,60 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
               </Stack>
             </RadioGroup>
             {/* PLACE */}
-            <Text my={2}>Places</Text>
-            <NumberInput
-              onChange={(valueString: string) =>
-                setNbPlaces(parseInt(valueString))
-              }
-              value={nbPlaces}
-              min={2}
-              max={maxPlaces}
-            >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
+            <VStack>
+              <HStack my={2}>
+                <Text my={2}>Places</Text>
+                <NumberInput
+                  onChange={(valueString: string) =>
+                    setNbPlaces(parseInt(valueString))
+                  }
+                  value={nbPlaces}
+                  min={2}
+                  max={maxPlaces}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+                <Text my={2}>Vies</Text>
+                <NumberInput
+                  onChange={(valueString: string) =>
+                    setNbLife(parseInt(valueString))
+                  }
+                  value={nbLife === 6 ? nbLife + " (default)" : nbLife}
+                  min={2}
+                  max={10}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </HStack>
+              <Fade in={openFade} unmountOnExit={true}>
+                <HStack>
+                  <Text my={2}>Round(s)</Text>
+                  <NumberInput
+                    onChange={(valueString: string) =>
+                      setNbRounds(parseInt(valueString))
+                    }
+                    value={nbRounds}
+                    min={1}
+                    max={5}
+                    w={330}
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </HStack>
+              </Fade>
+            </VStack>
             {/* PUBLIC/PRIVE */}
             <Text my={2}>Visibilité</Text>
             <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>

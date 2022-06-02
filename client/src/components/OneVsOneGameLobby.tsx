@@ -158,7 +158,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
             <PlayerGrid
               isVisible={false}
               wordLength={game_length}
-              nbLife={6}
+              nbLife={playerOne.nb_life}
               firstLetter={first_letter}
               word={wordP2}
               triesHistory={tryHistoryP2}
@@ -176,7 +176,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
           focus={focus}
           isVisible={true}
           wordLength={game_length}
-          nbLife={6}
+          nbLife={playerOne.nb_life}
           firstLetter={first_letter.toUpperCase()}
           word={word}
           triesHistory={tryHistory}

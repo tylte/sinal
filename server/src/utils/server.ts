@@ -82,6 +82,15 @@ export const getServer = () => {
           console.log("create_lobby : response is supposed to be a function");
           return;
         }
+        /**
+         * @param request.mode - GameMode of the Lobby
+         * @param request.place - Number of places in the Lobby
+         * @param request.isPublic - Visibility of the Lobby
+         * @param request.owner - Owner of the Lobby
+         * @param request.name - Name of the Lobby
+         * @param request.nbRounds - Number of rounds (only for 1vs1 Mode)
+         * @param request.nbLife - Number of lifes
+         */
 
         let check = ArgCreateLobby.safeParse(request);
         if (check.success) {

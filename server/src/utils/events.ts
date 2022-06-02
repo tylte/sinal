@@ -24,7 +24,15 @@ import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 export const createLobbyEvent = (
   io: Server,
   socket: Socket,
-  { isPublic, mode, name, owner, place: totalPlace }: ArgCreateLobbyType,
+  {
+    isPublic,
+    mode,
+    name,
+    owner,
+    place: totalPlace,
+    nbRounds,
+    nbLife,
+  }: ArgCreateLobbyType,
   response: (payload: PacketType) => void
 ) => {
   let lobbyId = get_id();
@@ -34,6 +42,7 @@ export const createLobbyEvent = (
     name,
     totalPlace,
     playerList: new Array<Player>(),
+    nbLifePerPlayer: nbLife,
     owner: owner.id,
     isPublic,
     mode,
@@ -268,12 +277,12 @@ export const startGame1vs1Event = (
     playerOne: {
       id: playerOne.id,
       name: playerOne.name,
-      nb_life: 6,
+      nb_life: lobby.nbLifePerPlayer,
     },
     playerTwo: {
       id: playerTwo.id,
       name: playerTwo.name,
-      nb_life: 6,
+      nb_life: lobby.nbLifePerPlayer,
     },
     id: gameId,
     first_letter: word.charAt(0),
