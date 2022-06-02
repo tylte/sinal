@@ -20,7 +20,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import React, { useEffect } from "react";
+import React from "react";
 import { Socket } from "socket.io-client";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { Packet, Player } from "src/utils/types";
