@@ -46,15 +46,17 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
       <Box pt={8} pl={8}>
         {lastGame != null && (
           <>
-            <Box fontSize={"3xl"} fontWeight={"bold"}>
+            <Text fontSize={"3xl"} fontWeight={"bold"}>
               Dernière partie
-            </Box>
+            </Text>
             <Box>
               <Text fontWeight={"bold"}>Mode de jeu :</Text> {lastGame.gameMode}
             </Box>
             <Box>
               <Text fontWeight={"bold"}>Liste des joueurs :</Text>
-              {lastGame.playerList.map((player) => player.name + ", ")}
+              {lastGame.playerList.map((player) => (
+                <Text key={player.id}>{player.name}</Text>
+              ))}
             </Box>
             <Box>
               <Text fontWeight={"bold"}>Gagnant : </Text>
