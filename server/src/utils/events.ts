@@ -72,7 +72,7 @@ export const createLobbyEvent = (
 
   let packet: PacketType = {
     success: true,
-    message: "Create_lobby à été effectué sans errreur",
+    message: "Create_lobby a été effectué sans errreur",
     data: lobbyId,
   };
 
@@ -129,7 +129,7 @@ export const joinLobbyEvent = (
 
   response({
     success: true,
-    message: "Le lobby à été rejoins !",
+    message: "Le lobby a été rejoins !",
   });
 };
 
@@ -191,7 +191,7 @@ export const leaveLobbyEvent = (
   console.log("Joueur retiré : ", playerId, " dans le lobby : ", lobbyId, "");
   response({
     success: true,
-    message: "leave_lobby : le joueur à été retiré ! ",
+    message: "leave_lobby : le joueur a été retiré ! ",
     data: null,
   });
 };
@@ -207,7 +207,7 @@ export const createPlayerEvent = (
   console.log(`player created : ${playerName} : ${playerId}`);
   response({
     success: true,
-    message: "Le joueur à bien été créé",
+    message: "Le joueur a bien été créé",
     data: player,
   });
 };
