@@ -2,7 +2,7 @@ import { Flex, Text } from "@chakra-ui/react";
 import { Layout } from "src/components/Layout";
 import { PlayerGrid } from "src/components/player-grid/PlayerGrid";
 
-export default function FourNotFourPage() {
+const FourNotFourPage = () => {
   return (
     <Layout variant="large">
       <Flex direction={"column"}>
@@ -29,4 +29,5 @@ export default function FourNotFourPage() {
       </Flex>
     </Layout>
   );
-}
+};
+export default FourNotFourPage;

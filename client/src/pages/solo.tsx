@@ -36,7 +36,6 @@ const Solo: React.FC<SoloProps> = ({}) => {
         mode: "solo",
       })
       .then(({ data: { firstLetter, id, length, nb_life } }) => {
-        console.log(length);
         setGameState({
           firstLetter: firstLetter.toUpperCase(),
           isFinished: false,
