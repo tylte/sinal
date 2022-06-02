@@ -84,7 +84,7 @@ export type PlayerBr = {
 };
 
 export type BrGameInfo = {
-  endTime?: number | undefined;
+  endTime: number;
   playerList: PlayerBr[],
   playerFound: PlayerBr[],
   playersLastNextRound: number,

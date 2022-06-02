@@ -20,11 +20,11 @@ import {
   BrGameInfo,
   KeyboardSettings,
   MyFocus,
-  twoDigits,
 } from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
 import { getClassicKeyboardSettings } from "../utils/utils";
+import { Chrono } from "./Chrono";
 
 interface InGameLobbyBrProps {
   player: Player;
@@ -50,17 +50,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   const isChatting = useIsChatting();
 
-  const [endTime, setEndTime] = useState(gameInfo?.endTime);
-  //The time remaining for the timer in ms
-  const [msRemaining, setMsRemaining] = useState(1);
-
-  //the interval of the chrono
-  const [countRef, setCountRef] = useState<NodeJS.Timeout | null>(null);
-
-  //the chrono to display
-  const secondsToDisplay = Math.trunc((msRemaining / 1000) % 60);
-  const minutesRemaining = msRemaining / 1000 / 60;
-  const minutesToDisplay = Math.trunc(minutesRemaining);
+  const [endPoint, setEndPoint] = useState(gameInfo.endTime);
 
   //the focus in the grid
   const [focus, setFocus] = useState<MyFocus>({
@@ -101,17 +91,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     });
     setGameState(newGameState);
     setWord(gameInfo.firstLetter.toUpperCase());
-
-    //initialize the chrono
-    if (gameInfo.endTime !== undefined) {
-      setEndTime(gameInfo.endTime); 
-      console.log(gameInfo.endTime - Date.now());
-    }
-    setCountRef(
-      setInterval(() => {
-        setMsRemaining((timer) => gameInfo.endTime - Date.now());
-      }, 1000)
-    );
   };
 
   //load the new word
@@ -122,6 +101,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         return pl.id === player.id;
       }) !== undefined;
     if (playerIn) {
+      setEndPoint(gameBr.endTime);
       let newGameState = [];
       //the first player
       newGameState.push({
@@ -154,18 +134,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       });
       setGameState(newGameState);
       setWord(gameBr.firstLetter.toUpperCase());
-
-      //initialize the chrono
-      if (gameBr.endTime !== undefined) {
-        //set the time
-        setEndTime(gameBr.endTime);
-      }
-      //set the interval
-      setCountRef(
-        setInterval(() => {
-          setMsRemaining(() => endTime - Date.now());
-        }, 1000)
-      );
     } else {
       // set the game for the looser
       setGameState((gameSate) =>
@@ -175,12 +143,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             : { ...game }
         )
       );
-      //set the interval to 0 because the clear is not taken into account
-      setCountRef(
-        setInterval(() => {
-          setMsRemaining((timer) => endTime - 0);
-        }, 0)
-      );
     }
   };
 
@@ -188,11 +150,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   useEffect(() => {
     //start the game
     startGame();
-    return () => {
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
-    };
   }, []);
 
   //use effect for the socket exchange
@@ -206,37 +163,19 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         socket,
         player.id,
         toast,
-        setEndTime,
-        countRef,
-        setGameState,
-        msRemaining
+        setEndPoint,
+        setGameState
       );
     }
     return () => {
       //remove all the event
       removeBrEvent(socket);
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
     };
   }, [socket]);
 
   const toast = useToast();
 
-  //check if the time is finished
-  if (msRemaining <= 0) {
-    console.log("reset ms");
-    if (countRef !== null) {
-      clearInterval(countRef);
-      //set 1 ms to avoid re-entering the if
-      setMsRemaining(1);
-    }
-    // toast({
-    //   title: "Perdu ! Sadge",
-    //   status: "error",
-    //   isClosable: true,
-    //   duration: 2500,
-    // });
+  const onTimeFinish = () => {
     setGameState(
       gameState.map((game) =>
         game.playerId === player.id
@@ -244,15 +183,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           : { ...game }
       )
     );
-  }
-
-  useEffect(() => {
-    return () => {
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
-    };
-  }, [countRef]);
+  };
 
   const onEnter = async () => {
     if (gameState === null) {
@@ -339,10 +270,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isClosable: true,
         duration: 2500,
       });
-      //the game is finished so we stop the timer
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
     }
 
     //check if the number of try exceed the nbLife
@@ -360,10 +287,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isClosable: true,
         duration: 2500,
       });
-      //the game is finished so we stop the timer
-      if (countRef !== null) {
-        clearInterval(countRef);
-      }
     }
   };
 
@@ -436,36 +359,20 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         <Text align="center" fontSize="large">
           {player.name}
         </Text>
-        <Box>
-          {/* the result of the game */}
+        {/* the result of the game */}
+        {isFinished && (
           <Text
-            color={
-              (!hasWon && minutesToDisplay <= 0 && secondsToDisplay <= 30) ||
-              (isFinished && !hasWon)
-                ? "red"
-                : "white"
-            }
+            color={!hasWon ? "red" : "white"}
             align="center"
             fontSize="larger"
           >
-            {isFinished && hasWon && "GAGNER"}
-            {isFinished && !hasWon && "PERDUE"}
+            {hasWon && "GAGNER"}
+            {!hasWon && "PERDUE"}
           </Text>
-          {/* the timer of the game */}
-          {!isFinished && !hasWon && (
-            <Text
-              color={
-                !hasWon && minutesToDisplay <= 0 && secondsToDisplay <= 30
-                  ? "red"
-                  : "white"
-              }
-              align="center"
-              fontSize="larger"
-            >
-              {twoDigits(minutesToDisplay)}:{twoDigits(secondsToDisplay)}
-            </Text>
-          )}
-        </Box>
+        )}
+        {!isFinished && (
+          <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
+        )}
         <PlayerGrid
           focus={focus}
           isVisible={true}

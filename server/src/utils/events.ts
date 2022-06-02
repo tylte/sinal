@@ -570,6 +570,7 @@ export const guessWordBrEvent = (
       io.to(gameId).emit("draw_br");
 
       game.playerFound = new Array();
+
       nouveauMotBr(io, game, game.globalTime);
 
       io.to(gameId).emit("next_word_br", game);
@@ -619,6 +620,11 @@ const nouveauMotBr = (
   newTime: number
 ) => {
   if (game !== undefined) {
+    let time = timeoutMap.get(game.id);
+    if (time !== undefined) {
+      clearTimeout(time);
+    }
+    game.endTime = undefined;
     let newWord = get_word();
     console.log("Mot à découvrir : ", newWord);
     idToWord.set(game.id, newWord);

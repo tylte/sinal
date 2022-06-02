@@ -1,6 +1,6 @@
 import { ToastId, UseToastOptions } from "@chakra-ui/react";
 import axios from "axios";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import {
   BrGameInfo,
@@ -292,18 +292,15 @@ export const addGuessWordBrBroadcast = async (
 };
 
 export const addBrEvent = async (
-  startGame: (gameBr: BrGameInfo) => void,
+  resetGame: (gameBr: BrGameInfo) => void,
   socket: Socket,
   playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
-  setEndTime: React.Dispatch<React.SetStateAction<number>>,
-  countRef: NodeJS.Timeout | null,
-  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
-  msRemaining: number
+  setEndpoint: React.Dispatch<React.SetStateAction<number>>,
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
-    console.log("msRemaining : ", msRemaining, " endTime : ", arg.endTime);
-    setEndTime((time) => (time - Date.now() > 30000 ? arg.endTime : time));
+    setEndpoint(arg.endTime);
   });
   socket?.on("winning_player_br", (arg) => {
     if (arg !== playerId) {
@@ -321,13 +318,10 @@ export const addBrEvent = async (
         )
       );
     }
-    if (countRef !== null) {
-      clearTimeout(countRef);
-    }
     return;
   });
   socket?.on("next_word_br", (arg) => {
-    startGame(arg);
+    resetGame(arg);
   });
   socket?.on("draw_br", () => {
     toast({
