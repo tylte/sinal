@@ -22,6 +22,12 @@ import {
 import { useRouter } from "next/router";
 import React from "react";
 import { Socket } from "socket.io-client";
+import {
+  maxPlayer1vs1,
+  maxPlayerBr,
+  minPlayer1vs1,
+  minPlayerBr,
+} from "src/utils/Const";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { Packet, Player } from "src/utils/types";
 
@@ -29,7 +35,6 @@ interface CreateLobbyModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   isOpen,
   onClose,
@@ -39,6 +44,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const [lobbyName, setLobbyName] = React.useState("Nouveau Lobby");
   const [nbPlaces, setNbPlaces] = React.useState(2);
   const [maxPlaces, setmaxPlaces] = React.useState(2);
+  const [minPlaces, setminPlaces] = React.useState(2);
   const socket = useSocket();
   const [owner] = usePlayer();
   const router = useRouter();
@@ -78,11 +84,13 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const handleGameMode = (value: string) => {
     setGameMode(value);
     if (value == "battle-royale") {
-      setmaxPlaces(50);
-      setNbPlaces(50);
+      setmaxPlaces(maxPlayerBr);
+      setminPlaces(minPlayerBr);
+      setNbPlaces(maxPlayerBr);
     } else if (value == "1vs1") {
-      setmaxPlaces(2);
-      setNbPlaces(2);
+      setmaxPlaces(maxPlayer1vs1);
+      setminPlaces(minPlayer1vs1);
+      setNbPlaces(maxPlayer1vs1);
     }
   };
 
@@ -114,19 +122,23 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
             </RadioGroup>
             {/* PLACE */}
             <Text my={2}>Places</Text>
-            <Text> min : {2}</Text>
-            <Text>max : {maxPlaces}</Text>
+            <Text> min : {2} </Text>
+            <Text>max : {maxPlaces} </Text>
             <NumberInput
               onChange={(valueString: string) =>
                 setNbPlaces(() => {
                   let result = parseInt(valueString === "" ? "0" : valueString);
-                  if (result > maxPlaces) result = maxPlaces;
+                  if (result > maxPlaces) {
+                    result = maxPlaces;
+                  } else if (result < minPlaces) {
+                    result = minPlaces;
+                  }
 
                   return result;
                 })
               }
               value={nbPlaces}
-              min={2}
+              min={minPlaces}
               max={maxPlaces}
             >
               <NumberInputField />
