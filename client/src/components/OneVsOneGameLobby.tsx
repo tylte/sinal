@@ -32,7 +32,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   gameState: {
     playerOne,
     playerTwo,
-    first_letter,
+    firstLetter,
     id: gameId,
     length: game_length,
   },
@@ -48,8 +48,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const [tryHistoryP2, setTryHistoryP2] = useState<TriesHistory[]>([]);
 
   // Word of the player and his opponent.
-  const [word, setWord] = useState(first_letter.toUpperCase());
-  const [wordP2, setWordP2] = useState(first_letter.toUpperCase());
+  const [word, setWord] = useState(firstLetter.toUpperCase());
+  const [wordP2, setWordP2] = useState(firstLetter.toUpperCase());
 
   const [hasWon, setHasWon] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
@@ -129,7 +129,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
       }
     );
 
-    setWord(first_letter.toUpperCase());
+    setWord(firstLetter.toUpperCase());
   };
 
   useClassicWordInput(
@@ -162,7 +162,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
               isVisible={false}
               wordLength={game_length}
               nbLife={6}
-              firstLetter={first_letter}
+              firstLetter={firstLetter}
               word={wordP2}
               triesHistory={tryHistoryP2}
               isFinished={isFinished || isChatting}
@@ -180,7 +180,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
           isVisible={true}
           wordLength={game_length}
           nbLife={6}
-          firstLetter={first_letter.toUpperCase()}
+          firstLetter={firstLetter.toUpperCase()}
           word={word}
           triesHistory={tryHistory}
           keyboardSetting={keyboardSettings}
