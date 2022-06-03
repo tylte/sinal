@@ -301,6 +301,8 @@ export const startGame1vs1Event = (
   timeoutMap.set(gameId, timeout);
 
   game1vs1Map.set(gameId, game);
+  game.endTime = Date.now() + globalTime;
+  console.log("game 1vs1 : ", game);
   io.to(lobbyId).emit("starting_game_1vs1", game);
   io.to(lobbyId).socketsJoin(gameId);
 };
@@ -379,14 +381,33 @@ export const guessWord1vs1Event = (
         io.to(gameId).socketsLeave(gameId);
       }
     } else {
-      let timeout = timeoutMap.get(gameId);
-      if (timeout !== undefined) clearTimeout(timeout);
+      if (otherPlayer.nbLife <= player.nbLife + 1) {
+        console.log(
+          "other life : ",
+          otherPlayer.nbLife,
+          "player life : ",
+          player.nbLife
+        );
+        io.to(gameId).emit("wining_player_1vs1", player.id);
+        io.to(gameId).socketsLeave(gameId);
+      } else {
+        let timeout = timeoutMap.get(gameId);
+        if (timeout !== undefined) clearTimeout(timeout);
 
-      timeout = setTimeout(() => {
-        tempsEcoule1vs1(io, game);
-      }, game.timeAfterFirstGuess);
+        timeout = setTimeout(() => {
+          tempsEcoule1vs1(io, game);
+        }, game.timeAfterFirstGuess);
 
-      timeoutMap.set(gameId, timeout);
+        timeoutMap.set(gameId, timeout);
+
+        if (
+          game.endTime !== undefined &&
+          game.endTime > Date.now() + game.timeAfterFirstGuess
+        ) {
+          game.endTime = game.timeAfterFirstGuess + Date.now();
+        }
+        io.to(gameId).emit("first_wining_player_1vs1", game);
+      }
     }
   } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
     io.to(gameId).emit("draw_1vs1");
@@ -539,8 +560,6 @@ export const guessWordBrEvent = (
           io.to(gameId).emit("winning_player_br", playerId);
           io.to(gameId).socketsLeave(gameId);
         } else if (game.playersLastNextRound === 1) {
-          console.log("BO3");
-
           game.playerList = game.playerFound;
           game.playerFound = new Array();
           newWordBr(io, game, game.globalTime);

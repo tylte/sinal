@@ -55,6 +55,7 @@ export type Game1vs1 = {
   id: string;
   length: number;
   firstLetter: string;
+  endTime: number,
 };
 
 export type SoloGameState = {

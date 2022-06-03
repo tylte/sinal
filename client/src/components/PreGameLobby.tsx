@@ -49,7 +49,12 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
         timeAfterFirstGuess: defaultTimeAfterFirstGuess,
       });
     } else if (gameMode === "1vs1") {
-      socket?.emit("start_game_1vs1", { lobbyId: id, playerId });
+      socket?.emit("start_game_1vs1", {
+        lobbyId: id,
+        playerId,
+        globalTime: defaultGlobalTime,
+        timeAfterFirstGuess: defaultTimeAfterFirstGuess,
+      });
     }
   };
 
