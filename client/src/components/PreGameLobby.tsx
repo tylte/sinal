@@ -19,8 +19,10 @@ import { GiLaurelCrown } from "react-icons/gi";
 import { useSocket } from "../utils/hooks";
 import {
   defaultEliminationRate,
-  defaultGlobalTime,
-  defaultTimeAfterFirstGuess,
+  defaultGlobalTime1vs1,
+  defaultGlobalTimeBr,
+  defaultTimeAfterFirstGuess1vs1,
+  defaultTimeAfterFirstGuessBr,
 } from "src/utils/Const";
 
 interface PreGameLobbyProps {
@@ -45,16 +47,16 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
         lobbyId: id,
         playerId,
         eliminationRate: defaultEliminationRate,
-        globalTime: defaultGlobalTime,
-        timeAfterFirstGuess: defaultTimeAfterFirstGuess,
+        globalTime: defaultGlobalTimeBr,
+        timeAfterFirstGuess: defaultTimeAfterFirstGuessBr,
       });
     } else if (gameMode === "1vs1") {
       socket?.emit("start_game_1vs1", {
         lobbyId: id,
         playerId,
-        globalTime: 600000,
-        timeAfterFirstGuess: 60000,
-      }); //10 minutes puis 1 minute
+        globalTime: defaultGlobalTime1vs1,
+        timeAfterFirstGuess: defaultTimeAfterFirstGuess1vs1,
+      });
     }
   };
 
