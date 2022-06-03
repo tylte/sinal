@@ -7,7 +7,7 @@ import { SinalContext } from "../utils/context";
 import { io, Socket } from "socket.io-client";
 import { addSocketConnectionEvent } from "src/utils/api";
 import { Player } from "../utils/types";
-import { serverHttpUrl, serverWsUrl } from "../utils/Const";
+import { serverHttpUrl, serverWsPath, serverWsUrl } from "../utils/Const";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [dictionary, setDictionnary] = useState<Set<string>>(new Set());
@@ -24,7 +24,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       });
       setDictionnary(set);
     });
-    let socket = io(serverWsUrl);
+    let socket = io(serverWsUrl, {
+      path: serverWsPath,
+      transports: ["websocket"],
+    });
     setSocket(socket);
     addSocketConnectionEvent(socket, setIsConnected);
   }, []);
