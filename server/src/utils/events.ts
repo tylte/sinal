@@ -74,7 +74,7 @@ export const createLobbyEvent = (
 
   let packet: PacketType = {
     success: true,
-    message: "Create_lobby à été effectué sans errreur",
+    message: "Create_lobby a été effectué sans errreur",
     data: lobbyId,
   };
 
@@ -131,7 +131,7 @@ export const joinLobbyEvent = (
 
   response({
     success: true,
-    message: "Le lobby à été rejoins !",
+    message: "Le lobby a été rejoins !",
   });
 };
 
@@ -193,7 +193,7 @@ export const leaveLobbyEvent = (
   console.log("Joueur retiré : ", playerId, " dans le lobby : ", lobbyId, "");
   response({
     success: true,
-    message: "leave_lobby : le joueur à été retiré ! ",
+    message: "leave_lobby : le joueur a été retiré ! ",
     data: null,
   });
 };
@@ -209,7 +209,7 @@ export const createPlayerEvent = (
   console.log(`player created : ${playerName} : ${playerId}`);
   response({
     success: true,
-    message: "Le joueur à bien été créé",
+    message: "Le joueur a bien été créé",
     data: player,
   });
 };
@@ -371,7 +371,6 @@ export const guessWord1vs1Event = (
   });
 
   if (win) {
-    console.log("RENTRE DANS WIN");
     player.hasWon = true;
     let lobby = lobbyMap.get(lobbyId);
     if (lobby !== undefined) {
@@ -396,7 +395,6 @@ export const guessWord1vs1Event = (
           io.to(gameId).socketsLeave(gameId);
         }
       } else {
-        console.log("RENTRE DANS ELSE");
         let timeout = timeoutMap.get(gameId);
         if (timeout !== undefined) clearTimeout(timeout);
 
@@ -406,6 +404,18 @@ export const guessWord1vs1Event = (
 
         timeoutMap.set(gameId, timeout);
       }
+    } else if (player.nbLife >= otherPlayer.nbLife - 1) {
+      io.to(gameId).emit("wining_player_1vs1", player.id);
+      io.to(gameId).socketsLeave(gameId);
+    } else {
+      let timeout = timeoutMap.get(gameId);
+      if (timeout !== undefined) clearTimeout(timeout);
+
+      timeout = setTimeout(() => {
+        tempsEcoule1vs1(io, game);
+      }, game.timeAfterFirstGuess);
+
+      timeoutMap.set(gameId, timeout);
     }
   } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
     io.to(gameId).emit("draw_1vs1");
@@ -693,7 +703,6 @@ const tempsEcoule1vs1 = (
 ) => {
   if (game !== undefined && lobby !== undefined && word) {
     if (game.playerOne.hasWon && !game.playerTwo.hasWon) {
-      console.log("RENTRE ICI");
       io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
       lobby.lastGame = {
         gameMode: "1vs1",
@@ -724,9 +733,7 @@ const tempsEcoule1vs1 = (
       lobby.state = "pre-game";
       io.to(game.id).emit("ending_game", { lobby });
     }
-    console.log("AVANT SOCKET LEAVE");
     io.to(game.id).socketsLeave(game.id);
-    console.log("APRES SOCKET LEAVE");
   }
 };
 
