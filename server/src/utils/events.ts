@@ -380,6 +380,9 @@ export const guessWord1vs1Event = (
         io.to(gameId).emit("wining_player_1vs1", otherPlayer.id);
         io.to(gameId).socketsLeave(gameId);
       }
+    } else if (player.nbLife >= otherPlayer.nbLife - 1) {
+      io.to(gameId).emit("wining_player_1vs1", player.id);
+      io.to(gameId).socketsLeave(gameId);
     } else {
       if (otherPlayer.nbLife <= player.nbLife + 1) {
         console.log(
