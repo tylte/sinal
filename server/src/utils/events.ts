@@ -629,9 +629,6 @@ export const guessWordBrEvent = (
 
       newWordBr(io, game, game.globalTime);
 
-      if (game.endTime !== undefined) {
-        console.log("time 1 : ", game.endTime - Date.now());
-      }
       io.to(gameId).emit("next_word_br", game);
     } else {
       //the game is finished we delete the timeout
