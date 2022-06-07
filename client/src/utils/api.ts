@@ -210,11 +210,16 @@ export const addSpecificLobbiesEvent = (
       setLobby(changedLobby);
     }
   );
+
+  socket.on("ending_game", (req) => {
+    setTimeout(() => setLobby(req.lobby), 5000);
+  });
 };
 
 export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
+  socket?.removeListener("ending_game");
   socket?.removeListener("starting_game_1vs1");
   socket?.removeListener("starting_game_br");
 };

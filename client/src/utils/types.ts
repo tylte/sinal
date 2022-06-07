@@ -35,6 +35,7 @@ export type Lobby = {
   isPublic: boolean;
   mode: GameMode;
   currentGameId: string;
+  lastGame: LastGame | null;
 };
 
 export type Packet = {
@@ -69,7 +70,7 @@ export type SoloGameState = {
 };
 
 export type BrGameState = {
-  playerId:string;
+  playerId: string;
   wordLength: number;
   wordId: string;
   firstLetter: string;
@@ -79,23 +80,23 @@ export type BrGameState = {
   hasWon: boolean;
 };
 export type PlayerBr = {
-  id: string,
-  name: string,
-  nbLife: number,
+  id: string;
+  name: string;
+  nbLife: number;
 };
 
 export type BrGameInfo = {
   endTime: number;
-  playerList: PlayerBr[],
-  playerFound: PlayerBr[],
-  playersLastNextRound: number,
-  id: string,
-  length: number,
-  firstLetter: string,
-  eliminationRate: number,
-  globalTime: number,
-  timeAfterFirstGuess: number,
-}
+  playerList: PlayerBr[];
+  playerFound: PlayerBr[];
+  playersLastNextRound: number;
+  id: string;
+  length: number;
+  firstLetter: string;
+  eliminationRate: number;
+  globalTime: number;
+  timeAfterFirstGuess: number;
+};
 
 export type KeyboardSettings = {
   onEnter: () => void;
@@ -103,6 +104,12 @@ export type KeyboardSettings = {
   onBackspace: () => void;
 };
 
+type LastGame = {
+  gameMode: GameMode;
+  playerList: Player[];
+  winner: Player | null;
+  wordsToGuess: string[];
+};
 export type ChatMessage = {
   content: string;
   author: string;

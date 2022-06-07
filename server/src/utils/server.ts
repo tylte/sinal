@@ -20,6 +20,7 @@ import {
 } from "./events";
 import {
   ArgCreateLobby,
+  ArgGuessWord,
   ArgJoinLobby,
   ArgStartGame1vs1,
   ArgStartGameBr,
@@ -210,7 +211,7 @@ export const getServer = () => {
 
     /**
      * guess_word_1vs1
-     * @param { word, gameId, playerId }
+     * @param { word, gameId, playerId, lobby }
      * response : array of LetterResult,
      * broadcast "guess_word_broadcast" on all player in the game
      */
@@ -222,7 +223,7 @@ export const getServer = () => {
           return;
         }
 
-        let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
+        let check = ArgGuessWord.safeParse(req);
         if (check.success) {
           guessWord1vs1Event(io, response, check.data);
         } else {
