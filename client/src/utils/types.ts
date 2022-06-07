@@ -1,6 +1,6 @@
 export interface StartGameResponse {
   length: number;
-  first_letter: string;
+  firstLetter: string;
   id: string;
   nb_life: number;
 }
@@ -54,7 +54,7 @@ export type Game1vs1 = {
   playerTwo: { id: string; name: string; nb_life: number };
   id: string;
   length: number;
-  first_letter: string;
+  firstLetter: string;
 };
 
 export type SoloGameState = {
@@ -83,6 +83,14 @@ export type MyFocus = {
   index: number;
   isBorder: boolean;
   focusMode: FocusMode;
+};
+
+export type LastGame = {
+  gameMode: GameMode;
+  playerList: Player[];
+  winner: Player;
+  wordsToGuess: string[];
+  triesHistory: Map<string, TriesHistory[]>;
 };
 
 export type FocusMode = "overwrite" | "insert";

@@ -1,4 +1,4 @@
-import { Box, Flex, Text, useDisclosure, useToast } from "@chakra-ui/react";
+import { Box, Flex, Text, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
@@ -14,6 +14,8 @@ import {
 import {
   Game1vs1,
   KeyboardSettings,
+  LastGame,
+  LetterResult,
   MyFocus,
   Player,
   TriesHistory,
@@ -32,7 +34,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   gameState: {
     playerOne,
     playerTwo,
-    first_letter,
+    firstLetter,
     id: gameId,
     length: game_length,
   },
@@ -47,12 +49,11 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const [tryHistoryP2, setTryHistoryP2] = useState<TriesHistory[]>([]);
 
   // Word of the player and his opponent.
-  const [word, setWord] = useState(first_letter.toUpperCase());
-  const [wordP2, setWordP2] = useState(first_letter.toUpperCase());
+  const [word, setWord] = useState(firstLetter.toUpperCase());
+  const [wordP2, setWordP2] = useState(firstLetter.toUpperCase());
 
   const [hasWon, setHasWon] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
@@ -128,7 +129,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
       }
     );
 
-    setWord(first_letter.toUpperCase());
+    setWord(firstLetter.toUpperCase());
   };
 
   useClassicWordInput(
@@ -149,12 +150,22 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     game_length
   );
 
-  let tempGame = {
-    playerOne: { id: "1", name: "bob", nb_life: 5 },
-    playerTwo: { id: "2", name: "bonjour", nb_life: 2 },
-    id: "21",
-    length: 7,
-    first_letter: "A",
+  let mapHist = new Map<string, TriesHistory[]>;
+  let histp1:TriesHistory[] =  [{ wordTried: "osef", result: [LetterResult.RIGHT_POSITION, LetterResult.NOT_FOUND, LetterResult.FOUND]}, 
+                              { wordTried: "osef", result: [LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION]}];
+  mapHist.set("1", histp1)
+  let histp2:TriesHistory[] =  [{ wordTried: "osef", result: [LetterResult.RIGHT_POSITION, LetterResult.NOT_FOUND, LetterResult.FOUND]}, 
+                              { wordTried: "osef", result: [LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION]}];
+  mapHist.set("2", histp2)
+  let tempGame: LastGame = {
+    gameMode: "1vs1",
+    playerList: [
+      { id: "1", name: "bob", lobbyId: "0" },
+      { id: "2", name: "bonjour", lobbyId: "0"},
+    ],
+    winner: { id: "1", name: "bob", lobbyId: "0"},
+    wordsToGuess: ["cat"],
+    triesHistory: mapHist
   };
 
   return (
@@ -169,7 +180,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
               isVisible={false}
               wordLength={game_length}
               nbLife={6}
-              firstLetter={first_letter}
+              firstLetter={firstLetter}
               word={wordP2}
               triesHistory={tryHistoryP2}
               isFinished={isFinished || isChatting}
@@ -179,12 +190,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
       </Box>
       <Box>
         {hasWon && <Confetti />}
-        <LinkAfterGame1vs1
-          game={tempGame}
-          isWinner={true}
-          isOpen={isFinished}
-          onClose={onClose}
-        />
+        <LinkAfterGame1vs1 game={tempGame} />
         <Text mb="4" align={"center"}>
           {name}
         </Text>
@@ -193,7 +199,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
           isVisible={true}
           wordLength={game_length}
           nbLife={6}
-          firstLetter={first_letter.toUpperCase()}
+          firstLetter={firstLetter.toUpperCase()}
           word={word}
           triesHistory={tryHistory}
           keyboardSetting={keyboardSettings}
