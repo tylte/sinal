@@ -23,6 +23,24 @@ const LobbyStateEnum = {
 export const LobbyState = z.nativeEnum(LobbyStateEnum);
 export type LobbyStateType = z.infer<typeof GameMode>;
 
+export const Player1vs1 = z.object({
+  id: z.string(),
+  name: z.string(),
+  nbLife: z.number(),
+  hasWon: z.boolean(),
+});
+
+export type Player1vs1Type = z.infer<typeof Player1vs1>;
+
+export const LastGame = z.object({
+  gameMode: GameMode,
+  playerList: Player.array(),
+  winner: z.nullable(Player1vs1),
+  wordsToGuess: z.string().array(),
+});
+
+export type LastGameType = z.infer<typeof LastGame>;
+
 export const Lobby = z.object({
   id: z.string(),
   state: LobbyState,
@@ -33,6 +51,7 @@ export const Lobby = z.object({
   isPublic: z.boolean(),
   mode: GameMode,
   currentGameId: z.nullable(z.string()),
+  lastGame: z.nullable(LastGame),
 });
 
 export const Game1vs1 = z.object({
@@ -126,12 +145,20 @@ export const ReceivedChatMessage = z.object({
   playerId: z.string(),
 });
 
+export const ArgGuessWord = z.object({
+  word: z.string(),
+  gameId: z.string(),
+  playerId: z.string(),
+  lobbyId: z.string(),
+});
+
 export type LobbyType = z.infer<typeof Lobby>;
 export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
 export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
 export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
 export type ArgStartGame1vs1Type = z.infer<typeof ArgStartGame1vs1>;
 export type ArgUpdateWord = z.infer<typeof ArgUpdateWord>;
+export type ArgGuessWordType = z.infer<typeof ArgGuessWord>;
 export type ArgStartGameBrType = z.infer<typeof ArgStartGameBr>;
 export type ReceivedChatMessageType = z.infer<typeof ReceivedChatMessage>;
 

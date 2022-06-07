@@ -84,11 +84,11 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
 
   if (state === "pre-game") {
     return (
-      <Layout>
+      <Layout variant="grid">
         <PreGameLobby player={player} lobby={lobby} gameMode={lobby?.mode} />
       </Layout>
     );
-  } else if (state === "in-game" && gameState !== null) {
+  } else if (state === "in-game" && gameState !== null && lobbyId !== null) {
     if (lobby.mode === "1vs1") {
       return (
         <Layout variant="grid">
@@ -96,6 +96,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
             gameMode={lobby.mode}
             player={player}
             gameState={gameState}
+            lobbyId={lobbyId}
           />
         </Layout>
       );
@@ -106,6 +107,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
             gameMode={lobby.mode}
             player={player}
             gameState={gameState}
+            lobbyId={lobbyId}
           />
         </Layout>
       );
