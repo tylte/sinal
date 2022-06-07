@@ -134,6 +134,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       });
       setGameState(newGameState);
       setWord(gameBr.firstLetter.toUpperCase());
+      setEndPoint(gameBr.endTime);
     } else {
       // set the game for the looser
       setGameState((gameSate) =>

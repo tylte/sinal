@@ -588,6 +588,9 @@ export const guessWordBrEvent = (
 
       newWordBr(io, game, game.globalTime);
 
+      if(game.endTime !== undefined) {
+        console.log("time 1 : ", game.endTime - Date.now())
+      }
       io.to(gameId).emit("next_word_br", game);
     } else {
       io.to(gameId).emit("end_of_game_draw", game);
@@ -597,19 +600,20 @@ export const guessWordBrEvent = (
 
 const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
   if (game !== undefined) {
-    let newWord = get_word();
-    console.log("Mot à découvrir : ", newWord);
-    idToWord.set(game.id, newWord);
-    game.firstLetter = newWord.charAt(0);
-    game.length = newWord.length;
+    newWordBr(io, game, game.globalTime);
 
     if (game.playerFound.length === 0) {
-      game.playerList.forEach((p) => {
-        p.nbLife = NBLIFE;
-      });
+      if(game.numberOfDrawStreak < 3) {
+        game.numberOfDrawStreak++;
+        game.playerList.forEach((p) => {
+          p.nbLife = NBLIFE;
+        });
 
-      io.to(game.id).emit("draw_br");
-      io.to(game.id).emit("next_word_br", game);
+        io.to(game.id).emit("draw_br");
+        io.to(game.id).emit("next_word_br", game);
+      } else {
+        io.to(game.id).emit("end_of_game_draw", game);
+      }
     } else if (game.playerFound.length === 1) {
       io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
       io.to(game.id).socketsLeave(game.id);

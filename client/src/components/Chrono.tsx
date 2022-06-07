@@ -23,8 +23,8 @@ export const Chrono: React.FC<ChronoProps> = ({ endPoint, onTimeFinish }) => {
   if (msRemaining <= 0) {
     clearInterval(countRef.current);
     //set 1 ms to avoid re-entering the if
-    setMsRemaining(1);
     onTimeFinish();
+    setMsRemaining(1);
   }
 
   useEffect(() => {
@@ -34,6 +34,7 @@ export const Chrono: React.FC<ChronoProps> = ({ endPoint, onTimeFinish }) => {
         setMsRemaining(endPoint - Date.now());
       }, 1000);
     }
+    console.log("endpoint")
 
     return () => {
       clearInterval(countRef.current);
