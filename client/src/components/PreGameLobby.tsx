@@ -84,7 +84,11 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             </Box>
             <Box>
               <Text fontWeight={"bold"}>Gagnant : </Text>
-              {lastGame.winner ? lastGame.winner : "Egalité"}
+              {lastGame.winner
+                ? lastGame.winner.id === playerId
+                  ? lastGame.winner.name + " (Vous)"
+                  : lastGame.winner.name
+                : "Egalité"}
             </Box>
             <Box>
               <Text fontWeight={"bold"}>Mot(s) à deviner : </Text>

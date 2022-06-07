@@ -23,10 +23,19 @@ const LobbyStateEnum = {
 export const LobbyState = z.nativeEnum(LobbyStateEnum);
 export type LobbyStateType = z.infer<typeof GameMode>;
 
+export const Player1vs1 = z.object({
+  id: z.string(),
+  name: z.string(),
+  nbLife: z.number(),
+  hasWon: z.boolean(),
+});
+
+export type Player1vs1Type = z.infer<typeof Player1vs1>;
+
 export const LastGame = z.object({
   gameMode: GameMode,
   playerList: Player.array(),
-  winner: z.nullable(z.string()),
+  winner: z.nullable(Player1vs1),
   wordsToGuess: z.string().array(),
 });
 

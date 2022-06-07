@@ -383,13 +383,16 @@ export const guessWord1vs1Event = (
       if (otherPlayer.hasWon) {
         if (player.nbLife > otherPlayer.nbLife) {
           io.to(gameId).emit("wining_player_1vs1", player.id);
-          lobby.lastGame = { ...lobby.lastGame, winner: player.name };
+          lobby.lastGame = {
+            ...lobby.lastGame,
+            winner: player,
+          };
           lobby.state = "pre-game";
           io.to(gameId).emit("ending_game", { lobby });
           io.to(gameId).socketsLeave(gameId);
         } else {
           io.to(gameId).emit("wining_player_1vs1", otherPlayer.id);
-          lobby.lastGame = { ...lobby.lastGame, winner: otherPlayer.name };
+          lobby.lastGame = { ...lobby.lastGame, winner: otherPlayer };
           lobby.state = "pre-game";
           io.to(gameId).emit("ending_game", { lobby });
           io.to(gameId).socketsLeave(gameId);
@@ -707,7 +710,7 @@ const tempsEcoule1vs1 = (
       lobby.lastGame = {
         gameMode: "1vs1",
         playerList: lobby.playerList,
-        winner: game.playerOne.name,
+        winner: game.playerOne,
         wordsToGuess: [word],
       };
       lobby.state = "pre-game";
@@ -717,7 +720,7 @@ const tempsEcoule1vs1 = (
       lobby.lastGame = {
         gameMode: lobby.mode,
         playerList: lobby.playerList,
-        winner: game.playerTwo.name,
+        winner: game.playerTwo,
         wordsToGuess: [word],
       };
       lobby.state = "pre-game";
