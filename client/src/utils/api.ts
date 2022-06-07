@@ -370,8 +370,23 @@ export const lobbyOneVsOneAddEvents = (
   tryHistoryP2: TriesHistory[],
   setTryHistoryP2: Dispatch<SetStateAction<TriesHistory[]>>,
   setWordP2: Dispatch<SetStateAction<string>>,
-  setIsFinished: Dispatch<SetStateAction<boolean>>
+  setIsFinished: Dispatch<SetStateAction<boolean>>,
+  setEndPoint: React.Dispatch<React.SetStateAction<number>>
 ) => {
+  socket.on("first_wining_player_1vs1", (req) => {
+    setEndPoint(req.endTime);
+    if (
+      (req.playerTwo.hasWon && req.playerTwo.id === playerId) ||
+      (req.playerOne.hasWon && req.playerOne.id === playerId)
+    ) {
+      toast({
+        title: "L'adversaire peut encore gagner !",
+        status: "info",
+        isClosable: true,
+        duration: 2500,
+      });
+    }
+  });
   socket?.on("wining_player_1vs1", (req) => {
     setIsFinished(true);
     if (req === playerId) {
@@ -420,6 +435,7 @@ export const lobbyOneVsOneAddEvents = (
 };
 
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
+  socket?.removeListener("first_wining_player_1vs1");
   socket?.removeListener("wining_player_1vs1");
   socket?.removeListener("draw_1vs1");
   socket?.removeListener("guess_word_broadcast");

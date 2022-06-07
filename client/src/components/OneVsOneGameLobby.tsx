@@ -19,6 +19,7 @@ import {
   TriesHistory,
 } from "../utils/types";
 import { getClassicKeyboardSettings } from "../utils/utils";
+import { Chrono } from "./Chrono";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 
 interface OneVsOneGameLobbyProps {
@@ -35,6 +36,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     firstLetter,
     id: gameId,
     length: game_length,
+    endTime,
   },
   lobbyId,
 }) => {
@@ -53,6 +55,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
 
   const [hasWon, setHasWon] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+
+  const [endPoint, setEndPoint] = useState(endTime);
 
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
@@ -73,7 +77,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         tryHistoryP2,
         setTryHistoryP2,
         setWordP2,
-        setIsFinished
+        setIsFinished,
+        setEndPoint
       );
     }
     return () => {
@@ -132,6 +137,11 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     setWord(firstLetter.toUpperCase());
   };
 
+  const onTimeFinish = () => {
+    setHasWon(false);
+    setIsFinished(true);
+  };
+
   useClassicWordInput(
     word,
     setWord,
@@ -175,6 +185,20 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         <Text mb="4" align={"center"}>
           {name}
         </Text>
+        {/* the result of the game */}
+        {isFinished && (
+          <Text
+            color={!hasWon ? "red" : "white"}
+            align="center"
+            fontSize="larger"
+          >
+            {hasWon && "GAGNER"}
+            {!hasWon && "PERDU"}
+          </Text>
+        )}
+        {!isFinished && (
+          <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
+        )}
         <PlayerGrid
           focus={focus}
           isVisible={true}
