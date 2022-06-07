@@ -73,7 +73,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
                   <ListIcon as={GiLaurelCrown} color="green.500" />
                 )}
                 <Text fontSize={"xl"}>
-                  {player.name} {player.id === playerId && "(You)"}
+                  {player.name} {player.id === playerId && "(Vous)"}
                 </Text>
               </HStack>
             </ListItem>
