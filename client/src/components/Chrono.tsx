@@ -34,7 +34,6 @@ export const Chrono: React.FC<ChronoProps> = ({ endPoint, onTimeFinish }) => {
         setMsRemaining(endPoint - Date.now());
       }, 1000);
     }
-    console.log("endpoint")
 
     return () => {
       clearInterval(countRef.current);

@@ -491,6 +491,7 @@ export const guessWordBrEvent = (
   response: any,
   { word, gameId, playerId }: ArgUpdateWord
 ) => {
+  let timeout;
   let game = gameBrMap.get(gameId);
   if (game === undefined) {
     console.log("guess_word_br : there is no game unsing this gameId");
@@ -538,6 +539,9 @@ export const guessWordBrEvent = (
 
       io.to(gameId).emit("first_winning_player_br", game);
       if (game.playerFound.length === game.playersLastNextRound) {
+        //the game is finished we delete the timeout
+        timeout = timeoutMap.get(game.id);
+        if (timeout !== undefined) clearTimeout(timeout);
         io.to(gameId).emit("winning_player_br", playerId);
         io.to(gameId).socketsLeave(gameId);
       }
@@ -553,6 +557,9 @@ export const guessWordBrEvent = (
         );
 
         if (game.playersLastNextRound === 0) {
+          //the game is finished we delete the timeout
+          timeout = timeoutMap.get(game.id);
+          if (timeout !== undefined) clearTimeout(timeout);
           io.to(gameId).emit("winning_player_br", playerId);
           io.to(gameId).socketsLeave(gameId);
         } else if (game.playersLastNextRound === 1) {
@@ -588,11 +595,14 @@ export const guessWordBrEvent = (
 
       newWordBr(io, game, game.globalTime);
 
-      if(game.endTime !== undefined) {
-        console.log("time 1 : ", game.endTime - Date.now())
+      if (game.endTime !== undefined) {
+        console.log("time 1 : ", game.endTime - Date.now());
       }
       io.to(gameId).emit("next_word_br", game);
     } else {
+      //the game is finished we delete the timeout
+      timeout = timeoutMap.get(game.id);
+      if (timeout !== undefined) clearTimeout(timeout);
       io.to(gameId).emit("end_of_game_draw", game);
     }
   }
@@ -600,10 +610,12 @@ export const guessWordBrEvent = (
 
 const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
   if (game !== undefined) {
+    let timeout = timeoutMap.get(game.id);
+    if (timeout !== undefined) clearTimeout(timeout);
     newWordBr(io, game, game.globalTime);
 
     if (game.playerFound.length === 0) {
-      if(game.numberOfDrawStreak < 3) {
+      if (game.numberOfDrawStreak < 3) {
         game.numberOfDrawStreak++;
         game.playerList.forEach((p) => {
           p.nbLife = NBLIFE;
@@ -612,10 +624,16 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
         io.to(game.id).emit("draw_br");
         io.to(game.id).emit("next_word_br", game);
       } else {
+        //the game is finished we delete the timeout
+        timeout = timeoutMap.get(game.id);
+        if (timeout !== undefined) clearTimeout(timeout);
         io.to(game.id).emit("end_of_game_draw", game);
       }
     } else if (game.playerFound.length === 1) {
       io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
+      //the game is finished we delete the timeout
+      timeout = timeoutMap.get(game.id);
+      if (timeout !== undefined) clearTimeout(timeout);
       io.to(game.id).socketsLeave(game.id);
     } else {
       game.playersLastNextRound = Math.floor(
