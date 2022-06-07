@@ -302,7 +302,6 @@ export const startGame1vs1Event = (
 
   game1vs1Map.set(gameId, game);
   game.endTime = Date.now() + globalTime;
-  console.log("game 1vs1 : ", game);
   io.to(lobbyId).emit("starting_game_1vs1", game);
   io.to(lobbyId).socketsJoin(gameId);
 };
@@ -385,12 +384,6 @@ export const guessWord1vs1Event = (
       io.to(gameId).socketsLeave(gameId);
     } else {
       if (otherPlayer.nbLife <= player.nbLife + 1) {
-        console.log(
-          "other life : ",
-          otherPlayer.nbLife,
-          "player life : ",
-          player.nbLife
-        );
         io.to(gameId).emit("wining_player_1vs1", player.id);
         io.to(gameId).socketsLeave(gameId);
       } else {
