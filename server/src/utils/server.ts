@@ -37,27 +37,28 @@ export const getServer = () => {
 
   const server = createServer(app);
   const io = new Server(server, {
+    path: "/api/socket.io",
     cors: {
-      origin: "http://localhost:3000",
+      origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     },
   });
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(cors());
 
-  app.get("/dictionary", (_, res) => {
+  app.get("/api/dictionary", (_, res) => {
     res.send(get_dictionary());
   });
 
-  app.get("/list_lobbies", (_, res) => {
+  app.get("/api/list_lobbies", (_, res) => {
     res.send(get_lobbies());
   });
 
-  app.get("/list_lobbies/:id", (req, res) => {
+  app.get("/api/list_lobbies/:id", (req, res) => {
     res.send(get_lobby_id(req.params.id));
   });
 
-  app.post("/start_game", (req, res) => {
+  app.post("/api/start_game", (req, res) => {
     let id = get_id();
     let word = get_word();
     idToWord.set(id, word);
@@ -70,7 +71,7 @@ export const getServer = () => {
     });
   });
 
-  app.post("/guess", (req, res) => {
+  app.post("/api/guess", (req, res) => {
     let id = req.body.id;
     let word = req.body.word;
     res.send(get_guess(id, word, idToWord));
