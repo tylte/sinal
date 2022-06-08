@@ -19,22 +19,26 @@ import {
   TriesHistory,
 } from "../utils/types";
 import { getClassicKeyboardSettings } from "../utils/utils";
+import { Chrono } from "./Chrono";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 
 interface OneVsOneGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
+  lobbyId: string;
 }
 
 export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
-  player: { id: playerId, name, lobbyId },
+  player: { id: playerId, name },
   gameState: {
     playerOne,
     playerTwo,
-    first_letter,
+    firstLetter,
     id: gameId,
     length: game_length,
+    endTime,
   },
+  lobbyId,
 }) => {
   const socket = useSocket();
   const dictionary = useDictionary();
@@ -46,11 +50,13 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const [tryHistoryP2, setTryHistoryP2] = useState<TriesHistory[]>([]);
 
   // Word of the player and his opponent.
-  const [word, setWord] = useState(first_letter.toUpperCase());
-  const [wordP2, setWordP2] = useState(first_letter.toUpperCase());
+  const [word, setWord] = useState(firstLetter.toUpperCase());
+  const [wordP2, setWordP2] = useState(firstLetter.toUpperCase());
 
   const [hasWon, setHasWon] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+
+  const [endPoint, setEndPoint] = useState(endTime);
 
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
@@ -58,7 +64,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     focusMode: "overwrite",
   });
 
-  const adversaire: { id: string; name: string; nb_life: number } =
+  const adversaire: { id: string; name: string; nbLife: number } =
     playerOne.id !== playerId ? playerOne : playerTwo;
 
   useEffect(() => {
@@ -71,7 +77,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         tryHistoryP2,
         setTryHistoryP2,
         setWordP2,
-        setIsFinished
+        setIsFinished,
+        setEndPoint
       );
     }
     return () => {
@@ -120,13 +127,19 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         word: word.toLowerCase(),
         gameId: gameId,
         playerId,
+        lobbyId,
       },
       (res: any) => {
         setTryHistory([...tryHistory, { result: res.data, wordTried: word }]);
       }
     );
 
-    setWord(first_letter.toUpperCase());
+    setWord(firstLetter.toUpperCase());
+  };
+
+  const onTimeFinish = () => {
+    setHasWon(false);
+    setIsFinished(true);
   };
 
   useClassicWordInput(
@@ -158,8 +171,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
             <PlayerGrid
               isVisible={false}
               wordLength={game_length}
-              nbLife={playerOne.nb_life}
-              firstLetter={first_letter}
+              nbLife={playerOne.nbLife}
+              firstLetter={firstLetter}
               word={wordP2}
               triesHistory={tryHistoryP2}
               isFinished={isFinished || isChatting}
@@ -172,12 +185,26 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         <Text mb="4" align={"center"}>
           {name}
         </Text>
+        {/* the result of the game */}
+        {isFinished && (
+          <Text
+            color={!hasWon ? "red" : "white"}
+            align="center"
+            fontSize="larger"
+          >
+            {hasWon && "GAGNER"}
+            {!hasWon && "PERDU"}
+          </Text>
+        )}
+        {!isFinished && (
+          <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
+        )}
         <PlayerGrid
           focus={focus}
           isVisible={true}
           wordLength={game_length}
-          nbLife={playerOne.nb_life}
-          firstLetter={first_letter.toUpperCase()}
+          nbLife={playerOne.nbLife}
+          firstLetter={firstLetter.toUpperCase()}
           word={word}
           triesHistory={tryHistory}
           keyboardSetting={keyboardSettings}

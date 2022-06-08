@@ -27,6 +27,12 @@ import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
 import { Socket } from "socket.io-client";
+import {
+  maxPlayer1vs1,
+  maxPlayerBr,
+  minPlayer1vs1,
+  minPlayerBr,
+} from "src/utils/Const";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { GameMode, Lobby, Packet, Player } from "src/utils/types";
 
@@ -36,7 +42,6 @@ interface CreateLobbyModalProps {
   mode: string;
   lobby?: Lobby;
 }
-
 export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   isOpen,
   onClose,
@@ -49,6 +54,9 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     lobby ? lobby.name : "Nouveau Lobby"
   );
   const [nbPlaces, setNbPlaces] = React.useState(lobby ? lobby.totalPlace : 2);
+  const [minPlaces, setminPlaces] = React.useState(
+    lobby ? lobby.totalPlace : 2
+  );
   const [maxPlaces, setmaxPlaces] = React.useState(
     lobby ? lobby.totalPlace : 2
   );
@@ -111,12 +119,14 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const handleGameMode = (value: GameMode) => {
     setGameMode(value);
     if (value == "battle-royale") {
-      setmaxPlaces(50);
-      setNbPlaces(50);
+      setmaxPlaces(maxPlayerBr);
+      setminPlaces(minPlayerBr);
+      setNbPlaces(maxPlayerBr);
     } else if (value == "1vs1") {
       onToggle();
-      setmaxPlaces(2);
-      setNbPlaces(2);
+      setmaxPlaces(maxPlayer1vs1);
+      setminPlaces(minPlayer1vs1);
+      setNbPlaces(maxPlayer1vs1);
     }
   };
 
@@ -152,12 +162,26 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
             <VStack>
               <HStack my={2}>
                 <Text my={2}>Places</Text>
+                {/* <Text> min : {minPlaces} </Text>
+                <Text>max : {maxPlaces} </Text> */}
                 <NumberInput
+                  isDisabled={maxPlaces === minPlaces}
                   onChange={(valueString: string) =>
-                    setNbPlaces(parseInt(valueString))
+                    setNbPlaces(() => {
+                      let result = parseInt(
+                        valueString === "" ? "0" : valueString
+                      );
+                      if (result > maxPlaces) {
+                        result = maxPlaces;
+                      } else if (result < minPlaces) {
+                        result = minPlaces;
+                      }
+
+                      return result;
+                    })
                   }
                   value={nbPlaces}
-                  min={2}
+                  min={minPlaces}
                   max={maxPlaces}
                 >
                   <NumberInputField />
@@ -171,7 +195,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
                   onChange={(valueString: string) =>
                     setNbLife(parseInt(valueString))
                   }
-                  value={nbLife === 6 ? nbLife + " (default)" : nbLife}
+                  value={nbLife}
                   min={2}
                   max={10}
                 >
