@@ -52,12 +52,12 @@ export type UpdateLobbyLeavePayload = {
   lobby: Lobby | null;
 };
 export type Game1vs1 = {
-  playerOne: { id: string; name: string; nb_life: number };
-  playerTwo: { id: string; name: string; nb_life: number };
+  playerOne: { id: string; name: string; nbLife: number };
+  playerTwo: { id: string; name: string; nbLife: number };
   id: string;
   length: number;
   firstLetter: string;
-  endTime: number,
+  endTime: number;
 };
 
 export type SoloGameState = {
