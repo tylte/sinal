@@ -14,30 +14,31 @@ import {
 import {
   Game1vs1,
   KeyboardSettings,
-  LastGame,
-  LetterResult,
   MyFocus,
   Player,
   TriesHistory,
 } from "../utils/types";
 import { getClassicKeyboardSettings } from "../utils/utils";
-import { LinkAfterGame1vs1 } from "./LinkPostGame1vs1";
+import { Chrono } from "./Chrono";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 
 interface OneVsOneGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
+  lobbyId: string;
 }
 
 export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
-  player: { id: playerId, name, lobbyId },
+  player: { id: playerId, name },
   gameState: {
     playerOne,
     playerTwo,
     firstLetter,
     id: gameId,
     length: game_length,
+    endTime,
   },
+  lobbyId,
 }) => {
   const socket = useSocket();
   const dictionary = useDictionary();
@@ -54,6 +55,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
 
   const [hasWon, setHasWon] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+
+  const [endPoint, setEndPoint] = useState(endTime);
 
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
@@ -74,7 +77,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         tryHistoryP2,
         setTryHistoryP2,
         setWordP2,
-        setIsFinished
+        setIsFinished,
+        setEndPoint
       );
     }
     return () => {
@@ -123,6 +127,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         word: word.toLowerCase(),
         gameId: gameId,
         playerId,
+        lobbyId,
       },
       (res: any) => {
         setTryHistory([...tryHistory, { result: res.data, wordTried: word }]);
@@ -130,6 +135,11 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     );
 
     setWord(firstLetter.toUpperCase());
+  };
+
+  const onTimeFinish = () => {
+    setHasWon(false);
+    setIsFinished(true);
   };
 
   useClassicWordInput(
@@ -149,24 +159,6 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     setFocus,
     game_length
   );
-
-  let mapHist = new Map<string, TriesHistory[]>;
-  let histp1:TriesHistory[] =  [{ wordTried: "osef", result: [LetterResult.RIGHT_POSITION, LetterResult.NOT_FOUND, LetterResult.FOUND]}, 
-                              { wordTried: "osef", result: [LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION]}];
-  mapHist.set("1", histp1)
-  let histp2:TriesHistory[] =  [{ wordTried: "osef", result: [LetterResult.RIGHT_POSITION, LetterResult.NOT_FOUND, LetterResult.FOUND]}, 
-                              { wordTried: "osef", result: [LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION, LetterResult.RIGHT_POSITION]}];
-  mapHist.set("2", histp2)
-  let tempGame: LastGame = {
-    gameMode: "1vs1",
-    playerList: [
-      { id: "1", name: "bob", lobbyId: "0" },
-      { id: "2", name: "bonjour", lobbyId: "0"},
-    ],
-    winner: { id: "1", name: "bob", lobbyId: "0"},
-    wordsToGuess: ["cat"],
-    triesHistory: mapHist
-  };
 
   return (
     <>
@@ -190,10 +182,23 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
       </Box>
       <Box>
         {hasWon && <Confetti />}
-        <LinkAfterGame1vs1 game={tempGame} />
         <Text mb="4" align={"center"}>
           {name}
         </Text>
+        {/* the result of the game */}
+        {isFinished && (
+          <Text
+            color={!hasWon ? "red" : "white"}
+            align="center"
+            fontSize="larger"
+          >
+            {hasWon && "GAGNER"}
+            {!hasWon && "PERDU"}
+          </Text>
+        )}
+        {!isFinished && (
+          <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
+        )}
         <PlayerGrid
           focus={focus}
           isVisible={true}

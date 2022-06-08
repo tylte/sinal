@@ -9,23 +9,34 @@ import {
   List,
   ListIcon,
   ListItem,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
-import { Lobby, Player } from "../utils/types";
+import { GameMode, Lobby, Player } from "../utils/types";
 import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
 import { useSocket } from "../utils/hooks";
+import {
+  defaultEliminationRate,
+  defaultGlobalTime1vs1,
+  defaultGlobalTimeBr,
+  defaultTimeAfterFirstGuess1vs1,
+  defaultTimeAfterFirstGuessBr,
+} from "src/utils/Const";
+import { LinkAfterGame1vs1 } from "./LinkPostGame1vs1";
 
 interface PreGameLobbyProps {
   lobby: Lobby;
   player: Player;
+  gameMode: GameMode;
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
-  lobby: { name, totalPlace, state, playerList, id, owner, mode },
+  lobby: { name, totalPlace, state, playerList, id, owner, mode, lastGame },
   player: { id: playerId },
+  gameMode,
 }) => {
   const socket = useSocket();
   const router = useRouter();
@@ -33,12 +44,22 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   const currentPlace = playerList.length;
 
   const startGame = () => {
-    socket?.emit("start_game_1vs1", {
-      lobbyId: id,
-      playerId,
-      globalTime: 60000,
-      timeAfterFirstGuess: 10000,
-    });
+    if (gameMode === "battle-royale") {
+      socket?.emit("start_game_br", {
+        lobbyId: id,
+        playerId,
+        eliminationRate: defaultEliminationRate,
+        globalTime: defaultGlobalTimeBr,
+        timeAfterFirstGuess: defaultTimeAfterFirstGuessBr,
+      });
+    } else if (gameMode === "1vs1") {
+      socket?.emit("start_game_1vs1", {
+        lobbyId: id,
+        playerId,
+        globalTime: defaultGlobalTime1vs1,
+        timeAfterFirstGuess: defaultTimeAfterFirstGuess1vs1,
+      });
+    }
   };
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
@@ -46,45 +67,87 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
     : "Plein";
 
   return (
-    <Flex direction={"column"} alignContent={"center"}>
-      <Box mx="auto">
-        <Text fontSize={"4xl"}>
-          {name} - {mode} - {placeStatus}
-        </Text>
+    <>
+      <Box pt={8} pl={8}>
+        {lastGame != null && (
+          <>
+            <Text fontSize={"3xl"} fontWeight={"bold"}>
+              Dernière partie
+            </Text>
+            <Box>
+              <Text fontWeight={"bold"}>Mode de jeu :</Text> {lastGame.gameMode}
+            </Box>
+            <Box>
+              <Text fontWeight={"bold"}>Liste des joueurs :</Text>
+              {lastGame.playerList.map((player) => (
+                <Text key={player.id}>{player.name}</Text>
+              ))}
+            </Box>
+            <Box>
+              <Text fontWeight={"bold"}>Gagnant : </Text>
+              {lastGame.winner
+                ? lastGame.winner.id === playerId
+                  ? lastGame.winner.name + " (Vous)"
+                  : lastGame.winner.name
+                : "Egalité"}
+            </Box>
+            <Box>
+              <Text fontWeight={"bold"}>Mot(s) à deviner : </Text>
+              <Stack spacing={1}>
+                {lastGame.wordsToGuess.map((word, index) => (
+                  <Text key={index}>
+                    {word[0].toUpperCase() + word.slice(1)}
+                  </Text>
+                ))}
+              </Stack>
+            </Box>
+            <LinkAfterGame1vs1 game={lastGame} />
+          </>
+        )}
       </Box>
+      <Flex direction={"column"} alignContent={"center"}>
+        <Box mx="auto">
+          <Text fontSize={"4xl"}>
+            {name} - {mode} - {placeStatus}
+          </Text>
+        </Box>
 
-      <Text fontSize={"2xl"}>Players</Text>
-      <Divider />
-      <List>
-        {playerList.map((player) => {
-          return (
-            <ListItem key={player.id}>
-              <HStack>
-                {player.id === owner && (
-                  <ListIcon as={GiLaurelCrown} color="green.500" />
-                )}
-                <Text fontSize={"xl"}>
-                  {player.name} {player.id === playerId && "(You)"}
-                </Text>
-              </HStack>
-            </ListItem>
-          );
-        })}
-      </List>
-      <HStack mx="auto">
-        <IconButton
-          aria-label="quit lobby"
-          icon={<ArrowBackIcon />}
-          onClick={() => router.push("/lobby")}
-        />
-        <Button
-          isDisabled={playerId !== owner || playerList.length < totalPlace}
-          colorScheme={"green"}
-          onClick={startGame}
-        >
-          Commencer
-        </Button>
-      </HStack>
-    </Flex>
+        <Text fontSize={"2xl"}>Joueurs</Text>
+        <Divider />
+        <List>
+          {playerList.map((player) => {
+            return (
+              <ListItem key={player.id}>
+                <HStack>
+                  {player.id === owner && (
+                    <ListIcon as={GiLaurelCrown} color="green.500" />
+                  )}
+                  <Text fontSize={"xl"}>
+                    {player.name} {player.id === playerId && "(Vous)"}
+                  </Text>
+                </HStack>
+              </ListItem>
+            );
+          })}
+        </List>
+        <HStack mx="auto">
+          <IconButton
+            aria-label="quit lobby"
+            icon={<ArrowBackIcon />}
+            onClick={() => router.push("/lobby")}
+          />
+          <Button
+            isDisabled={
+              playerId !== owner ||
+              (playerList.length < totalPlace && gameMode !== "battle-royale")
+            }
+            colorScheme={"green"}
+            onClick={startGame}
+          >
+            Commencer
+          </Button>
+        </HStack>
+      </Flex>
+    </>
   );
 };

@@ -1,4 +1,4 @@
-import { number, z } from "zod";
+import { number, object, z } from "zod";
 
 export const Player = z.object({
   id: z.string(),
@@ -23,6 +23,24 @@ const LobbyStateEnum = {
 export const LobbyState = z.nativeEnum(LobbyStateEnum);
 export type LobbyStateType = z.infer<typeof GameMode>;
 
+export const Player1vs1 = z.object({
+  id: z.string(),
+  name: z.string(),
+  nbLife: z.number(),
+  hasWon: z.boolean(),
+});
+
+export type Player1vs1Type = z.infer<typeof Player1vs1>;
+
+export const LastGame = z.object({
+  gameMode: GameMode,
+  playerList: Player.array(),
+  winner: z.nullable(Player1vs1),
+  wordsToGuess: z.string().array(),
+});
+
+export type LastGameType = z.infer<typeof LastGame>;
+
 export const Lobby = z.object({
   id: z.string(),
   state: LobbyState,
@@ -33,6 +51,7 @@ export const Lobby = z.object({
   isPublic: z.boolean(),
   mode: GameMode,
   currentGameId: z.nullable(z.string()),
+  lastGame: z.nullable(LastGame),
 });
 
 export const Game1vs1 = z.object({
@@ -50,13 +69,37 @@ export const Game1vs1 = z.object({
   }),
   id: z.string(),
   length: z.number(),
-  first_letter: z.string(),
+  firstLetter: z.string(),
   endTime: z.optional(z.number()),
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;
+
+export const PlayerBr = z.object({
+  id: z.string(),
+  name: z.string(),
+  nbLife: z.number(),
+});
+
+export type PlayerBr = z.infer<typeof PlayerBr>;
+
+export const GameBr = z.object({
+  playerList: PlayerBr.array(),
+  playerFound: PlayerBr.array(),
+  playersLastNextRound: z.number(),
+  id: z.string(),
+  length: z.number(),
+  firstLetter: z.string(),
+  eliminationRate: z.number(),
+  globalTime: z.number(),
+  endTime: z.optional(z.number()),
+  timeAfterFirstGuess: z.number(),
+  numberOfDrawStreak: z.number(),
+});
+
+export type GameBr = z.infer<typeof GameBr>;
 
 //use in create_lobby
 export const ArgCreateLobby = z.object({
@@ -83,9 +126,17 @@ export const ArgUpdateWord = z.object({
   playerId: z.string(),
 });
 
-export const ArgStartGame = z.object({
+export const ArgStartGame1vs1 = z.object({
   lobbyId: z.string(),
   playerId: z.string(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
+});
+
+export const ArgStartGameBr = z.object({
+  lobbyId: z.string(),
+  playerId: z.string(),
+  eliminationRate: z.number(),
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
 });
@@ -94,21 +145,22 @@ export const ReceivedChatMessage = z.object({
   playerId: z.string(),
 });
 
+export const ArgGuessWord = z.object({
+  word: z.string(),
+  gameId: z.string(),
+  playerId: z.string(),
+  lobbyId: z.string(),
+});
+
 export type LobbyType = z.infer<typeof Lobby>;
 export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
 export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
 export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
-export type ArgStartGameType = z.infer<typeof ArgStartGame>;
+export type ArgStartGame1vs1Type = z.infer<typeof ArgStartGame1vs1>;
 export type ArgUpdateWord = z.infer<typeof ArgUpdateWord>;
+export type ArgGuessWordType = z.infer<typeof ArgGuessWord>;
+export type ArgStartGameBrType = z.infer<typeof ArgStartGameBr>;
 export type ReceivedChatMessageType = z.infer<typeof ReceivedChatMessage>;
-
-export let lobbyMap: Map<string, LobbyType> = new Map();
-
-export let playerMap: Map<string, Player> = new Map();
-
-export let game1vs1Map: Map<string, Game1vs1> = new Map();
-
-export let timeoutMap: Map<string, NodeJS.Timeout> = new Map();
 
 export type JoinLobbyResponse = (payload: {
   success: boolean;

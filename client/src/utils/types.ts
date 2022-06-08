@@ -35,6 +35,7 @@ export type Lobby = {
   isPublic: boolean;
   mode: GameMode;
   currentGameId: string;
+  lastGame: LastGame | null;
 };
 
 export type Packet = {
@@ -55,6 +56,7 @@ export type Game1vs1 = {
   id: string;
   length: number;
   firstLetter: string;
+  endTime: number;
 };
 
 export type SoloGameState = {
@@ -65,6 +67,35 @@ export type SoloGameState = {
   triesHistory: TriesHistory[];
   isFinished: boolean;
   hasWon: boolean;
+};
+
+export type BrGameState = {
+  playerId: string;
+  wordLength: number;
+  wordId: string;
+  firstLetter: string;
+  nbLife: number;
+  triesHistory: TriesHistory[];
+  isFinished: boolean;
+  hasWon: boolean;
+};
+export type PlayerBr = {
+  id: string;
+  name: string;
+  nbLife: number;
+};
+
+export type BrGameInfo = {
+  endTime: number;
+  playerList: PlayerBr[];
+  playerFound: PlayerBr[];
+  playersLastNextRound: number;
+  id: string;
+  length: number;
+  firstLetter: string;
+  eliminationRate: number;
+  globalTime: number;
+  timeAfterFirstGuess: number;
 };
 
 export type KeyboardSettings = {
@@ -88,9 +119,11 @@ export type MyFocus = {
 export type LastGame = {
   gameMode: GameMode;
   playerList: Player[];
-  winner: Player;
+  winner: Player | null;
   wordsToGuess: string[];
   triesHistory: Map<string, TriesHistory[]>;
 };
 
 export type FocusMode = "overwrite" | "insert";
+
+export const twoDigits = (num: number) => String(num).padStart(2, "0");
