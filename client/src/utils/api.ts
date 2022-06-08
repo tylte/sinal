@@ -212,7 +212,10 @@ export const addSpecificLobbiesEvent = (
   );
 
   socket.on("ending_game", (req) => {
-    setTimeout(() => setLobby(req.lobby), 5000);
+    setTimeout(() => {
+      setLobby(req.lobby);
+      console.log("lobby (client side) : ", req.lobby);
+    }, 5000);
   });
 };
 

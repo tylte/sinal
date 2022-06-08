@@ -121,7 +121,7 @@ export type LastGame = {
   playerList: Player[];
   winner: Player | null;
   wordsToGuess: string[];
-  triesHistory: Map<string, TriesHistory[]>;
+  triesHistory: number[][][]; //player (same index than in playerList) - word tried - letter tried
 };
 
 export type FocusMode = "overwrite" | "insert";

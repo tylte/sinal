@@ -6,40 +6,44 @@ interface LinkAfterGame1vs1Props {
   game: LastGame;
 }
 
-const copiePressePapier = (game: LastGame) => {
+const copiePressePapier = (game: LastGame | undefined) => {
+  if (game === undefined) return;
+
   let textToWrite = "SINAL 1vs1 victoire de " + game.winner?.name + " !\n";
   textToWrite += "Le mot à découvrir était : " + game.wordsToGuess[0] + "\n\n";
 
-  let historyP1 = game.triesHistory.get(game.playerList[0].id);
-  textToWrite += game.playerList[0].name + " : ";
-  if (historyP1 !== undefined) {
+  let historyP1 = game.triesHistory[0];
+  textToWrite += game.playerList[0].name + " : \n";
+  if (historyP1.length === 0)
+    for (let i = 0; i < game.wordsToGuess[0].length; i++) textToWrite += "⬛";
+  else {
     for (let j = 0; j < historyP1.length; j++) {
-      for (let i = 0; i < game.wordsToGuess[0].length; i++) {
-        if (historyP1[j].result[i] === LetterResult.RIGHT_POSITION)
+      for (let i = 0; i < historyP1[j].length; i++) {
+        if (historyP1[j][i] === LetterResult.RIGHT_POSITION)
           textToWrite += "🟩";
-        else if (historyP1[j].result[i] === LetterResult.FOUND)
-          textToWrite += "🟧";
+        else if (historyP1[j][i] === LetterResult.FOUND) textToWrite += "🟧";
         else textToWrite += "⬛";
       }
+      textToWrite += "\n";
     }
-    textToWrite += "\n";
   }
 
   textToWrite += "\nVS\n\n";
 
-  let historyP2 = game.triesHistory.get(game.playerList[1].id);
-  textToWrite += game.playerList[1].name + " : ";
-  if (historyP2 !== undefined) {
+  let historyP2 = game.triesHistory[1];
+  textToWrite += game.playerList[1].name + " : \n";
+  if (historyP2.length === 0)
+    for (let i = 0; i < game.wordsToGuess[0].length; i++) textToWrite += "⬛";
+  else {
     for (let j = 0; j < historyP2.length; j++) {
-      for (let i = 0; i < game.wordsToGuess[0].length; i++) {
-        if (historyP2[j].result[i] === LetterResult.RIGHT_POSITION)
+      for (let i = 0; i < historyP2[j].length; i++) {
+        if (historyP2[j][i] === LetterResult.RIGHT_POSITION)
           textToWrite += "🟩";
-        else if (historyP2[j].result[i] === LetterResult.FOUND)
-          textToWrite += "🟧";
+        else if (historyP2[j][i] === LetterResult.FOUND) textToWrite += "🟧";
         else textToWrite += "⬛";
       }
+      textToWrite += "\n";
     }
-    textToWrite += "\n";
   }
 
   textToWrite += "\nhttps://sinal.ovoleur.dev/";

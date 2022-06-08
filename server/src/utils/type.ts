@@ -35,8 +35,9 @@ export type Player1vs1Type = z.infer<typeof Player1vs1>;
 export const LastGame = z.object({
   gameMode: GameMode,
   playerList: Player.array(),
-  winner: z.nullable(Player1vs1),
+  winner: z.optional(Player),
   wordsToGuess: z.string().array(),
+  triesHistory: z.number().array().array().array(), //player (same index than in playerList) - word tried - letter tried
 });
 
 export type LastGameType = z.infer<typeof LastGame>;
