@@ -32,6 +32,7 @@ export type Lobby = {
   totalPlace: number; // nombre de place que le lobby peut contenir en tt
   playerList: Player[];
   nbLifePerPlayer: number;
+  nbRounds: number;
   owner: string; // id du joueur owner
   isPublic: boolean;
   mode: GameMode;

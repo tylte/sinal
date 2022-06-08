@@ -48,6 +48,7 @@ export const Lobby = z.object({
   totalPlace: z.number(),
   playerList: Player.array(),
   nbLifePerPlayer: z.number(),
+  nbRounds: z.number(),
   owner: z.string(), // id du joueur owner
   isPublic: z.boolean(),
   mode: GameMode,

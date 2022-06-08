@@ -55,6 +55,7 @@ export const createLobbyEvent = (
     totalPlace,
     playerList: new Array<Player>(),
     nbLifePerPlayer: nbLife,
+    nbRounds,
     owner: owner.id,
     isPublic,
     mode,
@@ -116,6 +117,7 @@ export const updateLobbyEvent = (
       name: name,
       nbLifePerPlayer: nbLife,
       totalPlace: totalPlace,
+      nbRounds: nbRounds,
     };
     lobbyMap.set(lobbyId, lobby);
     io.to(lobbyId).emit("updating_lobby", lobby);

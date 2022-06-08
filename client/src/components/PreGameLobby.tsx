@@ -47,6 +47,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
     currentGameId,
     isPublic,
     nbLifePerPlayer,
+    nbRounds,
   },
   player: { id: playerId },
   gameMode,
@@ -77,7 +78,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   };
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
-    ? `En attente de joueur ${currentPlace}/${totalPlace}`
+    ? `En attente ${currentPlace}/${totalPlace}`
     : "Plein";
 
   return (
@@ -122,6 +123,9 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
         <Box mx="auto">
           <Text fontSize={"4xl"}>
             {name} - {mode} - {placeStatus}
+          </Text>
+          <Text textAlign={"center"} fontStyle={"italic"}>
+            Vies : {nbLifePerPlayer} - Rounds : {nbRounds}
           </Text>
         </Box>
 
@@ -168,6 +172,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
               owner,
               mode,
               nbLifePerPlayer,
+              nbRounds,
               isPublic,
               currentGameId,
               lastGame,
