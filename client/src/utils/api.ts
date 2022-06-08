@@ -285,16 +285,17 @@ export const addGuessWordBrBroadcast = async (
   socket?.on("guess_word_broadcast", (arg) => {
     if (arg.playerId !== playerId) {
       setGameState((gameState) => {
-        let playerStateIndex = gameState.findIndex(
-          (state) => state.playerId === arg.playerId
+        return gameState.map((game) =>
+          game.playerId === arg.playerId
+            ? {
+                ...game,
+                triesHistory: [
+                  ...game.triesHistory,
+                  { result: arg.tab_res, wordTried: arg.word },
+                ],
+              }
+            : { ...game }
         );
-
-        gameState[playerStateIndex].triesHistory.push({
-          result: arg.tab_res,
-          wordTried: arg.word,
-        });
-
-        return gameState;
       });
     }
   });
