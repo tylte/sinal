@@ -17,6 +17,7 @@ import {
   ArgLeaveLobbyType,
   ArgStartGame1vs1Type,
   ArgStartGameBrType,
+  ArgUpdateLobbyType,
   ArgUpdateWord,
   ChatMessageToSend,
   EventResponseFn,
@@ -92,6 +93,33 @@ export const createLobbyEvent = (
     leaveLobbyEvent(io, socket, { lobbyId, playerId: player!.id }, response);
   });
   response(packet);
+};
+
+export const updateLobbyEvent = (
+  io: Server,
+  {
+    isPublic,
+    mode,
+    name,
+    place: totalPlace,
+    nbRounds,
+    nbLife,
+  }: ArgUpdateLobbyType,
+  lobbyId: string
+) => {
+  let lobby = lobbyMap.get(lobbyId);
+  if (lobby !== undefined) {
+    lobby = {
+      ...lobby,
+      isPublic: isPublic,
+      mode: mode,
+      name: name,
+      nbLifePerPlayer: nbLife,
+      totalPlace: totalPlace,
+    };
+    lobbyMap.set(lobbyId, lobby);
+    io.to(lobbyId).emit("updating_lobby", lobby);
+  }
 };
 
 export const joinLobbyEvent = (

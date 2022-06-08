@@ -168,6 +168,7 @@ export const ArgGuessWord = z.object({
 export type LobbyType = z.infer<typeof Lobby>;
 export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
 export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
+export type ArgUpdateLobbyType = z.infer<typeof ArgUpdateLobby>;
 export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
 export type ArgStartGame1vs1Type = z.infer<typeof ArgStartGame1vs1>;
 export type ArgUpdateWord = z.infer<typeof ArgUpdateWord>;

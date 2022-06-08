@@ -167,7 +167,6 @@ export const addSpecificLobbiesEvent = (
 ) => {
   socket.on("starting_game_1vs1", (game: Game1vs1) => {
     console.log("starting-game-1vs1");
-    console.log("NBLIFE :", game.playerOne.nbLife);
     setGameState(game);
     setLobby((lobby) => {
       if (lobby === null) {

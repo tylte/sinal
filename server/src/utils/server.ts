@@ -16,6 +16,7 @@ import {
   sendChatMessage,
   startGame1vs1Event,
   startGameBrEvent,
+  updateLobbyEvent,
   updateWordEvent,
 } from "./events";
 import { lobbyMap } from "./maps";
@@ -130,28 +131,10 @@ export const getServer = () => {
 
       let check = ArgUpdateLobby.safeParse(request);
       if (check.success) {
-        // check.data : {
-        //     isPublic,
-        //     mode,
-        //     name,
-        //     owner,
-        //     place: totalPlace,
-        //     nbRounds,
-        //     nbLife,
-        // };
-        let lobby = lobbyMap.get(request.lobbyId);
-        if (lobby !== undefined) {
-          lobby = {
-            ...lobby,
-            isPublic: check.data.isPublic,
-            mode: check.data.mode,
-            name: check.data.name,
-            nbLifePerPlayer: check.data.nbLife,
-            totalPlace: check.data.place,
-          };
-          lobbyMap.set(check.data.lobbyId, lobby);
-          io.to(check.data.lobbyId).emit("updating_lobby", lobby);
-        }
+        updateLobbyEvent(io, check.data, request.lobbyId);
+      } else {
+        console.log("update_lobby payload : ", request);
+        console.log("update_lobby : ", check.error);
       }
     });
 
