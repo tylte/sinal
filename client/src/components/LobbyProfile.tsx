@@ -16,7 +16,16 @@ interface LobbyProfileProps {
 }
 
 export const LobbyProfile: React.FC<LobbyProfileProps> = ({
-  lobby: { name, id, mode, state, totalPlace, owner, playerList },
+  lobby: {
+    name,
+    id,
+    mode,
+    state,
+    totalPlace,
+    owner,
+    playerList,
+    nbLifePerPlayer,
+  },
 }) => {
   const currentPlace = playerList.length;
   let playerOwner = playerList.find(({ id }) => owner === id);
@@ -50,6 +59,7 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
               {currentPlace}/{totalPlace} joueurs
             </Text>
             <Text fontStyle={"italic"}>{state}</Text>
+            <Text fontStyle={"italic"}>{nbLifePerPlayer} Vies</Text>
           </HStack>
           {playerOwner !== undefined && (
             <Text>{playerOwner.name} (owner) </Text>

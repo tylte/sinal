@@ -97,6 +97,14 @@ export const addLobbiesEvent = (
     setLobbies((lobbies) => [...lobbies, lobby]);
   });
 
+  socket?.on("updating_lobby_broadcast", (lobby: Lobby) => {
+    setLobbies((lobbies) =>
+      lobbies.map((item) => {
+        return item.id === lobby.id ? lobby : item;
+      })
+    );
+  });
+
   socket?.on(
     "lobbies_update_join",
     ({ lobby: lobbyChanged }: UpdateLobbyJoinPayload) => {

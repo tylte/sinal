@@ -119,6 +119,9 @@ export const updateLobbyEvent = (
     };
     lobbyMap.set(lobbyId, lobby);
     io.to(lobbyId).emit("updating_lobby", lobby);
+    if (isPublic) {
+      io.to(PUBLIC_LOBBIES).emit("updating_lobby_broadcast", lobby);
+    }
   }
 };
 
