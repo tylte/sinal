@@ -414,6 +414,7 @@ export const lobbyOneVsOneAddEvents = (
     }
   });
   socket.on("draw_1vs1", () => {
+    console.log("draw_1vs1")
     setIsFinished(true);
     toast({
       title: "Egalité.",

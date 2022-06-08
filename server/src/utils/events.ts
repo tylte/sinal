@@ -3,6 +3,7 @@ import { dicoHasWord } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
 import {
+  disconnectMap,
   game1vs1Map,
   gameBrMap,
   lobbyMap,
@@ -79,9 +80,7 @@ export const createLobbyEvent = (
   };
 
   // If the user created a lobby, he will leave it when deconnecting
-  socket.on("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId: player!.id }, response);
-  });
+  willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId: player!.id });
   response(packet);
 };
 
@@ -125,9 +124,7 @@ export const joinLobbyEvent = (
   io.to(PUBLIC_LOBBIES).to(lobbyId).emit("lobbies_update_join", { lobby });
 
   // If the user joined a lobby, he will leave it when deconnecting
-  socket.on("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId: player!.id }, response);
-  });
+  willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId: player!.id });
 
   response({
     success: true,
@@ -219,9 +216,11 @@ export const willLeaveLobbyOnDisconnect = (
   socket: Socket,
   { playerId, lobbyId }: ArgLeaveLobbyType
 ) => {
-  socket.on("disconnect", () => {
+  let disconnect = () => {
     leaveLobbyEvent(io, socket, { lobbyId, playerId }, () => {});
-  });
+  };
+  disconnectMap.set(playerId + lobbyId, disconnect);
+  socket.on("disconnect", disconnect);
 };
 
 export const willNoLongerLeaveLobbyOnDisconnect = (
@@ -229,12 +228,14 @@ export const willNoLongerLeaveLobbyOnDisconnect = (
   socket: Socket,
   { playerId, lobbyId }: ArgLeaveLobbyType
 ) => {
-  socket.removeListener("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId }, () => {});
-  });
+  let disconnect = disconnectMap.get(playerId + lobbyId);
+  if (disconnect !== undefined) {
+    socket.removeListener("disconnect", disconnect);
+    disconnectMap.delete(playerId + lobbyId);
+  }
 };
 
-export const startGame1vs1Event = (
+export const startGame1vs1Event = async (
   io: Server,
   { lobbyId, playerId, globalTime, timeAfterFirstGuess }: ArgStartGame1vs1Type
 ) => {
@@ -306,6 +307,16 @@ export const startGame1vs1Event = (
   game.endTime = Date.now() + globalTime;
   io.to(lobbyId).emit("starting_game_1vs1", game);
   io.to(lobbyId).socketsJoin(gameId);
+
+  let disconnect = () => {
+    leaveGame1vs1(io, game, "", lobby);
+  };
+  disconnectMap.set(playerId + game.id, disconnect);
+  let sockets = await io.to(lobbyId).allSockets();
+  sockets.forEach((socketString) => {
+    let socket = io.sockets.sockets.get(socketString);
+    socket?.on("disconnect", disconnect);
+  });
 };
 
 export const updateWordEvent = (
@@ -785,4 +796,109 @@ export const sendChatMessage = (
   };
 
   io.to(PUBLIC_CHAT).emit("broadcast_message", messageToSend);
+};
+
+export const leaveGameBr = (
+  io: Server,
+  game: GameBr,
+  playerId: string,
+  lobby?: LobbyType
+) => {
+  if (game !== undefined) {
+    if (game.playersLastNextRound - 1 === game.playerFound.length) {
+      let timeout = timeoutMap.get(game.id);
+      if (timeout !== undefined) clearTimeout(timeout);
+      newWordBr(io, game, game.globalTime);
+      if (game.playerFound.length === 0) {
+        if (game.numberOfDrawStreak < 3) {
+          game.numberOfDrawStreak++;
+          game.playerList.forEach((p) => {
+            p.nbLife = NBLIFE;
+          });
+
+          io.to(game.id).emit("draw_br");
+          io.to(game.id).emit("next_word_br", game);
+        } else {
+          //the game is finished we delete the timeout
+          timeout = timeoutMap.get(game.id);
+          if (timeout !== undefined) clearTimeout(timeout);
+          io.to(game.id).emit("end_of_game_draw", game);
+        }
+      } else if (game.playerFound.length === 1) {
+        io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
+        //the game is finished we delete the timeout
+        timeout = timeoutMap.get(game.id);
+        if (timeout !== undefined) clearTimeout(timeout);
+        io.to(game.id).socketsLeave(game.id);
+      } else {
+        game.playersLastNextRound = Math.floor(
+          game.playersLastNextRound * (1 - game.eliminationRate / 100)
+        );
+        game.playerList = game.playerFound;
+        game.playerFound = new Array();
+
+        game.playerList.forEach((p) => {
+          p.nbLife = NBLIFE;
+        });
+
+        io.to(game.id).emit("next_word_br", game);
+      }
+    }
+  }
+};
+
+export const leaveGame1vs1 = async (
+  io: Server,
+  game: Game1vs1,
+  playerId: string,
+  lobby?: LobbyType
+) => {
+  if (game !== undefined && lobby !== undefined) {
+    //the game is finished and nobody crash
+    if (game.playerOne.id === playerId) {
+      io.to(game.id).emit("wining_player_1vs1", game.playerTwo.id);
+      lobby.state = "pre-game";
+      io.to(game.id).emit("ending_game", { lobby });
+    } else if (game.playerOne.id === playerId) {
+      io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
+      lobby.state = "pre-game";
+      io.to(game.id).emit("ending_game", { lobby });
+    } else {
+      //if one player crash
+      io.to(game.id).emit("wining_player_1vs1", "");
+      lobby.state = "pre-game";
+      io.to(game.id).emit("ending_game", { lobby });
+    }
+    //reset the disconnect listeners
+    let disconnect = disconnectMap.get(playerId + game.id);
+    if (disconnect !== undefined) {
+      //get all the socket for the lobby
+      let sockets = await io.to(lobby.id).allSockets();
+      sockets.forEach((socketString) => {
+        let socket = io.sockets.sockets.get(socketString);
+        socket?.removeListener("disconnect", disconnect);
+      });
+    }
+    disconnectMap.delete(playerId + game.id);
+    io.to(game.id).socketsLeave(game.id);
+  }
+};
+
+export const leaveGame = (
+  io: Server,
+  gameId: string,
+  lobbyId: string,
+  playerId: string
+) => {
+  console.log("leaveGame");
+  let game1vs1 = Game1vs1.safeParse(game1vs1Map.get(gameId));
+  let lobby = lobbyMap.get(lobbyId);
+  if (game1vs1.success) {
+    leaveGame1vs1(io, game1vs1.data, playerId, lobby);
+  } else {
+    let gameBr = GameBr.safeParse(gameBrMap.get(gameId));
+    if (gameBr.success) {
+      leaveGameBr(io, gameBr.data, playerId, lobby);
+    }
+  }
 };

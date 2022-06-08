@@ -84,6 +84,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     return () => {
       if (socket) {
         lobbyOneVsOneRemoveEvents(socket);
+        socket.emit("leave_game", { playerId, lobbyId, gameId }, () => {});
       }
     };
   }, [socket]);
