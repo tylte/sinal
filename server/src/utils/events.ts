@@ -317,14 +317,28 @@ export const startGame1vs1Event = async (
   io.to(lobbyId).emit("starting_game_1vs1", game);
   io.to(lobbyId).socketsJoin(gameId);
 
-  let disconnect = () => {
-    leaveGame1vs1(io, game, "", lobby);
+  //set the function of the disconnect
+  let disconnectPlayerOne = () => {
+    console.log("disconnect1");
+    leaveGame1vs1(io, game, game.playerOne.id, lobby);
   };
-  disconnectMap.set(playerId + game.id, disconnect);
+  let disconnectPlayerTwo = () => {
+    console.log("disconnect2");
+    leaveGame1vs1(io, game, game.playerTwo.id, lobby);
+  };
+  let index = 0;
+  //set the map of the disconnect
+  disconnectMap.set(game.playerOne.id + game.id, disconnectPlayerOne);
+  disconnectMap.set(game.playerTwo.id + game.id, disconnectPlayerTwo);
   let sockets = await io.to(lobbyId).allSockets();
   sockets.forEach((socketString) => {
     let socket = io.sockets.sockets.get(socketString);
-    socket?.on("disconnect", disconnect);
+    if (index === 0) {
+      socket?.on("disconnect", disconnectPlayerOne);
+    } else {
+      socket?.on("disconnect", disconnectPlayerTwo);
+    }
+    index++;
   });
 };
 
@@ -631,15 +645,7 @@ export const guessWordBrEvent = (
       setNewTimeout(io, game, game.timeAfterFirstGuess);
 
       io.to(gameId).emit("first_winning_player_br", game);
-      console.log("first winning");
-      console.log(
-        "game.playerFound.length : ",
-        game.playerFound.length,
-        " game.playersLastNextRound : ",
-        game.playersLastNextRound
-      );
       if (game.playerFound.length === game.playersLastNextRound) {
-        console.log("winning");
         //the game is finished we delete the timeout
         timeout = timeoutMap.get(game.id);
         if (timeout !== undefined) clearTimeout(timeout);
@@ -898,7 +904,6 @@ export const leaveGameBr = async (
     }
     if (game.playerFound.findIndex((player) => playerId === player.id) < 0) {
       if (game.playersLastNextRound <= 0) {
-        console.log("if 1");
         //1vs1 round
         io.to(game.id).emit("win_by_forfeit", game.playerList[0].id); //One player in playerList
         //the game is finished we delete the timeout
@@ -910,7 +915,6 @@ export const leaveGameBr = async (
         if (game.playersLastNextRound === 1) {
           //3 player 1 quit
           if (game.playerFound.length === 1) {
-            console.log("if 2");
             io.to(game.id).emit("win_by_forfeit", game.playerFound[0].id);
             //the game is finished we delete the timeout
             timeout = timeoutMap.get(game.id);
@@ -918,10 +922,11 @@ export const leaveGameBr = async (
             io.to(game.id).socketsLeave(game.id);
           }
         } else {
+          //case the game as many player and somebody leave the game
           if (game.playersLastNextRound === game.playerFound.length) {
+            //if the new playersLastNextRound is the same as playerFound.length, the game is finish and the next word is send
             if (timeout !== undefined) clearTimeout(timeout);
             newWordBr(io, game, game.globalTime);
-            console.log("if 3");
             game.playersLastNextRound = Math.floor(
               game.playersLastNextRound * (1 - game.eliminationRate / 100)
             );
@@ -939,13 +944,11 @@ export const leaveGameBr = async (
     }
     //save the change of the game
     gameBrMap.set(game.id, game);
-    console.log("game : ", game);
   }
 };
 
 /**
  * Is called when a player leaves a 1vs1 game whether it is voluntary or not.
- *
  *
  * @param io - The io server
  * @param game - The gameBr

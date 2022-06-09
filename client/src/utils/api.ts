@@ -492,3 +492,16 @@ export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("update_word_broadcast");
 };
+
+export const leaveGame = (
+  socket:Socket,
+  playerId:string,
+  gameId:string,
+  lobbyId?:string | undefined
+) => {
+  socket.emit(
+    "leave_game",
+    { playerId, lobbyId, gameId },
+    () => {}
+  );
+}
