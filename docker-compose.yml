@@ -2,10 +2,12 @@ version: "3.9"
 services:
   server:
     image: sinal/server:latest
+    build: ./server
     ports:
       - "4000:4000"
   client:
     image: sinal/client:latest
+    build: ./client
     environment:
       NEXT_PUBLIC_SERVER_HTTP_URL: "https://sinal.ovoleur.dev/api"
       NEXT_PUBLIC_SERVER_WS_URL: "wss://sinal.ovoleur.dev/api"
