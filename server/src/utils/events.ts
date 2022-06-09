@@ -434,26 +434,21 @@ export const guessWord1vs1Event = (
         io.to(gameId).emit("ending_game", { lobby });
         io.to(gameId).socketsLeave(gameId);
       } else {
-        if (otherPlayer.nbLife <= player.nbLife + 1) {
-          io.to(gameId).emit("wining_player_1vs1", player.id);
-          io.to(gameId).socketsLeave(gameId);
-        } else {
-          let timeout = timeoutMap.get(gameId);
-          if (timeout !== undefined) clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            tempsEcoule1vs1(io, game, lobby, word);
-          }, game.timeAfterFirstGuess);
+        let timeout = timeoutMap.get(gameId);
+        if (timeout !== undefined) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          tempsEcoule1vs1(io, game, lobby, word);
+        }, game.timeAfterFirstGuess);
 
-          timeoutMap.set(gameId, timeout);
+        timeoutMap.set(gameId, timeout);
 
-          if (
-            game.endTime !== undefined &&
-            game.endTime > Date.now() + game.timeAfterFirstGuess
-          ) {
-            game.endTime = game.timeAfterFirstGuess + Date.now();
-          }
-          io.to(gameId).emit("first_wining_player_1vs1", game);
+        if (
+          game.endTime !== undefined &&
+          game.endTime > Date.now() + game.timeAfterFirstGuess
+        ) {
+          game.endTime = game.timeAfterFirstGuess + Date.now();
         }
+        io.to(gameId).emit("first_wining_player_1vs1", game);
       }
     } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
       io.to(gameId).emit("draw_1vs1");
@@ -471,6 +466,15 @@ export const guessWord1vs1Event = (
       }
       io.to(gameId).socketsLeave(gameId);
       game1vs1Map.delete(gameId);
+    } else if (player.nbLife <= otherPlayer.nbLife && otherPlayer.hasWon) {
+      io.to(gameId).emit("wining_player_1vs1", otherPlayer.id);
+      lobby.lastGame = {
+        ...lobby.lastGame,
+        winner: playerMap.get(otherPlayer.id),
+      };
+      lobby.state = "pre-game";
+      io.to(gameId).emit("ending_game", { lobby });
+      io.to(gameId).socketsLeave(gameId);
     }
   }
 };
