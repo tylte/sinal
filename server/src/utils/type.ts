@@ -28,6 +28,7 @@ export const Player1vs1 = z.object({
   name: z.string(),
   nbLife: z.number(),
   hasWon: z.boolean(),
+  nbWins: z.number(), //TODO : Change in client
 });
 
 export type Player1vs1Type = z.infer<typeof Player1vs1>;
@@ -75,6 +76,8 @@ export const Game1vs1 = z.object({
   endTime: z.optional(z.number()),
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
+  roundNumber: z.number(),
+  nbRounds: z.number(), //TODO : Change in client
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;

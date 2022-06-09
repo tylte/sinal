@@ -337,6 +337,8 @@ export const startGame1vs1Event = (
     length: word.length,
     globalTime: globalTime,
     timeAfterFirstGuess: timeAfterFirstGuess,
+    roundNumber: 1,
+    nbRounds: lobby.nbRounds,
   };
 
   let timeout = setTimeout(() => {
