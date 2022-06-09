@@ -2,6 +2,7 @@ import { ToastId, UseToastOptions } from "@chakra-ui/react";
 import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
+import { serverHttpUrl } from "./Const";
 import {
   BrGameInfo,
   BrGameState,
@@ -22,8 +23,11 @@ export const guessWord = async (
 ): Promise<LetterResult[]> => {
   try {
     const { data } = await axios.post<LetterResult[]>(
-      "http://localhost:4000/guess",
-      { word, id }
+      `${serverHttpUrl}/guess`,
+      {
+        word,
+        id,
+      }
     );
 
     return data;
@@ -235,7 +239,7 @@ export const getSpecificLobby = (
   player: Player
 ) => {
   axios
-    .get<Lobby>(`http://localhost:4000/list_lobbies/${lobbyId}`)
+    .get<Lobby>(`${serverHttpUrl}/list_lobbies/${lobbyId}`)
     .then(({ data }) => {
       if (data !== null) {
         setLobby(data);
@@ -284,16 +288,17 @@ export const addGuessWordBrBroadcast = async (
   socket?.on("guess_word_broadcast", (arg) => {
     if (arg.playerId !== playerId) {
       setGameState((gameState) => {
-        let playerStateIndex = gameState.findIndex(
-          (state) => state.playerId === arg.playerId
+        return gameState.map((game) =>
+          game.playerId === arg.playerId
+            ? {
+                ...game,
+                triesHistory: [
+                  ...game.triesHistory,
+                  { result: arg.tab_res, wordTried: arg.word },
+                ],
+              }
+            : { ...game }
         );
-
-        gameState[playerStateIndex].triesHistory.push({
-          result: arg.tab_res,
-          wordTried: arg.word,
-        });
-
-        return gameState;
       });
     }
   });

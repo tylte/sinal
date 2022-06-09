@@ -1,4 +1,4 @@
-import dict_full from "../../../server/data/dictionary_full.json";
+import dict_full from "../../data/dictionary_full.json";
 
 const dicoSet: Set<string> = new Set(dict_full);
 

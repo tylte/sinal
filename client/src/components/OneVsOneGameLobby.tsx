@@ -17,6 +17,7 @@ import {
   Lobby,
   MyFocus,
   Player,
+  Player1vs1,
   TriesHistory,
 } from "../utils/types";
 import { getClassicKeyboardSettings } from "../utils/utils";
@@ -65,7 +66,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     focusMode: "overwrite",
   });
 
-  const adversaire: { id: string; name: string; nb_life: number } =
+  const adversaire: Player1vs1 =
     playerOne.id !== playerId ? playerOne : playerTwo;
 
   useEffect(() => {

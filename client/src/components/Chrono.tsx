@@ -14,29 +14,29 @@ export const Chrono: React.FC<ChronoProps> = ({ endPoint, onTimeFinish }) => {
   const minutesToDisplay = Math.trunc(minutesRemaining);
 
   //the interval of the chrono
-  const countRef = useRef<NodeJS.Timeout>(
-    setInterval(() => {
-      setMsRemaining((timer) => timer - 0);
-    }, 0)
-  );
+  const countRef = useRef<NodeJS.Timeout | null>(null);
 
-  if (msRemaining <= 0) {
-    clearInterval(countRef.current);
-    //set 1 ms to avoid re-entering the if
-    onTimeFinish();
-    setMsRemaining(1);
-  }
+  // if (msRemaining <= 0) {
+  //   if(countRef !== null) {
+  //     clearInterval(countRef.current);
+  //   }
+
+  //   //set 1 ms to avoid re-entering the if
+  //   onTimeFinish();
+  //   setMsRemaining(1);
+  // }
 
   useEffect(() => {
-    if (endPoint !== undefined) {
-      clearInterval(countRef.current);
-      countRef.current = setInterval(() => {
-        setMsRemaining(endPoint - Date.now());
-      }, 1000);
-    }
+    countRef.current = setInterval(() => {
+      let currentMsRemaining = endPoint - Date.now();
+      if (currentMsRemaining <= 0) {
+        onTimeFinish();
+      }
+      setMsRemaining(currentMsRemaining);
+    }, 1000);
 
     return () => {
-      clearInterval(countRef.current);
+      countRef.current && clearInterval(countRef.current);
     };
   }, [endPoint]);
 
