@@ -55,18 +55,8 @@ export const Lobby = z.object({
 });
 
 export const Game1vs1 = z.object({
-  playerOne: z.object({
-    id: z.string(),
-    name: z.string(),
-    nbLife: z.number(),
-    hasWon: z.boolean(),
-  }),
-  playerTwo: z.object({
-    id: z.string(),
-    name: z.string(),
-    nbLife: z.number(),
-    hasWon: z.boolean(),
-  }),
+  playerOne: Player1vs1,
+  playerTwo: Player1vs1,
   id: z.string(),
   length: z.number(),
   firstLetter: z.string(),

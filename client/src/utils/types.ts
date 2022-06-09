@@ -51,12 +51,12 @@ export type UpdateLobbyLeavePayload = {
   lobby: Lobby | null;
 };
 export type Game1vs1 = {
-  playerOne: { id: string; name: string; nb_life: number };
-  playerTwo: { id: string; name: string; nb_life: number };
+  playerOne: Player1vs1;
+  playerTwo: Player1vs1;
   id: string;
   length: number;
   firstLetter: string;
-  endTime: number,
+  endTime: number;
 };
 
 export type SoloGameState = {
@@ -104,12 +104,20 @@ export type KeyboardSettings = {
   onBackspace: () => void;
 };
 
-type LastGame = {
+export type Player1vs1 = {
+  id: string;
+  name: string;
+  nbLife: number;
+  hasWon: boolean;
+};
+
+export type LastGame = {
   gameMode: GameMode;
   playerList: Player[];
-  winner: Player | null;
+  winner: Player1vs1 | null;
   wordsToGuess: string[];
 };
+
 export type ChatMessage = {
   content: string;
   author: string;
