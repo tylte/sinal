@@ -10,16 +10,25 @@ import {
   nextFocusMode,
 } from "./utils";
 
+/**
+ * @returns dictionary of word to try
+ */
 export const useDictionary = (): Set<string> => {
   let { dictionary } = useContext(SinalContext);
   return dictionary;
 };
 
+/**
+ * @returns socket connection, can be null if not connected
+ */
 export const useSocket = (): Socket | null => {
   let { socket } = useContext(SinalContext);
   return socket;
 };
 
+/**
+ * @returns get an array, first element is the player state, the second element can set the state of the player
+ */
 export const usePlayer = (): [
   player: Player | null,
   setPlayer: Dispatch<SetStateAction<Player | null>> | null
@@ -28,6 +37,9 @@ export const usePlayer = (): [
   return playerActions;
 };
 
+/**
+ * @returns boolean: true if user chatting, false otherwise
+ */
 export const useIsChatting = (): boolean => {
   let {
     chattingActions: [isChatting],
@@ -35,6 +47,9 @@ export const useIsChatting = (): boolean => {
   return isChatting;
 };
 
+/**
+ * @returns get an array, first element tells if the user is chatting, the second element can set the state chatting
+ */
 export const useChattingActions = (): [
   isChatting: boolean,
   setIsChatting: Dispatch<SetStateAction<boolean>> | null
@@ -43,11 +58,18 @@ export const useChattingActions = (): [
   return chattingActions;
 };
 
+/**
+ * @returns is the user connected in websocket
+ */
 export const useConnected = (): boolean => {
   let { isConnected } = useContext(SinalContext);
   return isConnected;
 };
 
+/**
+ * This handles the input of a user by setting word accordingly to the user input
+ * The user can also move a focus with arrow keys
+ */
 const handleWordInput = (
   e: KeyboardEvent,
   setWord: Dispatch<SetStateAction<string>>,

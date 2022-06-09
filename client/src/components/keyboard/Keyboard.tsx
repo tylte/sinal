@@ -12,6 +12,7 @@ interface KeyboardProps {
   isClickable: boolean;
 }
 
+// The keyboard layout
 const FRIST_ROW_LETTERS = "AZERTYUIOP";
 const SECOND_ROW_LETTERS = "QSDFGHJKLM";
 const THIRD_ROW_LETTERS = "WXCVBN";
@@ -53,6 +54,7 @@ export const Keyboard: React.FC<KeyboardProps> = ({
           );
         })}
       </Flex>
+      {/* Here, to the left and right of the last row we have enter and delete key */}
       <Flex>
         <KeyboardKey
           isClickable={isClickable}

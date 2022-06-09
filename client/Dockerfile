@@ -8,6 +8,7 @@ RUN yarn
 
 # Copy sources
 COPY src/. src/.
+COPY static/. static/.
 COPY tsconfig.json ./
 
 COPY .env.production ./

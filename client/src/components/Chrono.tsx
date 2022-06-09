@@ -16,16 +16,6 @@ export const Chrono: React.FC<ChronoProps> = ({ endPoint, onTimeFinish }) => {
   //the interval of the chrono
   const countRef = useRef<NodeJS.Timeout | null>(null);
 
-  // if (msRemaining <= 0) {
-  //   if(countRef !== null) {
-  //     clearInterval(countRef.current);
-  //   }
-
-  //   //set 1 ms to avoid re-entering the if
-  //   onTimeFinish();
-  //   setMsRemaining(1);
-  // }
-
   useEffect(() => {
     countRef.current = setInterval(() => {
       let currentMsRemaining = endPoint - Date.now();
