@@ -171,6 +171,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     return () => {
       //remove all the event
       removeBrEvent(socket);
+      socket?.emit("leave_game", {gameId:gameInfo.id, playerId:player.id, lobbyId:""}, () => {})
     };
   }, [socket]);
 
