@@ -533,10 +533,11 @@ export const startGameBrEvent = async (
   //get all the socket for the game
   let sockets = await io.to(gameId).allSockets();
   let socketsIterator = sockets.values();
+  //the order of the playerList is the same of the set of the socket so we can use the foreach of the player to get the playerId
   game.playerList.forEach((player) => {
     let disconnect = () => {
       console.log("playerList : ", game.playerList);
-      leaveGameBr(io, game, player.id); //use index because the playerList is updating the same time as the room of the game
+      leaveGameBr(io, game, player.id);
     };
     //set the map for the disconnect
     disconnectMap.set(player.id + game.id, disconnect);
@@ -820,23 +821,26 @@ export const sendChatMessage = (
   io.to(PUBLIC_CHAT).emit("broadcast_message", messageToSend);
 };
 
+/**
+ * Is called when a player leaves a battle royal game whether it is voluntary or not.
+ *
+ * @param io - The io server
+ * @param game - The game
+ * @param playerId - The id of the player
+ */
 export const leaveGameBr = async (
   io: Server,
   game: GameBr,
   playerId: string
 ) => {
-  console.log("game : ", game);
-  console.log("playerId : ", playerId);
-  console.log("playerList : ", game.playerList);
-  console.log(
-    "findIndex : ",
-    game.playerList.findIndex((player) => playerId === player.id)
-  );
+  //check if the player exist
   let indexPlayer = game.playerList.findIndex(
     (player) => playerId === player.id
   );
-  game.playersLastNextRound -= 1;
   if (game !== undefined && indexPlayer >= 0) {
+    //the current game have one less player
+    game.playersLastNextRound -= 1;
+    //Informs the other players that a player has left.
     io.to(game.id).emit("player_leave", game.playerList[indexPlayer].name); //emit the name of the player that leave
     let timeout;
     let index = game.playerList.findIndex((player) => playerId === player.id);
@@ -847,6 +851,7 @@ export const leaveGameBr = async (
       let sockets = await io.to(game.id).allSockets();
       sockets.forEach((socketString) => {
         let socket = io.sockets.sockets.get(socketString);
+        //remove only the disconnect that as the same function so for one user
         socket?.removeListener("disconnect", disconnect);
       });
     }
@@ -896,11 +901,21 @@ export const leaveGameBr = async (
         }
       }
     }
+    //save the change of the game
     gameBrMap.set(game.id, game);
     console.log("game : ", game);
   }
 };
 
+/**
+ * Is called when a player leaves a 1vs1 game whether it is voluntary or not.
+ *
+ *
+ * @param io - The io server
+ * @param game - The gameBr
+ * @param playerId - The id of the player that leave
+ * @param lobby - lobbyType can be undefined
+ */
 export const leaveGame1vs1 = async (
   io: Server,
   game: Game1vs1,
@@ -938,13 +953,21 @@ export const leaveGame1vs1 = async (
   }
 };
 
+/**
+ * This method is called when the game is over or the player leave the game.
+ * This method get the game and call leaveGame1vs1 or leaveGameBr.
+ *
+ * @param io - The io server
+ * @param gameId - The id of the game
+ * @param lobbyId - The id of the lobby
+ * @param playerId - The id of the player
+ */
 export const leaveGame = (
   io: Server,
   gameId: string,
   lobbyId: string,
   playerId: string
 ) => {
-  console.log("leaveGame");
   let game1vs1 = Game1vs1.safeParse(game1vs1Map.get(gameId));
   let lobby = lobbyMap.get(lobbyId);
   //if the game is a 1vs1
