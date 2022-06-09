@@ -17,6 +17,10 @@ import {
   UpdateLobbyLeavePayload,
 } from "./types";
 
+// Here are all the api calls
+// Can be http request or websockets events
+// All the logic is here and is used by components
+
 export const guessWord = async (
   word: string,
   id: string

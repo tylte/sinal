@@ -8,6 +8,9 @@ import {
   TriesHistory,
 } from "./types";
 
+/**
+ * From letter result, tells if the player has the correct word or no
+ */
 export const isWordCorrect = (result: LetterResult[]): boolean => {
   if (result.length === 0) {
     return false;
@@ -23,22 +26,9 @@ export const isWordCorrect = (result: LetterResult[]): boolean => {
   return true;
 };
 
-export const getColorFromResults = (result: LetterResult[]): string[] => {
-  const ret = [];
-  for (let i = 0; i < result.length; i++) {
-    const res = result[i];
-    if (res === LetterResult.RIGHT_POSITION) {
-      ret.push("green.300");
-    } else if (res === LetterResult.FOUND) {
-      ret.push("orange.100");
-    } else if (res === LetterResult.NOT_FOUND) {
-      ret.push("blackAlpha.300");
-    }
-  }
-
-  return ret;
-};
-
+/**
+ * From a letter result, get the color to display
+ */
 export const getColorFromResult = (result?: LetterResult): string => {
   if (result === LetterResult.RIGHT_POSITION) {
     return "green.300";
@@ -50,6 +40,9 @@ export const getColorFromResult = (result?: LetterResult): string => {
   return "grey";
 };
 
+/**
+ * Tells if a lobby is joinable
+ */
 export const isLobbyJoinable = (
   currentPlace: number,
   totalPlace: number,
@@ -73,6 +66,13 @@ export const getIdFromPage = (id: string | string[] | undefined) => {
   }
 };
 
+/**
+ * Append the letter to the word depending to the focus
+ * @param letter the letter typed
+ * @param setWord set word hook
+ * @param wordLength the lenght of the word to be guessed
+ * @param focus the state of the current focus
+ */
 export const classicWordWriting = (
   letter: string,
   setWord: Dispatch<SetStateAction<string>>,
@@ -88,6 +88,11 @@ export const classicWordWriting = (
   });
 };
 
+/**
+ * Remove a letter from the word depending on the focus
+ * @param setWord
+ * @param focus
+ */
 export const classicWordDelete = (
   setWord: Dispatch<SetStateAction<string>>,
   { index, isBorder }: MyFocus
@@ -108,6 +113,15 @@ export const classicWordDelete = (
   });
 };
 
+/**
+ * Get the classic keyboard settings
+ * @param onEnter What happens when the user click the enter key
+ * @param setWord set word hook
+ * @param focus the focus state
+ * @param setFocus set focus hook
+ * @param wordLength the length of the word to be guessed
+ * @returns
+ */
 export const getClassicKeyboardSettings = (
   onEnter: () => void,
   setWord: Dispatch<SetStateAction<string>>,
@@ -128,6 +142,9 @@ export const getClassicKeyboardSettings = (
   };
 };
 
+/**
+ * Get the letter to color for the tries history in order to display the color on the keyboard
+ */
 export const getLetterToColorFromTriesHistory = (
   triesHistory: TriesHistory[]
 ): Map<string, string> => {
@@ -178,6 +195,9 @@ export const decrementFocus = (
   });
 };
 
+/**
+ * Return the new word with the letter at the right place depending on the focus
+ */
 export const writeWordWithFocus = (
   { focusMode, index }: MyFocus,
   word: string,
@@ -204,6 +224,9 @@ export const writeWordWithFocus = (
   return word;
 };
 
+/**
+ * Change focus mode
+ */
 export const nextFocusMode = (focusMode: FocusMode): FocusMode => {
   if (focusMode === "insert") {
     return "overwrite";
@@ -215,6 +238,9 @@ export const nextFocusMode = (focusMode: FocusMode): FocusMode => {
   }
 };
 
+/**
+ * Get focus mode dispay
+ */
 export const getGradientFromFocus = (
   focus: MyFocus | undefined,
   color: string
