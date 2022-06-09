@@ -27,6 +27,7 @@ import {
   defaultTimeAfterFirstGuess1vs1,
   defaultTimeAfterFirstGuessBr,
 } from "src/utils/Const";
+import { LinkAfterGame1vs1 } from "./LinkPostGame1vs1";
 
 interface PreGameLobbyProps {
   lobby: Lobby;
@@ -116,6 +117,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
                 ))}
               </Stack>
             </Box>
+            <LinkAfterGame1vs1 game={lastGame} />
           </>
         )}
       </Box>

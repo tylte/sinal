@@ -36,8 +36,9 @@ export type Player1vs1Type = z.infer<typeof Player1vs1>;
 export const LastGame = z.object({
   gameMode: GameMode,
   playerList: Player.array(),
-  winner: z.nullable(Player1vs1),
+  winner: z.optional(Player),
   wordsToGuess: z.string().array(),
+  triesHistory: z.number().array().array().array(), //player (same index than in playerList) - word tried - letter tried
 });
 
 export type LastGameType = z.infer<typeof LastGame>;
@@ -58,18 +59,8 @@ export const Lobby = z.object({
 });
 
 export const Game1vs1 = z.object({
-  playerOne: z.object({
-    id: z.string(),
-    name: z.string(),
-    nbLife: z.number(),
-    hasWon: z.boolean(),
-  }),
-  playerTwo: z.object({
-    id: z.string(),
-    name: z.string(),
-    nbLife: z.number(),
-    hasWon: z.boolean(),
-  }),
+  playerOne: Player1vs1,
+  playerTwo: Player1vs1,
   id: z.string(),
   length: z.number(),
   firstLetter: z.string(),
