@@ -14,12 +14,12 @@ const pasteInClipboard = (game: LastGame | undefined) => {
   textToWrite += "Le mot à découvrir était : " + game.wordsToGuess[0] + "\n\n";
 
   let historyP1 = game.triesHistory[0];
-  textToWrite += getStringFromHistory(historyP1, game, 0);
+  textToWrite += getStringFromHistory(historyP1, game, 0, 0);
 
   textToWrite += "\nVS\n\n";
 
   let historyP2 = game.triesHistory[1];
-  textToWrite += getStringFromHistory(historyP2, game, 1);
+  textToWrite += getStringFromHistory(historyP2, game, 1, 0);
 
   textToWrite += "\nhttps://sinal.ovoleur.dev/";
 
