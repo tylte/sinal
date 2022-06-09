@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 import {
   FocusMode,
   KeyboardSettings,
+  LastGame,
   LetterResult,
   LobbyState,
   MyFocus,
@@ -227,4 +228,24 @@ export const getGradientFromFocus = (
   }
 
   return undefined;
+};
+
+export const getStringFromHistory = (
+  history: number[][],
+  game: LastGame
+): string => {
+  let ret = game.playerList[0].name + " : \n";
+  if (history.length === 0)
+    for (let i = 0; i < game.wordsToGuess[0].length; i++) ret += "⬛";
+  else {
+    for (let j = 0; j < history.length; j++) {
+      for (let i = 0; i < history[j].length; i++) {
+        if (history[j][i] === LetterResult.RIGHT_POSITION) ret += "🟩";
+        else if (history[j][i] === LetterResult.FOUND) ret += "🟧";
+        else ret += "⬛";
+      }
+      ret += "\n";
+    }
+  }
+  return ret;
 };

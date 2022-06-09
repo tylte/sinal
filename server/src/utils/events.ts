@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import { map } from "zod";
 import { dicoHasWord } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
@@ -297,6 +298,14 @@ export const startGame1vs1Event = (
     timeAfterFirstGuess: timeAfterFirstGuess,
   };
 
+  lobby.lastGame = {
+    gameMode: "1vs1",
+    playerList: playerList,
+    winner: undefined,
+    wordsToGuess: [word],
+    triesHistory: lobby.playerList.map(() => []),
+  };
+
   let timeout = setTimeout(() => {
     tempsEcoule1vs1(io, game, lobby, word);
   }, globalTime);
@@ -373,12 +382,24 @@ export const guessWord1vs1Event = (
 
   let lobby = lobbyMap.get(lobbyId);
   if (lobby !== undefined) {
-    lobby.lastGame = {
-      gameMode: "1vs1",
-      playerList: lobby.playerList,
-      winner: null,
-      wordsToGuess: [word],
-    };
+    if (lobby.lastGame === undefined) {
+      lobby.lastGame = {
+        gameMode: "1vs1",
+        playerList: lobby.playerList,
+        winner: undefined,
+        wordsToGuess: [word],
+        triesHistory: lobby.playerList.map(() => [[0]]),
+      };
+    } else {
+      for (let i = 0; i < lobby.playerList.length; i++) {
+        if (lobby.playerList[i].id === playerId) {
+          lobby.lastGame?.triesHistory[i].push(tab_res);
+        }
+      }
+    }
+    if (lobby.lastGame?.triesHistory === undefined) {
+      return;
+    }
 
     if (win) {
       player.hasWon = true;
@@ -387,45 +408,47 @@ export const guessWord1vs1Event = (
           io.to(gameId).emit("wining_player_1vs1", player.id);
           lobby.lastGame = {
             ...lobby.lastGame,
-            winner: player,
+            winner: playerMap.get(playerId),
           };
+
           lobby.state = "pre-game";
           io.to(gameId).emit("ending_game", { lobby });
           io.to(gameId).socketsLeave(gameId);
         } else {
           io.to(gameId).emit("wining_player_1vs1", otherPlayer.id);
-          lobby.lastGame = { ...lobby.lastGame, winner: otherPlayer };
+          lobby.lastGame = {
+            ...lobby.lastGame,
+            winner: playerMap.get(otherPlayer.id),
+          };
           lobby.state = "pre-game";
           io.to(gameId).emit("ending_game", { lobby });
           io.to(gameId).socketsLeave(gameId);
         }
       } else if (player.nbLife >= otherPlayer.nbLife - 1) {
         io.to(gameId).emit("wining_player_1vs1", player.id);
-        lobby.lastGame = { ...lobby.lastGame, winner: otherPlayer };
+        lobby.lastGame = {
+          ...lobby.lastGame,
+          winner: playerMap.get(otherPlayer.id),
+        };
         lobby.state = "pre-game";
         io.to(gameId).emit("ending_game", { lobby });
         io.to(gameId).socketsLeave(gameId);
       } else {
-        if (otherPlayer.nbLife <= player.nbLife + 1) {
-          io.to(gameId).emit("wining_player_1vs1", player.id);
-          io.to(gameId).socketsLeave(gameId);
-        } else {
-          let timeout = timeoutMap.get(gameId);
-          if (timeout !== undefined) clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            tempsEcoule1vs1(io, game, lobby, word);
-          }, game.timeAfterFirstGuess);
+        let timeout = timeoutMap.get(gameId);
+        if (timeout !== undefined) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          tempsEcoule1vs1(io, game, lobby, word);
+        }, game.timeAfterFirstGuess);
 
-          timeoutMap.set(gameId, timeout);
+        timeoutMap.set(gameId, timeout);
 
-          if (
-            game.endTime !== undefined &&
-            game.endTime > Date.now() + game.timeAfterFirstGuess
-          ) {
-            game.endTime = game.timeAfterFirstGuess + Date.now();
-          }
-          io.to(gameId).emit("first_wining_player_1vs1", game);
+        if (
+          game.endTime !== undefined &&
+          game.endTime > Date.now() + game.timeAfterFirstGuess
+        ) {
+          game.endTime = game.timeAfterFirstGuess + Date.now();
         }
+        io.to(gameId).emit("first_wining_player_1vs1", game);
       }
     } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
       io.to(gameId).emit("draw_1vs1");
@@ -434,14 +457,24 @@ export const guessWord1vs1Event = (
         lobby.lastGame = {
           gameMode: "1vs1",
           playerList: lobby.playerList,
-          winner: null,
+          winner: undefined,
           wordsToGuess: [word],
+          triesHistory: lobby.lastGame?.triesHistory || [[]],
         };
         lobby.state = "pre-game";
         io.to(gameId).emit("ending_game", { lobby });
       }
       io.to(gameId).socketsLeave(gameId);
       game1vs1Map.delete(gameId);
+    } else if (player.nbLife <= otherPlayer.nbLife && otherPlayer.hasWon) {
+      io.to(gameId).emit("wining_player_1vs1", otherPlayer.id);
+      lobby.lastGame = {
+        ...lobby.lastGame,
+        winner: playerMap.get(otherPlayer.id),
+      };
+      lobby.state = "pre-game";
+      io.to(gameId).emit("ending_game", { lobby });
+      io.to(gameId).socketsLeave(gameId);
     }
   }
 };
@@ -735,8 +768,9 @@ const tempsEcoule1vs1 = (
       lobby.lastGame = {
         gameMode: "1vs1",
         playerList: lobby.playerList,
-        winner: game.playerOne,
+        winner: playerMap.get(game.playerOne.id),
         wordsToGuess: [word],
+        triesHistory: lobby.lastGame?.triesHistory || [[]],
       };
       lobby.state = "pre-game";
       io.to(game.id).emit("ending_game", { lobby });
@@ -745,8 +779,9 @@ const tempsEcoule1vs1 = (
       lobby.lastGame = {
         gameMode: lobby.mode,
         playerList: lobby.playerList,
-        winner: game.playerTwo,
+        winner: playerMap.get(game.playerTwo.id),
         wordsToGuess: [word],
+        triesHistory: lobby.lastGame?.triesHistory || [[]],
       };
       lobby.state = "pre-game";
       io.to(game.id).emit("ending_game", { lobby });
@@ -755,8 +790,9 @@ const tempsEcoule1vs1 = (
       lobby.lastGame = {
         gameMode: lobby.mode,
         playerList: lobby.playerList,
-        winner: null,
+        winner: undefined,
         wordsToGuess: [word],
+        triesHistory: lobby.lastGame?.triesHistory || [[]],
       };
       lobby.state = "pre-game";
       io.to(game.id).emit("ending_game", { lobby });

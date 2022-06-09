@@ -96,7 +96,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
             gameMode={lobby.mode}
             player={player}
             gameState={gameState}
-            lobbyId={lobbyId}
+            lobby={lobby}
           />
         </Layout>
       );
@@ -107,7 +107,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
             gameMode={lobby.mode}
             player={player}
             gameState={gameState}
-            lobbyId={lobbyId}
+            lobby={lobby}
           />
         </Layout>
       );
