@@ -18,6 +18,12 @@ export const variantSize = (variant: WrapperVariant) => {
   return size;
 };
 
+// Will wrap the body of the page, will usually never be used directly
+// But by using the layout.
+
+// The layout allow you to have 3 component on the page
+// 1 : 1/4 of the screen | 2 : 1/2 of the screen | 3: (chat) 1/4 of the screen
+// The thrid one will be the chat
 export const Wrapper: React.FC<WrapperProps> = ({
   variant = "regular",
   children,

@@ -14,9 +14,11 @@ import { ChatMessage } from "../utils/types";
 
 interface ChatProps {}
 
+// chat component
 export const Chat: React.FC<ChatProps> = ({}) => {
   const socket = useSocket();
   const [player] = usePlayer();
+  // Message displayed while user can't send message
   const [alert, setAlert] = useState({ enabled: false, message: "" });
   const [canSendMessage, setCanSendMessage] = useState(true);
   const [messageHistory, setMessageHistory] = useState<ChatMessage[]>([]);
@@ -74,7 +76,6 @@ export const Chat: React.FC<ChatProps> = ({}) => {
 
   return (
     <Flex
-      // borderRadius={"md"}
       direction={"column-reverse"}
       border={"1px"}
       h={"100vh"}
