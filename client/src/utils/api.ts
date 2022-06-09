@@ -313,7 +313,6 @@ export const addBrEvent = async (
     setEndpoint(arg.endTime);
   });
   socket?.on("win_by_forfeit", (arg) => {
-    console.log("win_by_forfeit");
     if (arg !== playerId) {
       toast({
         title: "Perdu un joueur a quitter !",
@@ -483,6 +482,14 @@ export const lobbyOneVsOneAddEvents = (
       );
     }
   });
+  socket?.on("player_leave", (arg) => {
+    toast({
+      title: "le joueur " + arg + " a quitté la partie.",
+      status: "info",
+      isClosable: true,
+      duration: 2500,
+    });
+  });
 };
 
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
@@ -491,17 +498,14 @@ export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
   socket?.removeListener("draw_1vs1");
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("update_word_broadcast");
+  socket?.removeListener("player_leave");
 };
 
 export const leaveGame = (
-  socket:Socket,
-  playerId:string,
-  gameId:string,
-  lobbyId?:string | undefined
+  socket: Socket,
+  playerId: string,
+  gameId: string,
+  lobbyId?: string | undefined
 ) => {
-  socket.emit(
-    "leave_game",
-    { playerId, lobbyId, gameId },
-    () => {}
-  );
-}
+  socket.emit("leave_game", { playerId, lobbyId, gameId }, () => {});
+};

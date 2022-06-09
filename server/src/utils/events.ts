@@ -317,13 +317,12 @@ export const startGame1vs1Event = async (
   io.to(lobbyId).emit("starting_game_1vs1", game);
   io.to(lobbyId).socketsJoin(gameId);
 
-  //set the function of the disconnect
+  //set the function of the disconnect for the first player
   let disconnectPlayerOne = () => {
-    console.log("disconnect1");
     leaveGame1vs1(io, game, game.playerOne.id, lobby);
   };
+  //set the function of the disconnect for the second player
   let disconnectPlayerTwo = () => {
-    console.log("disconnect2");
     leaveGame1vs1(io, game, game.playerTwo.id, lobby);
   };
   let index = 0;
@@ -583,7 +582,6 @@ export const startGameBrEvent = async (
   //the order of the playerList is the same of the set of the socket so we can use the foreach of the player to get the playerId
   game.playerList.forEach((player) => {
     let disconnect = () => {
-      console.log("playerList : ", game.playerList);
       leaveGameBr(io, game, player.id);
     };
     //set the map for the disconnect
@@ -902,7 +900,13 @@ export const leaveGameBr = async (
       //delete the player in the playerList
       game.playerList.splice(index, 1);
     }
-    if (game.playerFound.findIndex((player) => playerId === player.id) < 0) {
+    index = game.playerFound.findIndex((player) => playerId === player.id);
+    if (index !== -1) {
+      //delete the player in the playerFound
+      game.playerFound.splice(index, 1);
+    }
+    //check if the player that leave isn't in the player that win
+    if (game.playerList.length > 0) {
       if (game.playersLastNextRound <= 0) {
         //1vs1 round
         io.to(game.id).emit("win_by_forfeit", game.playerList[0].id); //One player in playerList
@@ -964,16 +968,13 @@ export const leaveGame1vs1 = async (
   if (game !== undefined && lobby !== undefined) {
     //the game is finished and nobody crash
     if (game.playerOne.id === playerId) {
+      io.to(game.id).emit("player_leave", game.playerTwo.name); //emit the name of the player that leave
       io.to(game.id).emit("wining_player_1vs1", game.playerTwo.id);
       lobby.state = "pre-game";
       io.to(game.id).emit("ending_game", { lobby });
-    } else if (game.playerOne.id === playerId) {
+    } else if (game.playerTwo.id === playerId) {
+      io.to(game.id).emit("player_leave", game.playerOne.name); //emit the name of the player that leave
       io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
-      lobby.state = "pre-game";
-      io.to(game.id).emit("ending_game", { lobby });
-    } else {
-      //if one player crash
-      io.to(game.id).emit("wining_player_1vs1", "");
       lobby.state = "pre-game";
       io.to(game.id).emit("ending_game", { lobby });
     }
