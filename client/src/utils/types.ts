@@ -51,12 +51,12 @@ export type UpdateLobbyLeavePayload = {
   lobby: Lobby | null;
 };
 export type Game1vs1 = {
-  playerOne: { id: string; name: string; nb_life: number };
-  playerTwo: { id: string; name: string; nb_life: number };
+  playerOne: Player1vs1;
+  playerTwo: Player1vs1;
   id: string;
   length: number;
   firstLetter: string;
-  endTime: number,
+  endTime: number;
 };
 
 export type SoloGameState = {
@@ -104,12 +104,13 @@ export type KeyboardSettings = {
   onBackspace: () => void;
 };
 
-type LastGame = {
-  gameMode: GameMode;
-  playerList: Player[];
-  winner: Player | null;
-  wordsToGuess: string[];
+export type Player1vs1 = {
+  id: string;
+  name: string;
+  nbLife: number;
+  hasWon: boolean;
 };
+
 export type ChatMessage = {
   content: string;
   author: string;
@@ -120,6 +121,14 @@ export type MyFocus = {
   index: number;
   isBorder: boolean;
   focusMode: FocusMode;
+};
+
+export type LastGame = {
+  gameMode: GameMode;
+  playerList: Player[];
+  winner: Player | null;
+  wordsToGuess: string[];
+  triesHistory: number[][][]; //player (same index than in playerList) - word tried - letter tried
 };
 
 export type FocusMode = "overwrite" | "insert";

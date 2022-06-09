@@ -14,8 +14,10 @@ import {
 import {
   Game1vs1,
   KeyboardSettings,
+  Lobby,
   MyFocus,
   Player,
+  Player1vs1,
   TriesHistory,
 } from "../utils/types";
 import { getClassicKeyboardSettings } from "../utils/utils";
@@ -25,7 +27,7 @@ import { PlayerGrid } from "./player-grid/PlayerGrid";
 interface OneVsOneGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
-  lobbyId: string;
+  lobby: Lobby;
 }
 
 export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
@@ -38,7 +40,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     length: game_length,
     endTime,
   },
-  lobbyId,
+  lobby: lobby,
 }) => {
   const socket = useSocket();
   const dictionary = useDictionary();
@@ -64,7 +66,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     focusMode: "overwrite",
   });
 
-  const adversaire: { id: string; name: string; nb_life: number } =
+  const adversaire: Player1vs1 =
     playerOne.id !== playerId ? playerOne : playerTwo;
 
   useEffect(() => {
@@ -128,7 +130,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         word: word.toLowerCase(),
         gameId: gameId,
         playerId,
-        lobbyId,
+        lobbyId: lobby.id,
       },
       (res: any) => {
         setTryHistory([...tryHistory, { result: res.data, wordTried: word }]);
