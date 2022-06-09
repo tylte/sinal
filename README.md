@@ -1,6 +1,6 @@
 # Projet SINAL (Sutom Is Not About Luck)
 
-| Nom                   | Role                   |
+| Dev                   | Role                   |
 | --------------------- | ---------------------- |
 | Tanguy Lambert        | Front / Chef de projet |
 | Baptiste Meauzé       | Backend                |
@@ -20,7 +20,7 @@ Les principales fonctionalités sont le mode 1vs1 et le mode Battle Royale
 
 # Jouer en local
 
-Pour jouer en local vous avez deux choix
+Pour jouer en local vous avez deux choix, NodeJs ou Docker
 
 ### Avec Nodejs
 
