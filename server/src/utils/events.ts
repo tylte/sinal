@@ -453,12 +453,12 @@ export const guessWord1vs1Event = (
     } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
       io.to(gameId).emit("draw_1vs1");
       let lobby = lobbyMap.get(lobbyId);
-      if (lobby) {
+      if (lobby && lobby.lastGame) {
         lobby.lastGame = {
+          ...lobby.lastGame,
           gameMode: "1vs1",
           playerList: lobby.playerList,
           winner: undefined,
-          wordsToGuess: [word],
           triesHistory: lobby.lastGame?.triesHistory || [[]],
         };
         lobby.state = "pre-game";
