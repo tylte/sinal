@@ -233,12 +233,12 @@ export const getGradientFromFocus = (
 export const getStringFromHistory = (
   history: number[][],
   game: LastGame,
-  indexOfPlayer: number
+  indexOfPlayer: number,
+  indexOfWord: number
 ): string => {
   let ret = game.playerList[indexOfPlayer].name + " : \n";
   if (history.length === 0)
-    for (let i = 0; i < game.wordsToGuess[indexOfPlayer].length; i++)
-      ret += "⬛";
+    for (let i = 0; i < game.wordsToGuess[indexOfWord].length; i++) ret += "⬛";
   else {
     for (let j = 0; j < history.length; j++) {
       for (let i = 0; i < history[j].length; i++) {
