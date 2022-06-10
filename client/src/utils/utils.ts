@@ -192,6 +192,10 @@ export const decrementFocus = (
       return { ...focus, index: focus.index - 1 };
     }
 
+    if (focus.firstLetterWritable) {
+      return { ...focus, firstLetterWritable: false };
+    }
+
     return focus;
   });
 };

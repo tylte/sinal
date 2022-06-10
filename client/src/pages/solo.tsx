@@ -27,6 +27,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
     index: 1,
     isBorder: false,
     focusMode: "overwrite",
+    firstLetterWritable: false,
   });
 
   const dictionary = useDictionary();
@@ -137,6 +138,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
     onEnter,
     focus,
     setFocus,
+    word.charAt(0).toUpperCase(),
     gameState?.isFinished
   );
 
