@@ -64,6 +64,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     index: 1,
     isBorder: false,
     focusMode: "overwrite",
+    firstLetterWritable: false,
   });
 
   const adversaire: Player1vs1 =
@@ -151,6 +152,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     onEnter,
     focus,
     setFocus,
+    firstLetter.toUpperCase(),
     isFinished || isChatting
   );
 

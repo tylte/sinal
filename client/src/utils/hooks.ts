@@ -76,12 +76,15 @@ const handleWordInput = (
   wordLength: number,
   onEnter: () => void,
   focus: MyFocus,
-  setFocus: Dispatch<SetStateAction<MyFocus>>
+  setFocus: Dispatch<SetStateAction<MyFocus>>,
+  firstLetter: string
 ) => {
   // Only one alphabetic caracter in the key
   const re = /^([a-zA-Z]{1})$/;
   // more detail on e.key https://www.toptal.com/developers/keycode/for/alt
-  if (re.test(e.key)) {
+  if (e.key.toUpperCase() === firstLetter && !focus.firstLetterWritable) {
+    focus.firstLetterWritable = true;
+  } else if (re.test(e.key)) {
     incrementFocus(setFocus, wordLength - 1);
     classicWordWriting(e.key, setWord, wordLength, focus);
   } else if (e.key === "Backspace") {
@@ -118,10 +121,19 @@ export const useClassicWordInput = (
   onEnter: () => void,
   focus: MyFocus,
   setFocus: Dispatch<SetStateAction<MyFocus>>,
+  firstLetter: string,
   stopListening?: boolean
 ) => {
   const handleInput = (e: KeyboardEvent) => {
-    handleWordInput(e, setWord, wordLength, onEnter, focus, setFocus);
+    handleWordInput(
+      e,
+      setWord,
+      wordLength,
+      onEnter,
+      focus,
+      setFocus,
+      firstLetter
+    );
   };
   useEffect(() => {
     if (!stopListening) {
