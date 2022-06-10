@@ -2,7 +2,7 @@
 
 docker build server/. -t sinal/server
 
-docker build client/. -t sinal/client
+docker build -f client/Dockerfile.prod client/. -t sinal/client
 
 docker save sinal/server | bzip2 | pv | ssh sinal@51.91.57.172 docker load
 
