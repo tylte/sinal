@@ -5,6 +5,7 @@ import {
   addBrEvent,
   addGuessWordBrBroadcast,
   guessWordBr,
+  leaveGame,
   removeBrEvent,
 } from "src/utils/api";
 import {
@@ -169,13 +170,19 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       );
     }
     return () => {
-      //remove all the event
-      removeBrEvent(socket);
+      if (socket) {
+        //remove all the event
+        removeBrEvent(socket);
+        leaveGame(socket, player.id, gameInfo.id, "");
+      }
     };
   }, [socket]);
 
   const toast = useToast();
 
+  /**
+   * Call when the chrono is finieshed and set isFinished = true and hasWon = false
+   */
   const onTimeFinish = () => {
     setGameState(
       gameState.map((game) =>
@@ -186,6 +193,11 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     );
   };
 
+  /**
+   * Call when the touch enter is pressed.
+   * 
+   * @returns 
+   */
   const onEnter = async () => {
     if (gameState === null) {
       return;
