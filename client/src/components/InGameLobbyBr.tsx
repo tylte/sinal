@@ -1,4 +1,15 @@
-import { Box, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Spinner,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
@@ -73,7 +84,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //start the game
   const startGame = () => {
-    console.log("gameInfo.firstLetter : ", gameInfo.firstLetter);
     //the first player
     setNumberPlayer(gameInfo.playerList.length);
     let newGameState = [];
@@ -194,7 +204,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         player.id,
         toast,
         setEndPoint,
-        setGameState
+        setGameState,
+        spectate
       );
     }
     return () => {
@@ -204,7 +215,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         leaveGame(socket, player.id, gameInfo.id, lobby.id);
       }
     };
-  }, [socket]);
+  }, [socket, spectate]);
 
   const toast = useToast();
 
@@ -223,8 +234,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   const changePlayerFocus = (playerId: string) => {
     let index = gameState.findIndex((game) => game.playerId === playerId);
-
-    // console.log("gameTmp : ", gameTmp, " index : ", index);
     setGameState((gameState) => {
       let gameTmp = gameState[index];
       gameState[index] = gameState[0];
@@ -393,10 +402,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const grid = [];
   // save the grid of player, any[] to use the pop function
   const items = [];
+
+  const tab = [];
   let j = 0;
   for (let i = 1; i < numberPlayer; ) {
     // 1 because 0 is the player
-    for (j = 0; j < 6 && i < numberPlayer; j++) {
+    for (j = 0; j < 5 && i < numberPlayer; j++) {
       const { triesHistory, nbLife, wordLength, playerId, playerName } =
         gameState?.[i] || {};
       if (spectate) {
@@ -417,29 +428,44 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         );
       } else {
         items.push(
-          <SmallPlayerGrid
-            key={playerId}
-            wordLength={wordLength}
-            nbLife={nbLife}
-            triesHistory={triesHistory}
-            nbPlayer={numberPlayer}
-          />
+          <Box key={playerId + i} alignContent={"center"}>
+            <Text alignContent={"center"}>{playerName}</Text>
+            <SmallPlayerGrid
+              key={playerId}
+              wordLength={wordLength}
+              nbLife={nbLife}
+              triesHistory={triesHistory}
+              nbPlayer={numberPlayer}
+            />
+          </Box>
         );
       }
       i++;
     }
+    tab.push(<Tab textColor={""}>{i-j}-{i-1}</Tab>);
     grid.push(
-      <Flex key={i + "-" + i} direction={"column"} alignContent={"center"}>
-        {items.slice(i - 1 - j, i - 1)}
-      </Flex>
+      <TabPanel>
+        <Flex key={i + "-" + i} direction={"column"} alignContent={"center"}>
+          {items.slice(i - 1 - j, i - 1)}
+        </Flex>
+      </TabPanel>
     );
   }
   return (
     <>
       {hasWon && <Confetti />}
       <Box>
-        <Flex marginLeft={10} direction={"row"} alignContent={"center"}>
-          {grid}
+        <Flex marginLeft={0} direction={"row"} align={"center"}>
+          <Tabs
+            isLazy={true}
+            variant="soft-rounded"
+            colorScheme="green"
+            align={"center"}
+            isManual={true}
+          >
+            {numberPlayer > 5 && <TabList marginY={0}>{tab}</TabList>}
+            <TabPanels>{grid}</TabPanels>
+          </Tabs>
         </Flex>
       </Box>
       <Box>
@@ -452,23 +478,22 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           </Text>
         )}
         {/* the result of the game */}
-        {isFinished && (
-          <Text
-            color={!hasWon ? "red" : ""}
-            align="center"
-            fontSize="larger"
-          >
+        {isFinished && !spectate && (
+          <Text color={!hasWon ? "red" : ""} align="center" fontSize="larger">
             {hasWon && "GAGNER"}
             {!hasWon && "PERDU"}
+          </Text>
+        )}
+        {isFinished && spectate && (
+          <Text align="center" fontSize="larger">
+            Round Terminé
           </Text>
         )}
         {!isFinished && (
           <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
         )}
         {spectate && (
-          <Text align="center">
-            Grille du joueur : {playerName}
-          </Text>
+          <Text align="center">Grille du joueur : {playerName}</Text>
         )}
         <PlayerGrid
           focus={focus}

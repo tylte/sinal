@@ -14,8 +14,10 @@ export const SmallPlayerGridCase: React.FC<SmallPlayerGridCaseProps> = ({
 }) => {
   let color = getColorFromResult(letterResult);
 
+  let size = 100/nbPlayer
+  if (size < 100/7) size = 100/7;
   return (
-    <Flex w={75/nbPlayer} height={75/nbPlayer} bgColor={color}>
+    <Flex w={size} height={size} bgColor={color}>
       <Text
         color={"white"}
         m="auto"

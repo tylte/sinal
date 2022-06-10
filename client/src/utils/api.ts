@@ -192,7 +192,6 @@ export const addSpecificLobbiesEvent = (
         return { ...lobby, state: "in-game" };
       }
     });
-    console.log(game.firstLetter);
   });
   socket.on(
     "lobbies_update_join",
@@ -223,7 +222,6 @@ export const addSpecificLobbiesEvent = (
   );
 
   socket.on("ending_game", (req) => {
-    console.log("ending_game : ", req);
     setTimeout(() => setLobby(req.lobby), 5000);
   });
 };
@@ -315,16 +313,14 @@ export const addBrEvent = async (
   playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
   setEndpoint: React.Dispatch<React.SetStateAction<number>>,
-  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
+  spectate: boolean
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
     setEndpoint(arg.endTime);
-    // setFirstPlayerWon(true);
-    // setPlayerWon(false);
-    // setFinished(true);
   });
   socket?.on("win_by_forfeit", (arg) => {
-    if (arg !== playerId) {
+    if (arg !== playerId && !spectate) {
       toast({
         title: "Perdu un joueur a quitter !",
         status: "error",
@@ -338,7 +334,7 @@ export const addBrEvent = async (
             : { ...game }
         )
       );
-    } else {
+    } else if (!spectate) {
       //case use when one player crash or quit
       toast({
         title: "GG vous avez gagné par forfait",
@@ -353,6 +349,13 @@ export const addBrEvent = async (
             : { ...game }
         )
       );
+    } else {
+      toast({
+        title: "Round terminé !",
+        status: "info",
+        isClosable: true,
+        duration: 2500,
+      });
     }
     return;
   });
@@ -366,7 +369,8 @@ export const addBrEvent = async (
   });
   socket?.on("winning_player_br", (arg) => {
     console.log("winning_player_br");
-    if (arg !== playerId) {
+    if (arg !== playerId && !spectate) {
+      console.log("enter winning");
       toast({
         title: "Perdu ! Sadge",
         status: "error",
