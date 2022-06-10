@@ -12,6 +12,8 @@ import {
   guessWord1vs1Event,
   guessWordBrEvent,
   joinLobbyEvent,
+  leaveGame,
+  leaveGame1vs1,
   leaveLobbyEvent,
   sendChatMessage,
   startGame1vs1Event,
@@ -309,6 +311,36 @@ export const getServer = () => {
         } else {
           console.log("guess_word_br payload : ", req);
           console.log("guess_word_br : ", check);
+        }
+      }
+    );
+
+    socket.on(
+      "leave_game",
+      (request, response: (payload: PacketType) => void) => {
+        if (typeof response !== "function") {
+          console.log("leave_lobby : response is supposed to be a function");
+          return;
+        }
+        /**
+         * @param request.roomId - Room of the player
+         * @param request.playerId - ID of the player who have to be removed
+         *
+         */
+        if (
+          request !== undefined &&
+          typeof request.gameId === "string" &&
+          typeof request.playerId === "string" &&
+          typeof request.lobbyId === "string"
+        ) {
+          leaveGame(
+            io,
+            request.gameId,
+            request.lobbyId,
+            request.playerId
+          );
+        } else {
+          console.log("leave_lobby : bad request : ", request);
         }
       }
     );

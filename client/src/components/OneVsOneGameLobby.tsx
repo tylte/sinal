@@ -2,6 +2,7 @@ import { Box, Flex, Text, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
+  leaveGame,
   lobbyOneVsOneAddEvents,
   lobbyOneVsOneRemoveEvents,
 } from "../utils/api";
@@ -87,6 +88,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     return () => {
       if (socket) {
         lobbyOneVsOneRemoveEvents(socket);
+        //leave the game
+        leaveGame(socket, playerId, gameId, lobby.id);
       }
     };
   }, [socket]);
