@@ -122,6 +122,7 @@ export type MyFocus = {
   index: number;
   isBorder: boolean;
   focusMode: FocusMode;
+  firstLetterWritable: boolean;
 };
 
 export type LastGame = {
