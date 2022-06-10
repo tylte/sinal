@@ -11,8 +11,6 @@ COPY src/. src/.
 COPY static/. static/.
 COPY tsconfig.json ./
 
-COPY .env.production ./
-
 RUN yarn build
 
 
