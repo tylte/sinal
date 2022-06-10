@@ -322,6 +322,47 @@ export const addBrEvent = async (
     // setPlayerWon(false);
     // setFinished(true);
   });
+  socket?.on("win_by_forfeit", (arg) => {
+    if (arg !== playerId) {
+      toast({
+        title: "Perdu un joueur a quitter !",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      setGameState((gameSate) =>
+        gameSate.map((game) =>
+          game.playerId !== arg
+            ? { ...game, isFinished: true, hasWon: false }
+            : { ...game }
+        )
+      );
+    } else {
+      //case use when one player crash or quit
+      toast({
+        title: "GG vous avez gagné par forfait",
+        status: "success",
+        isClosable: true,
+        duration: 2500,
+      });
+      setGameState((gameSate) =>
+        gameSate.map((game) =>
+          game.playerId === arg
+            ? { ...game, isFinished: true, hasWon: true }
+            : { ...game }
+        )
+      );
+    }
+    return;
+  });
+  socket?.on("player_leave", (arg) => {
+    toast({
+      title: "le joueur " + arg + " a quitté la partie.",
+      status: "info",
+      isClosable: true,
+      duration: 2500,
+    });
+  });
   socket?.on("winning_player_br", (arg) => {
     console.log("winning_player_br");
     if (arg !== playerId) {
@@ -381,6 +422,8 @@ export const addBrEvent = async (
 export const removeBrEvent = (socket: Socket | null) => {
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("first_winning_player_br");
+  socket?.removeListener("player_leave");
+  socket?.removeListener("win_by_forfeit");
   socket?.removeListener("winning_player_br");
   socket?.removeListener("next_word_br");
   socket?.removeListener("draw_br");
@@ -433,6 +476,7 @@ export const lobbyOneVsOneAddEvents = (
     }
   });
   socket.on("draw_1vs1", () => {
+    console.log("draw_1vs1");
     setIsFinished(true);
     toast({
       title: "Egalité.",
@@ -457,6 +501,14 @@ export const lobbyOneVsOneAddEvents = (
       );
     }
   });
+  socket?.on("player_leave", (arg) => {
+    toast({
+      title: "le joueur " + arg + " a quitté la partie.",
+      status: "info",
+      isClosable: true,
+      duration: 2500,
+    });
+  });
 };
 
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
@@ -465,4 +517,14 @@ export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
   socket?.removeListener("draw_1vs1");
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("update_word_broadcast");
+  socket?.removeListener("player_leave");
+};
+
+export const leaveGame = (
+  socket: Socket,
+  playerId: string,
+  gameId: string,
+  lobbyId?: string | undefined
+) => {
+  socket.emit("leave_game", { playerId, lobbyId, gameId }, () => {});
 };
