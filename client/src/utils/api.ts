@@ -64,6 +64,7 @@ export const guessWordBr = (
   word: string,
   gameId: string | undefined,
   playerId: string,
+  lobbyId: string,
   socket: Socket | null,
   response: (response: Packet) => void
 ) => {
@@ -74,6 +75,7 @@ export const guessWordBr = (
         word,
         gameId,
         playerId,
+        lobbyId,
       },
       response
     );
@@ -182,6 +184,7 @@ export const addSpecificLobbiesEvent = (
   });
   socket.on("starting_game_br", (game: BrGameInfo) => {
     console.log("starting-game-br");
+    setGameState(game);
     setLobby((lobby) => {
       if (lobby === null) {
         return null;
@@ -189,7 +192,7 @@ export const addSpecificLobbiesEvent = (
         return { ...lobby, state: "in-game" };
       }
     });
-    setGameState(game);
+    console.log(game.firstLetter);
   });
   socket.on(
     "lobbies_update_join",
@@ -220,6 +223,7 @@ export const addSpecificLobbiesEvent = (
   );
 
   socket.on("ending_game", (req) => {
+    console.log("ending_game : ", req);
     setTimeout(() => setLobby(req.lobby), 5000);
   });
 };
@@ -295,7 +299,7 @@ export const addGuessWordBrBroadcast = async (
                 ...game,
                 triesHistory: [
                   ...game.triesHistory,
-                  { result: arg.tab_res, wordTried: arg.word },
+                  { result: arg.tab_res, wordTried: arg.word.toUpperCase() },
                 ],
               }
             : { ...game }
@@ -311,10 +315,7 @@ export const addBrEvent = async (
   playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
   setEndpoint: React.Dispatch<React.SetStateAction<number>>,
-  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
-  setFirstPlayerWon: React.Dispatch<React.SetStateAction<boolean>>,
-  setPlayerWon: React.Dispatch<React.SetStateAction<boolean>>,
-  setFinished: React.Dispatch<React.SetStateAction<boolean>>
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
     setEndpoint(arg.endTime);
@@ -379,15 +380,6 @@ export const addBrEvent = async (
             : { ...game }
         )
       );
-      console.log("if");
-      setFirstPlayerWon(true);
-      setPlayerWon(false);
-      setFinished(true);
-    } else {
-      console.log("else");
-      setFirstPlayerWon(true);
-      setPlayerWon(true);
-      setFinished(true);
     }
     return;
   });
@@ -448,7 +440,7 @@ export const lobbyOneVsOneAddEvents = (
       (req.playerOne.hasWon && req.playerOne.id === playerId)
     ) {
       toast({
-        title: "L'adversaire peut encore gagner !",
+        title: "L'adversaire peut encore gagné !",
         status: "info",
         isClosable: true,
         duration: 2500,

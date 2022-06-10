@@ -21,16 +21,17 @@ import {
   BrGameInfo,
   KeyboardSettings,
   MyFocus,
+  Lobby,
 } from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
 import { getClassicKeyboardSettings } from "../utils/utils";
 import { Chrono } from "./Chrono";
-import { useRouter } from "next/router";
 
 interface InGameLobbyBrProps {
   player: Player;
   gameInfo: BrGameInfo;
+  lobby: Lobby;
 }
 
 const NOT_ENOUGH_LETTER = "NOLETTER";
@@ -39,8 +40,8 @@ const NOT_IN_DICTIONARY = "NODICTIONARY";
 export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
   gameInfo,
+  lobby,
 }) => {
-  const router = useRouter();
   //The number of player in the game
   const [numberPlayer, setNumberPlayer] = useState(gameInfo.playerList.length);
   //the word the player try
@@ -55,9 +56,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   const [endPoint, setEndPoint] = useState(gameInfo.endTime);
 
-  const [firstPlayerWon, setFirstPlayerWon] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const [playerWon, setPlayerWon] = useState(false);
+  //use for the player that loose
+  const [spectate, setSpectate] = useState(false);
+
+  //use to force the rerender of the component react
+  const [, updateState] = React.useState([]);
+  const forceUpdate = React.useCallback(() => updateState([]), []);
 
   //the focus in the grid
   const [focus, setFocus] = useState<MyFocus>({
@@ -68,11 +72,13 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //start the game
   const startGame = () => {
+    console.log("gameInfo.firstLetter : ", gameInfo.firstLetter);
     //the first player
     setNumberPlayer(gameInfo.playerList.length);
     let newGameState = [];
     newGameState.push({
       playerId: player.id,
+      playerName: player.name,
       firstLetter: gameInfo.firstLetter.toUpperCase(),
       isFinished: false,
       nbLife: 6,
@@ -86,6 +92,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       if (player.id !== pl.id) {
         newGameState.push({
           playerId: pl.id,
+          playerName: pl.name,
           firstLetter: gameInfo.firstLetter.toUpperCase(),
           isFinished: false,
           nbLife: 6,
@@ -113,6 +120,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       //the first player
       newGameState.push({
         playerId: player.id,
+        playerName: player.name,
         firstLetter: gameBr.firstLetter.toUpperCase(),
         isFinished: false,
         nbLife: 6,
@@ -128,6 +136,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         if (player.id !== pl.id) {
           newGameState.push({
             playerId: pl.id,
+            playerName: pl.name,
             firstLetter: gameBr.firstLetter.toUpperCase(),
             isFinished: false,
             nbLife: 6,
@@ -143,22 +152,26 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       setWord(gameBr.firstLetter.toUpperCase());
       setEndPoint(gameBr.endTime);
     } else {
-      toast({
-        title: "Vous avez perdu, tous les gagnant ont été trouvé !",
-        status: "error",
-        isClosable: true,
-        duration: 2500,
+      setSpectate(true);
+      setEndPoint(gameBr.endTime);
+      let newGameState: BrGameState[] = [];
+      //the first grid to display
+      setNumberPlayer(gameBr.playerList.length + 1);
+      gameBr.playerList.forEach((pl) => {
+        newGameState.push({
+          playerId: pl.id,
+          playerName: pl.name,
+          firstLetter: gameBr.firstLetter.toUpperCase(),
+          isFinished: false,
+          nbLife: 6,
+          triesHistory: [],
+          wordLength: gameBr.length,
+          hasWon: false,
+          wordId: gameBr.id,
+        });
       });
-      // set the game for the looser
-      setGameState((gameSate) =>
-        gameSate.map((game) =>
-          game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: false }
-            : { ...game }
-        )
-      );
-      await new Promise((f) => setTimeout(f, 2500));
-      router.push("/lobby");
+      setGameState(newGameState);
+      setWord(gameBr.firstLetter.toUpperCase());
     }
   };
 
@@ -167,38 +180,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     //start the game
     startGame();
   }, []);
-
-  useEffect(() => {
-    console.log(
-      "firstPlayerWon : ",
-      firstPlayerWon,
-      " finished : ",
-      finished,
-      " playerWon : ",
-      playerWon
-    );
-    const sleep = async () => {
-      await new Promise((f) => setTimeout(f, 2500));
-      router.push("/lobby");
-    };
-    if (firstPlayerWon && finished && !playerWon) {
-      toast({
-        title: "Vous avez perdu, tous les gagnant ont été trouvé !",
-        status: "error",
-        isClosable: true,
-        duration: 2500,
-      });
-      sleep();
-    } else if (firstPlayerWon && finished && playerWon) {
-      toast({
-        title: "Vous avez gagné !",
-        status: "success",
-        isClosable: true,
-        duration: 2500,
-      });
-      sleep();
-    }
-  }, [firstPlayerWon, finished, playerWon]);
 
   //use effect for the socket exchange
   useEffect(() => {
@@ -212,17 +193,14 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         player.id,
         toast,
         setEndPoint,
-        setGameState,
-        setFirstPlayerWon,
-        setPlayerWon,
-        setFinished
+        setGameState
       );
     }
     return () => {
       if (socket) {
         //remove all the event
         removeBrEvent(socket);
-        leaveGame(socket, player.id, gameInfo.id, "");
+        leaveGame(socket, player.id, gameInfo.id, lobby.id);
       }
     };
   }, [socket]);
@@ -240,14 +218,25 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           : { ...game }
       )
     );
-    setPlayerWon(false);
-    setFinished(true);
+  };
+
+  const changePlayerFocus = (playerId: string) => {
+    let index = gameState.findIndex((game) => game.playerId === playerId);
+
+    // console.log("gameTmp : ", gameTmp, " index : ", index);
+    setGameState((gameState) => {
+      let gameTmp = gameState[index];
+      gameState[index] = gameState[0];
+      gameState[0] = gameTmp;
+      return gameState;
+    });
+    forceUpdate();
   };
 
   /**
    * Call when the touch enter is pressed.
-   * 
-   * @returns 
+   *
+   * @returns
    */
   const onEnter = async () => {
     if (gameState === null) {
@@ -291,13 +280,20 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
     //check the word
     let result = await new Promise<number[]>((resolve) =>
-      guessWordBr(lowerCaseWord, gameInfo.id, player.id, socket, (arg) => {
-        if (arg.success) {
-          resolve(arg.data);
-        } else {
-          resolve([]);
+      guessWordBr(
+        lowerCaseWord,
+        gameInfo.id,
+        player.id,
+        lobby.id,
+        socket,
+        (arg) => {
+          if (arg.success) {
+            resolve(arg.data);
+          } else {
+            resolve([]);
+          }
         }
-      })
+      )
     );
     //set the triesHistory
     let newState = {
@@ -306,7 +302,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         ...triesHistory,
         {
           result,
-          wordTried: word,
+          wordTried: word.toUpperCase(),
         },
       ],
     };
@@ -328,8 +324,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             : { ...game }
         )
       );
-      setPlayerWon(true);
-      setFinished(true);
       toast({
         title: "GGEZ 😎",
         status: "success",
@@ -347,8 +341,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             : { ...game }
         )
       );
-      setPlayerWon(false);
-      setFinished(true);
       toast({
         title: "Perdu ! Sadge",
         status: "error",
@@ -365,7 +357,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     onEnter,
     focus,
     setFocus,
-    gameState[0]?.isFinished || isChatting
+    gameState[0]?.isFinished || isChatting || spectate
   );
 
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
@@ -385,8 +377,15 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     );
   }
   //the param of the current player
-  const { hasWon, triesHistory, firstLetter, nbLife, wordLength, isFinished } =
-    gameState[0];
+  const {
+    hasWon,
+    triesHistory,
+    firstLetter,
+    nbLife,
+    wordLength,
+    isFinished,
+    playerName,
+  } = gameState[0];
 
   //the component of the player, any[] to use the pop function
   const grid = [];
@@ -396,21 +395,39 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   for (let i = 1; i < numberPlayer; ) {
     // 1 because 0 is the player
     for (j = 0; j < 6 && i < numberPlayer; j++) {
-      const { triesHistory, nbLife, wordLength, playerId } =
+      const { triesHistory, nbLife, wordLength, playerId, playerName } =
         gameState?.[i] || {};
-      items.push(
-        <SmallPlayerGrid
-          key={playerId}
-          wordLength={wordLength}
-          nbLife={nbLife}
-          triesHistory={triesHistory}
-          nbPlayer={numberPlayer}
-        />
-      );
+      if (spectate) {
+        items.push(
+          <button
+            key={playerId + i}
+            onClick={() => changePlayerFocus(playerId)}
+          >
+            <Text>{playerName}</Text>
+            <SmallPlayerGrid
+              key={playerId}
+              wordLength={wordLength}
+              nbLife={nbLife}
+              triesHistory={triesHistory}
+              nbPlayer={numberPlayer}
+            />
+          </button>
+        );
+      } else {
+        items.push(
+          <SmallPlayerGrid
+            key={playerId}
+            wordLength={wordLength}
+            nbLife={nbLife}
+            triesHistory={triesHistory}
+            nbPlayer={numberPlayer}
+          />
+        );
+      }
       i++;
     }
     grid.push(
-      <Flex key={i} direction={"column"} alignContent={"center"}>
+      <Flex key={i + "-" + i} direction={"column"} alignContent={"center"}>
         {items.slice(i - 1 - j, i - 1)}
       </Flex>
     );
@@ -427,10 +444,15 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         <Text align="center" fontSize="large">
           {player.name}
         </Text>
+        {spectate && (
+          <Text color={"green"} align="center" fontSize="larger">
+            Mode spectateur
+          </Text>
+        )}
         {/* the result of the game */}
         {isFinished && (
           <Text
-            color={!hasWon ? "red" : "white"}
+            color={!hasWon ? "red" : ""}
             align="center"
             fontSize="larger"
           >
@@ -440,6 +462,11 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         )}
         {!isFinished && (
           <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
+        )}
+        {spectate && (
+          <Text align="center">
+            Grille du joueur : {playerName}
+          </Text>
         )}
         <PlayerGrid
           focus={focus}
