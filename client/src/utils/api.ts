@@ -6,7 +6,9 @@ import { serverHttpUrl } from "./Const";
 import {
   BrGameInfo,
   BrGameState,
+  ChatChannel,
   ChatMessage,
+  ChattingActions,
   Game1vs1,
   LetterResult,
   Lobby,
@@ -268,10 +270,50 @@ export const getSpecificLobby = (
 
 export const addChatEvents = (
   socket: Socket,
-  setMessageHistory: Dispatch<SetStateAction<ChatMessage[]>>
+  setChattingAction: React.Dispatch<React.SetStateAction<ChattingActions>>
 ) => {
   socket.on("broadcast_message", (message: ChatMessage) => {
-    setMessageHistory((messageHistory) => [...messageHistory, message]);
+    setChattingAction((action) => {
+      return {
+        ...action,
+        channels: action.channels.map((channel) => {
+          if (channel.id === message.channelId) {
+            return {
+              ...channel,
+              messageHistory: [...channel.messageHistory, message],
+            };
+          } else {
+            return {
+              ...channel,
+            };
+          }
+        }),
+      };
+    });
+  });
+  socket.on(
+    "add_player_to_chat_channel",
+    ({ name, id, messageHistory }: ChatChannel) => {
+      setChattingAction((action) => {
+        return {
+          ...action,
+          channels: [
+            ...action.channels,
+            { name, messageHistory: messageHistory, id },
+          ],
+        };
+      });
+    }
+  );
+  socket.on("remove_player_of_chat_channel", (channel_to_remove: string) => {
+    setChattingAction((action) => {
+      return {
+        ...action,
+        channels: action.channels.filter((channel) => {
+          return channel.id !== channel_to_remove;
+        }),
+      };
+    });
   });
 
   socket.emit("join_chat_global");
@@ -279,6 +321,8 @@ export const addChatEvents = (
 
 export const removeChatEvents = (socket: Socket) => {
   socket.removeListener("broadcast_message");
+  socket.removeListener("add_player_to_chat_channel");
+  socket.removeListener("remove_player_of_chat_channel");
   socket.emit("leave_chat_global");
 };
 export const addGuessWordBrBroadcast = async (

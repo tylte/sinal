@@ -6,7 +6,7 @@ import axios from "axios";
 import { SinalContext } from "../utils/context";
 import { io, Socket } from "socket.io-client";
 import { addSocketConnectionEvent } from "src/utils/api";
-import { Player } from "../utils/types";
+import { ChattingActions, Player } from "../utils/types";
 import { serverHttpUrl, serverWsPath, serverWsUrl } from "../utils/Const";
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -14,7 +14,10 @@ function MyApp({ Component, pageProps }: AppProps) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [player, setPlayer] = useState<Player | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [isChatting, setIsChatting] = useState<boolean>(false);
+  const [isChatting, setIsChatting] = useState<ChattingActions>({
+    isChatting: false,
+    channels: [{ id: "PUBLIC_CHAT", name: "Publique", messageHistory: [] }],
+  });
 
   useEffect(() => {
     axios.get<string[]>(`${serverHttpUrl}/dictionary`).then(({ data }) => {
