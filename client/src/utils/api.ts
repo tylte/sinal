@@ -214,6 +214,11 @@ export const addSpecificLobbiesEvent = (
     }
   );
 
+  socket.on("next_round", (game: Game1vs1) => {
+    console.log("GAME :", game);
+    setGameState(game);
+  });
+
   socket.on(
     "lobbies_update_leave",
     ({
@@ -407,7 +412,8 @@ export const lobbyOneVsOneAddEvents = (
       });
     }
   });
-  socket?.on("wining_player_1vs1", (req) => {
+
+  socket?.on("wining_round_1vs1", (req) => {
     setIsFinished(true);
     if (req === playerId) {
       toast({

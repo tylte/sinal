@@ -68,7 +68,7 @@ export const Game1vs1 = z.object({
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
   roundNumber: z.number(),
-  nbRounds: z.number(), //TODO : Change in client
+  nbRoundsTotal: z.number(), //TODO : Change in client
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;

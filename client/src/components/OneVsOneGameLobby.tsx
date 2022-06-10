@@ -51,6 +51,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   const [tryHistory, setTryHistory] = useState<TriesHistory[]>([]);
   const [tryHistoryP2, setTryHistoryP2] = useState<TriesHistory[]>([]);
 
+  console.log("First Letter : ", firstLetter);
+
   // Word of the player and his opponent.
   const [word, setWord] = useState(firstLetter.toUpperCase());
   const [wordP2, setWordP2] = useState(firstLetter.toUpperCase());
@@ -143,6 +145,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     setHasWon(false);
     setIsFinished(true);
   };
+
+  const resetGame = () => {};
 
   useClassicWordInput(
     word,
