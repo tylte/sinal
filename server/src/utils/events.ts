@@ -447,13 +447,13 @@ export const guessWord1vs1Event = (
       if (otherPlayer.hasWon) {
         if (player.nbLife > otherPlayer.nbLife) {
           // Player wins the round.
-          io.to(gameId).emit("wining_round_1vs1", player.id);
+          io.to(gameId).emit("winning_round_1vs1", player.id);
           player.nbWins++;
 
           // If we have reached the final round, then, it's the end of the game
           if (game.roundNumber >= game.nbRoundsTotal) {
             // We get the winner of the game (or the tie if it's a tie)
-            let winner = getGameWinner(
+            let winner = get1vs1GameWinner(
               io,
               player,
               otherPlayer,
@@ -461,31 +461,32 @@ export const guessWord1vs1Event = (
               lobbyId
             );
 
+            io.to(gameId).emit("winning_game_1vs1", winner);
+
             // The game is finished, we change the lastGame informations
             lobby.lastGame = {
               ...lobby.lastGame,
               winner,
             };
-
-            // We redirecting to the PreGameLobby
-            lobby.state = "pre-game";
-            io.to(gameId).emit("ending_game", { lobby });
-            io.to(gameId).socketsLeave(gameId);
-            game1vs1Map.delete(gameId);
+            ending1vs1Game(io, lobby, gameId);
           } else {
             // Launch another round
             game.roundNumber++;
             newWord1vs1(io, game, lobby);
-            io.to(gameId).emit("next_round", game);
+
+            // Waiting 3 seconds until the next round
+            setTimeout(() => {
+              io.to(gameId).emit("next_round", game);
+            }, 3000);
           }
         } else {
           // Other player wins the round
-          io.to(gameId).emit("wining_round_1vs1", otherPlayer.id);
+          io.to(gameId).emit("winning_round_1vs1", otherPlayer.id);
           otherPlayer.nbWins++;
 
           // If we have reached the final round, then, it's the end of the game
           if (game.roundNumber >= game.nbRoundsTotal) {
-            let winner = getGameWinner(
+            let winner = get1vs1GameWinner(
               io,
               player,
               otherPlayer,
@@ -493,51 +494,57 @@ export const guessWord1vs1Event = (
               lobbyId
             );
 
+            io.to(gameId).emit("winning_game_1vs1", winner);
+
             // The game is finished, we change the lastGame informations
             lobby.lastGame = {
               ...lobby.lastGame,
               winner,
             };
-
-            // We redirecting to the PreGameLobby
-            lobby.state = "pre-game";
-            io.to(gameId).emit("ending_game", { lobby });
-            io.to(gameId).socketsLeave(gameId);
-            game1vs1Map.delete(gameId);
+            ending1vs1Game(io, lobby, gameId);
           } else {
             // Launch another round
             game.roundNumber++;
             newWord1vs1(io, game, lobby);
-            console.log("GAME : ", game);
-            io.to(gameId).emit("next_round", game);
+
+            // Waiting 3 seconds until the next round
+            setTimeout(() => {
+              io.to(gameId).emit("next_round", game);
+            }, 3000);
           }
         }
       } else if (player.nbLife >= otherPlayer.nbLife - 1) {
         // The player who has win has more lives left than his opponent. Even if his opponent guess the word, he will lose.
-        io.to(gameId).emit("wining_round_1vs1", player.id);
+        io.to(gameId).emit("winning_round_1vs1", player.id);
         player.nbWins++;
 
         if (game.roundNumber >= game.nbRoundsTotal) {
           // We get the winner of the game (or the tie if it's a tie)
-          let winner = getGameWinner(io, player, otherPlayer, gameId, lobbyId);
+          let winner = get1vs1GameWinner(
+            io,
+            player,
+            otherPlayer,
+            gameId,
+            lobbyId
+          );
+
+          io.to(gameId).emit("winning_game_1vs1", winner);
 
           // The game is finished, we change the lastGame informations
           lobby.lastGame = {
             ...lobby.lastGame,
             winner,
           };
-
-          // We redirecting to the PreGameLobby
-          lobby.state = "pre-game";
-          io.to(gameId).emit("ending_game", { lobby });
-          io.to(gameId).socketsLeave(gameId);
-          game1vs1Map.delete(gameId);
+          ending1vs1Game(io, lobby, gameId);
         } else {
           // Launch another round
           game.roundNumber++;
           newWord1vs1(io, game, lobby);
-          console.log("GAME : ", game);
-          io.to(gameId).emit("next_round", game);
+
+          // Waiting 3 seconds until the next round
+          setTimeout(() => {
+            io.to(gameId).emit("next_round", game);
+          }, 3000);
         }
       } else {
         // If the player has guess but the opponent can guess in less tries, the opponent has (by default) 60 seconds to find the word.
@@ -563,7 +570,7 @@ export const guessWord1vs1Event = (
           game.endTime = game.timeAfterFirstGuess + Date.now();
         }
 
-        io.to(gameId).emit("first_wining_player_1vs1", game);
+        io.to(gameId).emit("first_winning_player_1vs1", game);
       }
     } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
       // If neither the player or his oppenent has no more lives, it's a tie for the round.
@@ -572,7 +579,15 @@ export const guessWord1vs1Event = (
       if (lobby && lobby.lastGame) {
         if (game.roundNumber >= game.nbRoundsTotal) {
           // We get the winner of the game (or the tie if it's a tie)
-          let winner = getGameWinner(io, player, otherPlayer, gameId, lobbyId);
+          let winner = get1vs1GameWinner(
+            io,
+            player,
+            otherPlayer,
+            gameId,
+            lobbyId
+          );
+
+          io.to(gameId).emit("winning_game_1vs1", winner);
 
           // The game is finished, we change the lastGame informations
           lobby.lastGame = {
@@ -582,37 +597,43 @@ export const guessWord1vs1Event = (
             winner,
             triesHistory: lobby.lastGame?.triesHistory || [[]],
           };
-          // We redirecting to the PreGameLobby
-          lobby.state = "pre-game";
-          io.to(gameId).emit("ending_game", { lobby });
-          io.to(gameId).socketsLeave(gameId);
-          game1vs1Map.delete(gameId);
+          ending1vs1Game(io, lobby, gameId);
         } else {
           // Launch another round
           game.roundNumber++;
           newWord1vs1(io, game, lobby);
-          io.to(gameId).emit("next_round", game);
+
+          // Waiting 3 seconds until the next round
+          setTimeout(() => {
+            io.to(gameId).emit("next_round", game);
+          }, 3000);
         }
       }
     } else if (player.nbLife <= otherPlayer.nbLife && otherPlayer.hasWon) {
-      io.to(gameId).emit("wining_round_1vs1", otherPlayer.id);
+      io.to(gameId).emit("winning_round_1vs1", otherPlayer.id);
       otherPlayer.nbWins++;
       if (game.roundNumber >= game.nbRoundsTotal) {
-        let winner = getGameWinner(io, player, otherPlayer, gameId, lobbyId);
+        let winner = get1vs1GameWinner(
+          io,
+          player,
+          otherPlayer,
+          gameId,
+          lobbyId
+        );
+
+        io.to(gameId).emit("winning_game_1vs1", winner);
 
         lobby.lastGame = {
           ...lobby.lastGame,
           winner,
         };
-        lobby.state = "pre-game";
-        io.to(gameId).emit("ending_game", { lobby });
-        io.to(gameId).socketsLeave(gameId);
-        game1vs1Map.delete(gameId);
+        ending1vs1Game(io, lobby, gameId);
       } else {
         // Launch another round
         game.roundNumber++;
         newWord1vs1(io, game, lobby);
-        // On attend trois secondes avant la nouvelle partie
+
+        // Waiting 3 seconds until the next round
         setTimeout(() => {
           io.to(gameId).emit("next_round", game);
         }, 3000);
@@ -621,7 +642,30 @@ export const guessWord1vs1Event = (
   }
 };
 
-const getGameWinner = (
+/**
+ * Private function which ends the game.
+ * @param io - Server
+ * @param lobby - Lobby of the game
+ * @param gameId - ID of the game
+ */
+const ending1vs1Game = (io: Server, lobby: LobbyType, gameId: string) => {
+  // We redirecting to the PreGameLobby
+  lobby.state = "pre-game";
+  io.to(gameId).emit("ending_game", { lobby });
+  io.to(gameId).socketsLeave(gameId);
+  game1vs1Map.delete(gameId);
+};
+
+/**
+ * Private function that returns the winner of the match when all the rounds was played.
+ * @param io - Server
+ * @param player - Player
+ * @param otherPlayer - Oppenent Player
+ * @param gameId - ID of the Game
+ * @param lobbyId - ID of the Lobby
+ * @returns The winner of the match
+ */
+const get1vs1GameWinner = (
   io: Server,
   player: Player1vs1Type,
   otherPlayer: Player1vs1Type,
@@ -637,7 +681,7 @@ const getGameWinner = (
       lobbyId,
       name: player.name,
     };
-  } else if (player.nbWins > otherPlayer.nbWins) {
+  } else if (player.nbWins < otherPlayer.nbWins) {
     io.to(gameId).emit("wining_game_1vs1", otherPlayer.id);
     winner = {
       id: otherPlayer.id,
@@ -653,22 +697,39 @@ const getGameWinner = (
   return winner;
 };
 
+/**
+ * Function which is called when we have another round.
+ * This function choose a new word to guess, and initialize all the properties of the new round.
+ * @param io - Server
+ * @param game - 1vs1 GameState
+ * @param lobby - Lobby of the Game
+ */
 const newWord1vs1 = (io: Server, game: Game1vs1, lobby: LobbyType) => {
   if (game !== undefined) {
+    // Clear the timeout of the game.
     let timeout = timeoutMap.get(game.id);
     if (timeout !== undefined) {
       clearTimeout(timeout);
     }
+
+    // Reset the endTime of the game.
     game.endTime = undefined;
+
+    // Choose a new word.
     let newWord = get_word();
     console.log("Mot à découvrir : ", newWord);
     idToWord.set(game.id, newWord);
+
+    // Update the wordsToGuess array of the Game.
+    lobby.lastGame?.wordsToGuess.push(newWord);
+
+    // Initialize all the properties of the new round.
     game.firstLetter = newWord.charAt(0);
     game.length = newWord.length;
-
     game.playerOne.nbLife = lobby.nbLifePerPlayer;
     game.playerTwo.nbLife = lobby.nbLifePerPlayer;
 
+    // Set the new timeout.
     timeout = setTimeout(() => {
       tempsEcoule1vs1(io, game, lobby, newWord);
     }, game.globalTime);

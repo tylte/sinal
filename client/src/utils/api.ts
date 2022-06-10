@@ -12,6 +12,7 @@ import {
   Lobby,
   Packet,
   Player,
+  Player1vs1,
   TriesHistory,
   UpdateLobbyJoinPayload,
   UpdateLobbyLeavePayload,
@@ -396,7 +397,7 @@ export const lobbyOneVsOneAddEvents = (
   setTryHistory: Dispatch<SetStateAction<TriesHistory[]>>,
   setWord: Dispatch<SetStateAction<string>>
 ) => {
-  socket.on("first_wining_player_1vs1", (req) => {
+  socket.on("first_winning_player_1vs1", (req) => {
     setEndPoint(req.endTime);
     if (
       (req.playerTwo.hasWon && req.playerTwo.id === playerId) ||
@@ -411,16 +412,44 @@ export const lobbyOneVsOneAddEvents = (
     }
   });
 
+  socket.on("winning_game_1vs1", (winner: Player1vs1 | undefined) => {
+    setIsFinished(true);
+    if (winner === undefined) {
+      toast({
+        title: "Egalité.",
+        status: "info",
+        isClosable: true,
+        duration: 2500,
+      });
+    } else if (playerId === winner.id) {
+      toast({
+        title: "Vous avez gagné la partie",
+        status: "success",
+        isClosable: true,
+        duration: 2500,
+      });
+      setHasWon(true);
+    } else {
+      toast({
+        title: "Vous avez perdu la partie",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+    }
+  });
+
   socket.on("next_round", (game: Game1vs1) => {
     setIsFinished(false);
     setHasWon(false);
     setTryHistory([]);
     setTryHistoryP2([]);
     setWord(game.firstLetter.toUpperCase());
+    setEndPoint(game.endTime);
     setGameState(game);
   });
 
-  socket?.on("wining_round_1vs1", (req) => {
+  socket?.on("winning_round_1vs1", (req) => {
     setIsFinished(true);
     if (req === playerId) {
       toast({
@@ -440,7 +469,7 @@ export const lobbyOneVsOneAddEvents = (
       setWordP2("●");
     }
   });
-  socket.on("draw_1vs1", () => {
+  socket.on("draw_round_1vs1", () => {
     setIsFinished(true);
     toast({
       title: "Egalité.",
@@ -449,6 +478,7 @@ export const lobbyOneVsOneAddEvents = (
       duration: 2500,
     });
   });
+
   socket.on("guess_word_broadcast", (req) => {
     if (req.playerId !== playerId) {
       setTryHistoryP2((tryHistoryP2) => [
@@ -468,8 +498,8 @@ export const lobbyOneVsOneAddEvents = (
 };
 
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
-  socket?.removeListener("first_wining_player_1vs1");
-  socket?.removeListener("wining_round_1vs1");
+  socket?.removeListener("first_winning_player_1vs1");
+  socket?.removeListener("winning_round_1vs1");
   socket?.removeListener("draw_1vs1");
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("update_word_broadcast");
