@@ -58,6 +58,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     index: 1,
     isBorder: false,
     focusMode: "overwrite",
+    firstLetterWritable: false,
   });
 
   //start the game
@@ -310,6 +311,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     onEnter,
     focus,
     setFocus,
+    word.charAt(0).toUpperCase(),
     gameState[0]?.isFinished || isChatting
   );
 
