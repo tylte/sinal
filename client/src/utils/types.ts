@@ -59,6 +59,8 @@ export type Game1vs1 = {
   length: number;
   firstLetter: string;
   endTime: number;
+  roundNumber: number;
+  nbRoundsTotal: number;
 };
 
 export type SoloGameState = {
@@ -111,6 +113,7 @@ export type Player1vs1 = {
   name: string;
   nbLife: number;
   hasWon: boolean;
+  nbWins: number;
 };
 
 export type ChatMessage = {
