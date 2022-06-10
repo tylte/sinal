@@ -134,6 +134,7 @@ export const ArgStartGameBr = z.object({
 export const ReceivedChatMessage = z.object({
   content: z.string(),
   playerId: z.string(),
+  channelId: z.string(),
 });
 
 export const ArgGuessWord = z.object({
@@ -169,6 +170,7 @@ export type PacketType = z.infer<typeof Packet>;
 export type EventResponseFn = (payload: PacketType) => void;
 
 export type ChatMessageToSend = {
+  channelId: string;
   content: string;
   author: string;
   id: string;

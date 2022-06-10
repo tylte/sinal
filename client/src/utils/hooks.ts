@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useContext, useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { SinalContext } from "./context";
-import { MyFocus, Player } from "./types";
+import { ChattingActions, MyFocus, Player } from "./types";
 import {
   classicWordDelete,
   classicWordWriting,
@@ -42,7 +42,7 @@ export const usePlayer = (): [
  */
 export const useIsChatting = (): boolean => {
   let {
-    chattingActions: [isChatting],
+    chattingActions: [{ isChatting }],
   } = useContext(SinalContext);
   return isChatting;
 };
@@ -51,8 +51,8 @@ export const useIsChatting = (): boolean => {
  * @returns get an array, first element tells if the user is chatting, the second element can set the state chatting
  */
 export const useChattingActions = (): [
-  isChatting: boolean,
-  setIsChatting: Dispatch<SetStateAction<boolean>> | null
+  isChatting: ChattingActions,
+  setIsChatting: Dispatch<SetStateAction<ChattingActions>> | null
 ] => {
   let { chattingActions } = useContext(SinalContext);
   return chattingActions;

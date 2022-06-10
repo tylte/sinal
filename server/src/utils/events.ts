@@ -4,6 +4,7 @@ import { dicoHasWord } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
 import {
+  channelIdToHistory,
   disconnectMap,
   game1vs1Map,
   gameBrMap,
@@ -68,8 +69,18 @@ export const createLobbyEvent = (
 
   lobbyMap.set(lobbyId, lobby);
   console.log("Lobby created notif");
+
+  // The user will join the lobby chat room
+  // For now no message history is kept on the server
+  socket.emit("add_player_to_chat_channel", {
+    name: "Lobby",
+    id: lobbyId,
+    messageHistory: [],
+  });
+
   socket.join(lobbyId);
   player.lobbyId = lobbyId;
+
   if (lobby.isPublic) {
     io.to(PUBLIC_LOBBIES).emit("lobbies_update_create", lobbyMap.get(lobbyId));
   }
@@ -121,6 +132,15 @@ export const joinLobbyEvent = (
   player.lobbyId = lobbyId;
 
   lobby.playerList.push(player);
+
+  let messageHistory = channelIdToHistory.get(lobbyId) ?? [];
+  // The user will join the lobby chat room
+  // For now no message history is kept on the server
+  socket.emit("add_player_to_chat_channel", {
+    name: "Lobby",
+    id: lobbyId,
+    messageHistory,
+  });
 
   io.to(PUBLIC_LOBBIES).to(lobbyId).emit("lobbies_update_join", { lobby });
 
@@ -187,6 +207,9 @@ export const leaveLobbyEvent = (
   player.lobbyId = null;
   // Leave the room
   socket.leave(lobbyId);
+
+  // Leave the lobby chat room
+  socket.emit("remove_player_of_chat_channel", lobbyId);
 
   console.log("Joueur retiré : ", playerId, " dans le lobby : ", lobbyId, "");
   response({
@@ -841,7 +864,7 @@ const tempsEcoule1vs1 = (
 
 export const sendChatMessage = (
   io: Server,
-  { content, playerId }: ReceivedChatMessageType
+  { content, playerId, channelId }: ReceivedChatMessageType
 ) => {
   const player = playerMap.get(playerId);
 
@@ -853,12 +876,20 @@ export const sendChatMessage = (
   let messageId = get_id();
 
   let messageToSend: ChatMessageToSend = {
+    channelId,
     author: player.name,
     content,
     id: messageId,
   };
 
-  io.to(PUBLIC_CHAT).emit("broadcast_message", messageToSend);
+  const messageHistory = channelIdToHistory.get(channelId);
+  if (messageHistory) {
+    messageHistory.push(messageToSend);
+  } else {
+    channelIdToHistory.set(channelId, [messageToSend]);
+  }
+
+  io.to(channelId).emit("broadcast_message", messageToSend);
 };
 
 /**
