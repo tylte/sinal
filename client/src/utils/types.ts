@@ -59,6 +59,8 @@ export type Game1vs1 = {
   length: number;
   firstLetter: string;
   endTime: number;
+  globalTime: number;
+  timeAfterFirstGuess: number;
   roundNumber: number;
   nbRoundsTotal: number;
 };

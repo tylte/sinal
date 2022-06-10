@@ -214,11 +214,6 @@ export const addSpecificLobbiesEvent = (
     }
   );
 
-  socket.on("next_round", (game: Game1vs1) => {
-    console.log("GAME :", game);
-    setGameState(game);
-  });
-
   socket.on(
     "lobbies_update_leave",
     ({
@@ -396,7 +391,10 @@ export const lobbyOneVsOneAddEvents = (
   setTryHistoryP2: Dispatch<SetStateAction<TriesHistory[]>>,
   setWordP2: Dispatch<SetStateAction<string>>,
   setIsFinished: Dispatch<SetStateAction<boolean>>,
-  setEndPoint: React.Dispatch<React.SetStateAction<number>>
+  setEndPoint: React.Dispatch<React.SetStateAction<number>>,
+  setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>,
+  setTryHistory: Dispatch<SetStateAction<TriesHistory[]>>,
+  setWord: Dispatch<SetStateAction<string>>
 ) => {
   socket.on("first_wining_player_1vs1", (req) => {
     setEndPoint(req.endTime);
@@ -411,6 +409,15 @@ export const lobbyOneVsOneAddEvents = (
         duration: 2500,
       });
     }
+  });
+
+  socket.on("next_round", (game: Game1vs1) => {
+    setIsFinished(false);
+    setHasWon(false);
+    setTryHistory([]);
+    setTryHistoryP2([]);
+    setWord(game.firstLetter.toUpperCase());
+    setGameState(game);
   });
 
   socket?.on("wining_round_1vs1", (req) => {
@@ -462,8 +469,9 @@ export const lobbyOneVsOneAddEvents = (
 
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
   socket?.removeListener("first_wining_player_1vs1");
-  socket?.removeListener("wining_player_1vs1");
+  socket?.removeListener("wining_round_1vs1");
   socket?.removeListener("draw_1vs1");
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("update_word_broadcast");
+  socket?.removeListener("next_round");
 };

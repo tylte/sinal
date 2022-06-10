@@ -1,5 +1,5 @@
 import { Box, Flex, Text, useToast } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
   lobbyOneVsOneAddEvents,
@@ -12,6 +12,7 @@ import {
   useSocket,
 } from "../utils/hooks";
 import {
+  BrGameInfo,
   Game1vs1,
   KeyboardSettings,
   Lobby,
@@ -28,6 +29,7 @@ interface OneVsOneGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
   lobby: Lobby;
+  setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>;
 }
 
 export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
@@ -41,6 +43,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     endTime,
   },
   lobby: lobby,
+  setGameState,
 }) => {
   const socket = useSocket();
   const dictionary = useDictionary();
@@ -50,8 +53,6 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   // TriesHistory of the player and his opponent.
   const [tryHistory, setTryHistory] = useState<TriesHistory[]>([]);
   const [tryHistoryP2, setTryHistoryP2] = useState<TriesHistory[]>([]);
-
-  console.log("First Letter : ", firstLetter);
 
   // Word of the player and his opponent.
   const [word, setWord] = useState(firstLetter.toUpperCase());
@@ -82,7 +83,10 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         setTryHistoryP2,
         setWordP2,
         setIsFinished,
-        setEndPoint
+        setEndPoint,
+        setGameState,
+        setTryHistory,
+        setWord
       );
     }
     return () => {
@@ -145,8 +149,6 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     setHasWon(false);
     setIsFinished(true);
   };
-
-  const resetGame = () => {};
 
   useClassicWordInput(
     word,

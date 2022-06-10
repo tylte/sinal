@@ -476,7 +476,7 @@ export const guessWord1vs1Event = (
             // Launch another round
             game.roundNumber++;
             newWord1vs1(io, game, lobby);
-            io.to(gameId).emit("next_round", { game });
+            io.to(gameId).emit("next_round", game);
           }
         } else {
           // Other player wins the round
@@ -509,7 +509,7 @@ export const guessWord1vs1Event = (
             game.roundNumber++;
             newWord1vs1(io, game, lobby);
             console.log("GAME : ", game);
-            io.to(gameId).emit("next_round", { game });
+            io.to(gameId).emit("next_round", game);
           }
         }
       } else if (player.nbLife >= otherPlayer.nbLife - 1) {
@@ -537,7 +537,7 @@ export const guessWord1vs1Event = (
           game.roundNumber++;
           newWord1vs1(io, game, lobby);
           console.log("GAME : ", game);
-          io.to(gameId).emit("next_round", { game });
+          io.to(gameId).emit("next_round", game);
         }
       } else {
         // If the player has guess but the opponent can guess in less tries, the opponent has (by default) 60 seconds to find the word.
@@ -591,7 +591,7 @@ export const guessWord1vs1Event = (
           // Launch another round
           game.roundNumber++;
           newWord1vs1(io, game, lobby);
-          io.to(gameId).emit("next_round", { game });
+          io.to(gameId).emit("next_round", game);
         }
       }
     } else if (player.nbLife <= otherPlayer.nbLife && otherPlayer.hasWon) {
@@ -612,7 +612,10 @@ export const guessWord1vs1Event = (
         // Launch another round
         game.roundNumber++;
         newWord1vs1(io, game, lobby);
-        io.to(gameId).emit("next_round", { game });
+        // On attend trois secondes avant la nouvelle partie
+        setTimeout(() => {
+          io.to(gameId).emit("next_round", game);
+        }, 3000);
       }
     }
   }
