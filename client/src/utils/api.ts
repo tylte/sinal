@@ -311,10 +311,16 @@ export const addBrEvent = async (
   playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
   setEndpoint: React.Dispatch<React.SetStateAction<number>>,
-  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
+  setFirstPlayerWon: React.Dispatch<React.SetStateAction<boolean>>,
+  setPlayerWon: React.Dispatch<React.SetStateAction<boolean>>,
+  setFinished: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
     setEndpoint(arg.endTime);
+    // setFirstPlayerWon(true);
+    // setPlayerWon(false);
+    // setFinished(true);
   });
   socket?.on("winning_player_br", (arg) => {
     console.log("winning_player_br");
@@ -332,6 +338,15 @@ export const addBrEvent = async (
             : { ...game }
         )
       );
+      console.log("if");
+      setFirstPlayerWon(true);
+      setPlayerWon(false);
+      setFinished(true);
+    } else {
+      console.log("else");
+      setFirstPlayerWon(true);
+      setPlayerWon(true);
+      setFinished(true);
     }
     return;
   });

@@ -25,6 +25,7 @@ import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
 import { getClassicKeyboardSettings } from "../utils/utils";
 import { Chrono } from "./Chrono";
+import { useRouter } from "next/router";
 
 interface InGameLobbyBrProps {
   player: Player;
@@ -38,6 +39,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
   gameInfo,
 }) => {
+  const router = useRouter();
   //The number of player in the game
   const [numberPlayer, setNumberPlayer] = useState(gameInfo.playerList.length);
   //the word the player try
@@ -51,6 +53,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   const isChatting = useIsChatting();
 
   const [endPoint, setEndPoint] = useState(gameInfo.endTime);
+
+  const [firstPlayerWon, setFirstPlayerWon] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [playerWon, setPlayerWon] = useState(false);
 
   //the focus in the grid
   const [focus, setFocus] = useState<MyFocus>({
@@ -94,7 +100,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   };
 
   //load the new word
-  const resetGame = (gameBr: BrGameInfo) => {
+  const resetGame = async (gameBr: BrGameInfo) => {
     //check if the player win the previous word
     let playerIn =
       gameBr.playerList.find((pl) => {
@@ -136,6 +142,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       setWord(gameBr.firstLetter.toUpperCase());
       setEndPoint(gameBr.endTime);
     } else {
+      toast({
+        title: "Vous avez perdu, tous les gagnant ont été trouvé !",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
       // set the game for the looser
       setGameState((gameSate) =>
         gameSate.map((game) =>
@@ -144,6 +156,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             : { ...game }
         )
       );
+      await new Promise((f) => setTimeout(f, 2500));
+      router.push("/lobby");
     }
   };
 
@@ -152,6 +166,38 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     //start the game
     startGame();
   }, []);
+
+  useEffect(() => {
+    console.log(
+      "firstPlayerWon : ",
+      firstPlayerWon,
+      " finished : ",
+      finished,
+      " playerWon : ",
+      playerWon
+    );
+    const sleep = async () => {
+      await new Promise((f) => setTimeout(f, 2500));
+      router.push("/lobby");
+    };
+    if (firstPlayerWon && finished && !playerWon) {
+      toast({
+        title: "Vous avez perdu, tous les gagnant ont été trouvé !",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      sleep();
+    } else if (firstPlayerWon && finished && playerWon) {
+      toast({
+        title: "Vous avez gagné !",
+        status: "success",
+        isClosable: true,
+        duration: 2500,
+      });
+      sleep();
+    }
+  }, [firstPlayerWon, finished, playerWon]);
 
   //use effect for the socket exchange
   useEffect(() => {
@@ -165,7 +211,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         player.id,
         toast,
         setEndPoint,
-        setGameState
+        setGameState,
+        setFirstPlayerWon,
+        setPlayerWon,
+        setFinished
       );
     }
     return () => {
@@ -184,6 +233,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           : { ...game }
       )
     );
+    setPlayerWon(false);
+    setFinished(true);
   };
 
   const onEnter = async () => {
@@ -265,6 +316,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             : { ...game }
         )
       );
+      setPlayerWon(true);
+      setFinished(true);
       toast({
         title: "GGEZ 😎",
         status: "success",
@@ -282,6 +335,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             : { ...game }
         )
       );
+      setPlayerWon(false);
+      setFinished(true);
       toast({
         title: "Perdu ! Sadge",
         status: "error",
