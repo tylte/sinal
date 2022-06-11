@@ -33,8 +33,6 @@ import {
 } from "./type";
 import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 
-const NBLIFE = 6;
-
 export const createLobbyEvent = (
   io: Server,
   socket: Socket,
@@ -48,6 +46,7 @@ export const createLobbyEvent = (
     nbLife,
     globalTime,
     timeAfterFirstGuess,
+    eliminationRate,
   }: ArgCreateLobbyType,
   response: (payload: PacketType) => void
 ) => {
@@ -67,6 +66,7 @@ export const createLobbyEvent = (
     lastGame: undefined,
     globalTime,
     timeAfterFirstGuess,
+    eliminationRate,
   };
 
   let player = playerMap.get(owner.id);
@@ -816,11 +816,11 @@ export const startGameBrEvent = (
 
   let playerArray = new Array<PlayerBr>();
   lobbyPlayerList.forEach((player) => {
-    if (player !== undefined) {
+    if (player !== undefined && lobby !== undefined) {
       playerArray.push({
         id: player.id,
         name: player.name,
-        nbLife: NBLIFE,
+        nbLife: lobby?.nbLifePerPlayer,
       });
     }
   });
@@ -838,6 +838,7 @@ export const startGameBrEvent = (
     globalTime: globalTime,
     timeAfterFirstGuess: timeAfterFirstGuess,
     numberOfDrawStreak: 0,
+    nbLifePerPlayer: lobby.nbLifePerPlayer,
   };
 
   newWordBr(io, game, globalTime);
@@ -976,7 +977,7 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
       if (game.numberOfDrawStreak < 3) {
         game.numberOfDrawStreak++;
         game.playerList.forEach((p) => {
-          p.nbLife = NBLIFE;
+          p.nbLife = game.nbLifePerPlayer;
         });
 
         io.to(game.id).emit("draw_br");
@@ -1001,7 +1002,7 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
       game.playerFound = new Array();
 
       game.playerList.forEach((p) => {
-        p.nbLife = NBLIFE;
+        p.nbLife = game.nbLifePerPlayer;
       });
 
       io.to(game.id).emit("next_word_br", game);
@@ -1023,7 +1024,7 @@ const newWordBr = (io: Server, game: GameBr | undefined, newTime: number) => {
     game.length = newWord.length;
 
     game.playerList.forEach((p) => {
-      p.nbLife = NBLIFE;
+      p.nbLife = game.nbLifePerPlayer;
     });
 
     setNewTimeout(io, game, newTime);

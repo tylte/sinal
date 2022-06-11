@@ -58,6 +58,7 @@ export const Lobby = z.object({
   mode: GameMode,
   currentGameId: z.optional(z.string()),
   lastGame: z.optional(LastGame),
+  eliminationRate: z.number(),
 });
 
 export const Game1vs1 = z.object({
@@ -70,7 +71,7 @@ export const Game1vs1 = z.object({
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
   roundNumber: z.number(),
-  nbRoundsTotal: z.number(), //TODO : Change in client
+  nbRoundsTotal: z.number(),
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;
@@ -95,6 +96,7 @@ export const GameBr = z.object({
   endTime: z.optional(z.number()),
   timeAfterFirstGuess: z.number(),
   numberOfDrawStreak: z.number(),
+  nbLifePerPlayer: z.number(),
 });
 
 export type GameBr = z.infer<typeof GameBr>;
@@ -110,6 +112,7 @@ export const ArgCreateLobby = z.object({
   nbLife: z.number(),
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
+  eliminationRate: z.number(),
 });
 
 export const ArgUpdateLobby = z.object({

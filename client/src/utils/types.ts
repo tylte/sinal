@@ -40,6 +40,7 @@ export type Lobby = {
   mode: GameMode;
   currentGameId: string;
   lastGame: LastGame | null;
+  eliminationRate: number;
 };
 
 export type Packet = {
@@ -104,6 +105,7 @@ export type BrGameInfo = {
   eliminationRate: number;
   globalTime: number;
   timeAfterFirstGuess: number;
+  nbLifePerPlayer: number;
 };
 
 export type KeyboardSettings = {

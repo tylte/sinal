@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Fade,
   HStack,
   Input,
   Modal,
@@ -20,15 +19,17 @@ import {
   RadioGroup,
   Stack,
   Text,
-  useDisclosure,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
 import { Socket } from "socket.io-client";
 import {
+  defaultEliminationRate,
   defaultGlobalTime1vs1,
   defaultGlobalTimeBr,
+  defaultNbLife,
+  defaultNbRounds,
   defaultTimeAfterFirstGuess1vs1,
   defaultTimeAfterFirstGuessBr,
   maxPlayer1vs1,
@@ -51,31 +52,34 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   mode,
   lobby,
 }) => {
-  const [gameMode, setGameMode] = React.useState(lobby ? lobby.mode : "1vs1");
-  const [isPublic, setIsPublic] = React.useState(lobby ? lobby.isPublic : true);
-  const [lobbyName, setLobbyName] = React.useState(
-    lobby ? lobby.name : "Nouveau Lobby"
-  );
-  const [nbPlaces, setNbPlaces] = React.useState(lobby ? lobby.totalPlace : 2);
-  const [minPlaces, setminPlaces] = React.useState(
-    lobby ? lobby.totalPlace : 2
-  );
-  const [maxPlaces, setmaxPlaces] = React.useState(
-    lobby ? lobby.totalPlace : 2
-  );
-  const [nbLife, setNbLife] = useState(lobby ? lobby.nbLifePerPlayer : 6);
-  const [nbRounds, setNbRounds] = useState(1);
-  const { isOpen: openFade, onToggle } = useDisclosure({
-    isOpen: gameMode === "1vs1",
-  });
-  const socket = useSocket();
   const [owner] = usePlayer();
+  const socket = useSocket();
   const router = useRouter();
+
+  const [lobbyName, setLobbyName] = useState(
+    lobby ? lobby.name : `Lobby de ${owner?.name}`
+  );
+  const [gameMode, setGameMode] = useState(lobby ? lobby.mode : "1vs1");
+  const [isPublic, setIsPublic] = useState(lobby ? lobby.isPublic : true);
+  const [nbPlaces, setNbPlaces] = useState(lobby ? lobby.totalPlace : 2);
+  const [minPlaces, setminPlaces] = useState(
+    gameMode === "1vs1" ? minPlayer1vs1 : minPlayerBr
+  );
+  const [maxPlaces, setmaxPlaces] = useState(
+    gameMode === "1vs1" ? maxPlayer1vs1 : maxPlayerBr
+  );
+  const [nbLife, setNbLife] = useState(
+    lobby ? lobby.nbLifePerPlayer : defaultNbLife
+  );
+
+  const [nbRounds, setNbRounds] = useState(defaultNbRounds);
+  const [eliminationRate, setEliminationRate] = useState(
+    defaultEliminationRate
+  );
 
   const [globalTime, setGlobalTime] = useState(
     lobby ? lobby.globalTime : defaultGlobalTime1vs1 / 60000
   );
-
   const [timeAfterFirstGuess, setTimeAfterFirstGuess] = useState(
     lobby ? lobby.timeAfterFirstGuess : defaultTimeAfterFirstGuess1vs1 / 1000
   );
@@ -93,6 +97,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         nbLife,
         globalTime: globalTime * 60000,
         timeAfterFirstGuess: timeAfterFirstGuess * 1000,
+        eliminationRate,
       });
     } else if (mode === "Create") {
       socket?.emit(
@@ -107,6 +112,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
           nbLife,
           globalTime: globalTime * 60000,
           timeAfterFirstGuess: timeAfterFirstGuess * 1000,
+          eliminationRate,
         },
         (response: Packet) => {
           if (response.success) {
@@ -140,7 +146,6 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
       setGlobalTime(defaultGlobalTimeBr / 60000);
       setTimeAfterFirstGuess(defaultTimeAfterFirstGuessBr / 1000);
     } else if (value == "1vs1") {
-      onToggle();
       setmaxPlaces(maxPlayer1vs1);
       setminPlaces(minPlayer1vs1);
       setNbPlaces(maxPlayer1vs1);
@@ -174,7 +179,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         <ModalCloseButton />
         <ModalBody>
           <Box onKeyDown={handleKeyPressed}>
-            <Box pb={4}>
+            <Box>
               <Text pb={1}>Nom</Text>
               <Input
                 autoFocus
@@ -184,7 +189,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
               />
             </Box>
             {/* GAME MODE */}
-            <Box pt={4}>
+            <Box pt={8}>
               <Text pb={2}>Mode de jeu</Text>
               <RadioGroup onChange={handleGameMode} value={gameMode}>
                 <Stack direction="row">
@@ -223,7 +228,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
               </Box>
               {/* NbLife */}
               <Box display={"flex"} alignItems={"center"} ml={2}>
-                <Text mr={1}>Vies</Text>
+                <Text pr={1}>Vies</Text>
                 <NumberInput
                   ml={1}
                   onChange={(valueString: string) =>
@@ -241,9 +246,53 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
                 </NumberInput>
               </Box>
             </HStack>
+            {/* NbRounds (only for 1vs1) */}
+            {gameMode === "1vs1" && (
+              <Box display={"flex"} alignItems={"center"} pt={2}>
+                <Text pr={1}>Round(s)</Text>
+                <NumberInput
+                  onChange={(valueString: string) =>
+                    setNbRounds(checkDataValidity(valueString, 1, 5))
+                  }
+                  value={nbRounds}
+                  min={1}
+                  max={5}
+                  w={"lg"}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Box>
+            )}
+            {/* Elimination rate (only for Battle-Royale) */}
+            {gameMode === "battle-royale" && (
+              <Box display={"flex"} alignItems={"center"} pt={2}>
+                <Text w={325} pr={1}>
+                  Taux d'élimination (en %)
+                </Text>
+                <NumberInput
+                  onChange={(valueString: string) =>
+                    setEliminationRate(checkDataValidity(valueString, 1, 50))
+                  }
+                  value={eliminationRate}
+                  min={1}
+                  max={50}
+                  w={"lg"}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Box>
+            )}
             {/* Temps global */}
-            <Box display={"flex"} alignItems={"center"}>
-              <Text mr={1}>Temps global (minutes)</Text>
+            <Box display={"flex"} alignItems={"center"} pt={2}>
+              <Text pr={1}>Temps global (minutes)</Text>
               <NumberInput
                 ml={1}
                 onChange={(valueString: string) =>
@@ -262,8 +311,8 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
               </NumberInput>
             </Box>
             {/* Time after the first player guess */}
-            <Box display={"flex"} alignItems={"center"}>
-              <Text mr={1}>Temps après 1er gagnant (secondes)</Text>
+            <Box display={"flex"} alignItems={"center"} pt={2}>
+              <Text pr={1}>Temps après le 1er gagnant (secondes)</Text>
               <NumberInput
                 ml={1}
                 onChange={(valueString: string) =>
@@ -281,30 +330,9 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
                 </NumberInputStepper>
               </NumberInput>
             </Box>
-            <Fade in={openFade} unmountOnExit={true}>
-              {/* NbRounds */}
-              <Box display={"flex"} alignItems={"center"} pt={2}>
-                <Text pr={2}>Round(s)</Text>
-                <NumberInput
-                  onChange={(valueString: string) =>
-                    setNbRounds(checkDataValidity(valueString, 1, 5))
-                  }
-                  value={nbRounds}
-                  min={1}
-                  max={5}
-                  w={"lg"}
-                >
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              </Box>
-            </Fade>
-            {/* PUBLIC/PRIVE */}
-            <Box pt={6}>
-              <Text my={2}>Visibilité</Text>
+            {/* Accessibilité du lobby */}
+            <Box pt={8}>
+              <Text pb={2}>Visibilité</Text>
               <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>
                 <Stack direction="row">
                   <Radio value="true">Public</Radio>

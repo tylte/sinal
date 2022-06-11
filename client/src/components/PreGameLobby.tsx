@@ -20,7 +20,6 @@ import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
 import { useSocket } from "../utils/hooks";
 import { CreateLobbyModal } from "./CreateLobbyModal";
-import { defaultEliminationRate } from "src/utils/Const";
 import { LinkAfterGame1vs1 } from "./LinkPostGame1vs1";
 
 interface PreGameLobbyProps {
@@ -45,6 +44,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
     nbRounds,
     globalTime,
     timeAfterFirstGuess,
+    eliminationRate,
   },
   player: { id: playerId },
   gameMode,
@@ -60,7 +60,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
       socket?.emit("start_game_br", {
         lobbyId: id,
         playerId,
-        eliminationRate: defaultEliminationRate,
+        eliminationRate: eliminationRate,
         globalTime: globalTime,
         timeAfterFirstGuess: timeAfterFirstGuess,
       });
@@ -178,10 +178,11 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
               lastGame,
               globalTime: globalTime / 60000,
               timeAfterFirstGuess: timeAfterFirstGuess / 1000,
+              eliminationRate,
             }}
           />
           <Button
-            isDisabled={playerId !== owner || playerList.length < totalPlace}
+            isDisabled={playerId !== owner || playerList.length < 2}
             colorScheme={"green"}
             onClick={startGame}
           >
