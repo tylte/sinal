@@ -61,7 +61,9 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   );
   const [gameMode, setGameMode] = useState(lobby ? lobby.mode : "1vs1");
   const [isPublic, setIsPublic] = useState(lobby ? lobby.isPublic : true);
-  const [nbPlaces, setNbPlaces] = useState(lobby ? lobby.totalPlace : 2);
+  const [nbPlaces, setNbPlaces] = useState(
+    lobby ? lobby.totalPlace : maxPlayer1vs1
+  );
   const [minPlaces, setminPlaces] = useState(
     gameMode === "1vs1" ? minPlayer1vs1 : minPlayerBr
   );
@@ -158,6 +160,13 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     setIsPublic(value === "true");
   };
 
+  /**
+   * Function to ensure that the value enter in the NumberInput is in the interval.
+   * @param value - Value of the NumberInput
+   * @param min - Minimum value
+   * @param max - Maximum value
+   * @returns A value in the interval
+   */
   const checkDataValidity = (value: string, min: number, max: number) => {
     let result = parseInt(value === "" ? "0" : value);
     if (result > max) {
@@ -235,7 +244,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
                     setNbLife(checkDataValidity(valueString, 1, 10))
                   }
                   value={nbLife}
-                  min={2}
+                  min={1}
                   max={10}
                 >
                   <NumberInputField />

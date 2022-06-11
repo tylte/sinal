@@ -16,7 +16,14 @@ export const serverWsUrl =
 export const serverWsPath =
   process.env.NEXT_PUBLIC_SERVER_WS_PATH || "/api/socket.io";
 
+/**
+ * Number of life (default)
+ */
 export const defaultNbLife = 6;
+
+/**
+ * Number of rounds (default)
+ */
 export const defaultNbRounds = 1;
 
 /**
