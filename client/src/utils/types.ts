@@ -33,6 +33,8 @@ export type Lobby = {
   playerList: Player[];
   nbLifePerPlayer: number;
   nbRounds: number;
+  globalTime: number;
+  timeAfterFirstGuess: number;
   owner: string; // id du joueur owner
   isPublic: boolean;
   mode: GameMode;

@@ -51,11 +51,13 @@ export const Lobby = z.object({
   playerList: Player.array(),
   nbLifePerPlayer: z.number(),
   nbRounds: z.number(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
   owner: z.string(), // id du joueur owner
   isPublic: z.boolean(),
   mode: GameMode,
-  currentGameId: z.nullable(z.string()),
-  lastGame: z.nullable(LastGame),
+  currentGameId: z.optional(z.string()),
+  lastGame: z.optional(LastGame),
 });
 
 export const Game1vs1 = z.object({
@@ -106,6 +108,8 @@ export const ArgCreateLobby = z.object({
   name: z.string(),
   nbRounds: z.number(),
   nbLife: z.number(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
 });
 
 export const ArgUpdateLobby = z.object({
@@ -116,6 +120,8 @@ export const ArgUpdateLobby = z.object({
   name: z.string(),
   nbRounds: z.number(),
   nbLife: z.number(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
 });
 
 export const ArgJoinLobby = z.object({

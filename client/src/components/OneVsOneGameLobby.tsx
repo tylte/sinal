@@ -41,6 +41,8 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     id: gameId,
     length: game_length,
     endTime,
+    roundNumber,
+    nbRoundsTotal,
   },
   lobby: lobby,
   setGameState,
@@ -204,6 +206,9 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
             {!hasWon && "PERDU"}
           </Text>
         )}
+        <Text align={"center"}>
+          Round {roundNumber}/{nbRoundsTotal}
+        </Text>
         {!isFinished && (
           <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
         )}

@@ -21,13 +21,16 @@ import {
   Stack,
   Text,
   useDisclosure,
-  VStack,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
 import { Socket } from "socket.io-client";
 import {
+  defaultGlobalTime1vs1,
+  defaultGlobalTimeBr,
+  defaultTimeAfterFirstGuess1vs1,
+  defaultTimeAfterFirstGuessBr,
   maxPlayer1vs1,
   maxPlayerBr,
   minPlayer1vs1,
@@ -69,6 +72,14 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const [owner] = usePlayer();
   const router = useRouter();
 
+  const [globalTime, setGlobalTime] = useState(
+    lobby ? lobby.globalTime : defaultGlobalTime1vs1 / 60000
+  );
+
+  const [timeAfterFirstGuess, setTimeAfterFirstGuess] = useState(
+    lobby ? lobby.timeAfterFirstGuess : defaultTimeAfterFirstGuess1vs1 / 1000
+  );
+
   const handleButton = (socket: Socket | null, owner: Player | null) => {
     if (mode === "Update" && lobby !== undefined) {
       socket?.emit("update_lobby", {
@@ -80,6 +91,8 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         name: lobbyName,
         nbRounds,
         nbLife,
+        globalTime: globalTime * 60000,
+        timeAfterFirstGuess: timeAfterFirstGuess * 1000,
       });
     } else if (mode === "Create") {
       socket?.emit(
@@ -92,6 +105,8 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
           name: lobbyName,
           nbRounds,
           nbLife,
+          globalTime: globalTime * 60000,
+          timeAfterFirstGuess: timeAfterFirstGuess * 1000,
         },
         (response: Packet) => {
           if (response.success) {
@@ -122,11 +137,15 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
       setmaxPlaces(maxPlayerBr);
       setminPlaces(minPlayerBr);
       setNbPlaces(maxPlayerBr);
+      setGlobalTime(defaultGlobalTimeBr / 60000);
+      setTimeAfterFirstGuess(defaultTimeAfterFirstGuessBr / 1000);
     } else if (value == "1vs1") {
       onToggle();
       setmaxPlaces(maxPlayer1vs1);
       setminPlaces(minPlayer1vs1);
       setNbPlaces(maxPlayer1vs1);
+      setGlobalTime(defaultGlobalTime1vs1 / 60000);
+      setTimeAfterFirstGuess(defaultTimeAfterFirstGuess1vs1 / 1000);
     }
   };
 
@@ -134,51 +153,62 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     setIsPublic(value === "true");
   };
 
+  const checkDataValidity = (value: string, min: number, max: number) => {
+    let result = parseInt(value === "" ? "0" : value);
+    if (result > max) {
+      result = max;
+    } else if (result < min) {
+      result = min;
+    }
+
+    return result;
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size={"lg"}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>
+        <ModalHeader textAlign={"center"}>
           {mode === "Create" ? "Création de lobby" : "Modifier le lobby"}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Box onKeyDown={handleKeyPressed}>
-            <Input autoFocus value={lobbyName} onChange={handleLobbyName} />
+            <Box pb={4}>
+              <Text pb={1}>Nom</Text>
+              <Input
+                autoFocus
+                value={lobbyName}
+                onChange={handleLobbyName}
+                mt={1}
+              />
+            </Box>
             {/* GAME MODE */}
-            <Text my={2}>Mode de jeu</Text>
-            <RadioGroup onChange={handleGameMode} value={gameMode}>
-              <Stack direction="row">
-                <Radio value="1vs1">1 vs 1</Radio>
-                <Radio isDisabled={false} value="battle-royale">
-                  Battle Royale
-                </Radio>
-                <Radio isDisabled={true} value="2vs2">
-                  2 vs 2
-                </Radio>
-              </Stack>
-            </RadioGroup>
-            {/* PLACE */}
-            <VStack>
-              <HStack my={2}>
-                <Text my={2}>Places</Text>
-                {/* <Text> min : {minPlaces} </Text>
-                <Text>max : {maxPlaces} </Text> */}
+            <Box pt={4}>
+              <Text pb={2}>Mode de jeu</Text>
+              <RadioGroup onChange={handleGameMode} value={gameMode}>
+                <Stack direction="row">
+                  <Radio value="1vs1">1 vs 1</Radio>
+                  <Radio isDisabled={false} value="battle-royale">
+                    Battle Royale
+                  </Radio>
+                  <Radio isDisabled={true} value="2vs2">
+                    2 vs 2
+                  </Radio>
+                </Stack>
+              </RadioGroup>
+            </Box>
+            <HStack pt={2}>
+              {/* NbPlaces */}
+              <Box display={"flex"} alignItems={"center"} mr={2}>
+                <Text mr={1}>Places</Text>
                 <NumberInput
+                  ml={1}
                   isDisabled={maxPlaces === minPlaces}
                   onChange={(valueString: string) =>
-                    setNbPlaces(() => {
-                      let result = parseInt(
-                        valueString === "" ? "0" : valueString
-                      );
-                      if (result > maxPlaces) {
-                        result = maxPlaces;
-                      } else if (result < minPlaces) {
-                        result = minPlaces;
-                      }
-
-                      return result;
-                    })
+                    setNbPlaces(
+                      checkDataValidity(valueString, minPlaces, maxPlaces)
+                    )
                   }
                   value={nbPlaces}
                   min={minPlaces}
@@ -190,10 +220,14 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
                     <NumberDecrementStepper />
                   </NumberInputStepper>
                 </NumberInput>
-                <Text my={2}>Vies</Text>
+              </Box>
+              {/* NbLife */}
+              <Box display={"flex"} alignItems={"center"} ml={2}>
+                <Text mr={1}>Vies</Text>
                 <NumberInput
+                  ml={1}
                   onChange={(valueString: string) =>
-                    setNbLife(parseInt(valueString))
+                    setNbLife(checkDataValidity(valueString, 1, 10))
                   }
                   value={nbLife}
                   min={2}
@@ -205,36 +239,79 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
                     <NumberDecrementStepper />
                   </NumberInputStepper>
                 </NumberInput>
-              </HStack>
-              <Fade in={openFade} unmountOnExit={true}>
-                <HStack>
-                  <Text my={2}>Round(s)</Text>
-                  <NumberInput
-                    onChange={(valueString: string) =>
-                      setNbRounds(parseInt(valueString))
-                    }
-                    value={nbRounds}
-                    min={1}
-                    max={5}
-                    w={330}
-                  >
-                    <NumberInputField />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </HStack>
-              </Fade>
-            </VStack>
+              </Box>
+            </HStack>
+            {/* Temps global */}
+            <Box display={"flex"} alignItems={"center"}>
+              <Text mr={1}>Temps global (minutes)</Text>
+              <NumberInput
+                ml={1}
+                onChange={(valueString: string) =>
+                  setGlobalTime(checkDataValidity(valueString, 1, 10))
+                }
+                value={globalTime}
+                min={1}
+                max={10}
+                w={"lg"}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </Box>
+            {/* Time after the first player guess */}
+            <Box display={"flex"} alignItems={"center"}>
+              <Text mr={1}>Temps après 1er gagnant (secondes)</Text>
+              <NumberInput
+                ml={1}
+                onChange={(valueString: string) =>
+                  setTimeAfterFirstGuess(checkDataValidity(valueString, 0, 300))
+                }
+                value={timeAfterFirstGuess}
+                min={0}
+                max={300}
+                w={"lg"}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </Box>
+            <Fade in={openFade} unmountOnExit={true}>
+              {/* NbRounds */}
+              <Box display={"flex"} alignItems={"center"} pt={2}>
+                <Text pr={2}>Round(s)</Text>
+                <NumberInput
+                  onChange={(valueString: string) =>
+                    setNbRounds(checkDataValidity(valueString, 1, 5))
+                  }
+                  value={nbRounds}
+                  min={1}
+                  max={5}
+                  w={"lg"}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Box>
+            </Fade>
             {/* PUBLIC/PRIVE */}
-            <Text my={2}>Visibilité</Text>
-            <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>
-              <Stack direction="row">
-                <Radio value="true">Public</Radio>
-                <Radio value="false">Privée</Radio>
-              </Stack>
-            </RadioGroup>
+            <Box pt={6}>
+              <Text my={2}>Visibilité</Text>
+              <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>
+                <Stack direction="row">
+                  <Radio value="true">Public</Radio>
+                  <Radio value="false">Privée</Radio>
+                </Stack>
+              </RadioGroup>
+            </Box>
           </Box>
         </ModalBody>
 

@@ -25,6 +25,7 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
     owner,
     playerList,
     nbLifePerPlayer,
+    nbRounds,
   },
 }) => {
   const currentPlace = playerList.length;
@@ -60,6 +61,7 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
             </Text>
             <Text fontStyle={"italic"}>{state}</Text>
             <Text fontStyle={"italic"}>{nbLifePerPlayer} Vies</Text>
+            <Text fontStyle={"italic"}>{nbRounds} Round(s)</Text>
           </HStack>
           {playerOwner !== undefined && (
             <Text>{playerOwner.name} (owner) </Text>

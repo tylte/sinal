@@ -412,9 +412,9 @@ export const lobbyOneVsOneAddEvents = (
     }
   });
 
-  socket.on("winning_game_1vs1", (winner: Player1vs1 | undefined) => {
+  socket.on("winning_game_1vs1", (winner: Player1vs1) => {
     setIsFinished(true);
-    if (winner === undefined) {
+    if (winner === null) {
       toast({
         title: "Egalité.",
         status: "info",
@@ -500,8 +500,9 @@ export const lobbyOneVsOneAddEvents = (
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
   socket?.removeListener("first_winning_player_1vs1");
   socket?.removeListener("winning_round_1vs1");
-  socket?.removeListener("draw_1vs1");
+  socket?.removeListener("draw_round_1vs1");
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("update_word_broadcast");
   socket?.removeListener("next_round");
+  socket?.removeListener("winning_game_1vs1");
 };

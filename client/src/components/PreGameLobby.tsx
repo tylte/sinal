@@ -20,13 +20,7 @@ import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
 import { useSocket } from "../utils/hooks";
 import { CreateLobbyModal } from "./CreateLobbyModal";
-import {
-  defaultEliminationRate,
-  defaultGlobalTime1vs1,
-  defaultGlobalTimeBr,
-  defaultTimeAfterFirstGuess1vs1,
-  defaultTimeAfterFirstGuessBr,
-} from "src/utils/Const";
+import { defaultEliminationRate } from "src/utils/Const";
 import { LinkAfterGame1vs1 } from "./LinkPostGame1vs1";
 
 interface PreGameLobbyProps {
@@ -49,6 +43,8 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
     isPublic,
     nbLifePerPlayer,
     nbRounds,
+    globalTime,
+    timeAfterFirstGuess,
   },
   player: { id: playerId },
   gameMode,
@@ -65,15 +61,15 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
         lobbyId: id,
         playerId,
         eliminationRate: defaultEliminationRate,
-        globalTime: defaultGlobalTimeBr,
-        timeAfterFirstGuess: defaultTimeAfterFirstGuessBr,
+        globalTime: globalTime,
+        timeAfterFirstGuess: timeAfterFirstGuess,
       });
     } else if (gameMode === "1vs1") {
       socket?.emit("start_game_1vs1", {
         lobbyId: id,
         playerId,
-        globalTime: defaultGlobalTime1vs1,
-        timeAfterFirstGuess: defaultTimeAfterFirstGuess1vs1,
+        globalTime: globalTime,
+        timeAfterFirstGuess: timeAfterFirstGuess,
       });
     }
   };
@@ -127,7 +123,9 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             {name} - {mode} - {placeStatus}
           </Text>
           <Text textAlign={"center"} fontStyle={"italic"}>
-            Vies : {nbLifePerPlayer} - Rounds : {nbRounds}
+            Vies : {nbLifePerPlayer} - Rounds : {nbRounds} - Temps global :{" "}
+            {globalTime / 60000} minutes - Temps après 1er gagnant :{" "}
+            {timeAfterFirstGuess / 1000} secondes
           </Text>
         </Box>
 
@@ -178,6 +176,8 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
               isPublic,
               currentGameId,
               lastGame,
+              globalTime: globalTime / 60000,
+              timeAfterFirstGuess: timeAfterFirstGuess / 1000,
             }}
           />
           <Button

@@ -46,6 +46,8 @@ export const createLobbyEvent = (
     place: totalPlace,
     nbRounds,
     nbLife,
+    globalTime,
+    timeAfterFirstGuess,
   }: ArgCreateLobbyType,
   response: (payload: PacketType) => void
 ) => {
@@ -61,8 +63,10 @@ export const createLobbyEvent = (
     owner: owner.id,
     isPublic,
     mode,
-    currentGameId: null,
-    lastGame: null,
+    currentGameId: undefined,
+    lastGame: undefined,
+    globalTime,
+    timeAfterFirstGuess,
   };
 
   let player = playerMap.get(owner.id);
@@ -107,6 +111,8 @@ export const updateLobbyEvent = (
     place: totalPlace,
     nbRounds,
     nbLife,
+    globalTime,
+    timeAfterFirstGuess,
   }: ArgUpdateLobbyType,
   lobbyId: string
 ) => {
@@ -114,12 +120,14 @@ export const updateLobbyEvent = (
   if (lobby !== undefined) {
     lobby = {
       ...lobby,
-      isPublic: isPublic,
-      mode: mode,
-      name: name,
+      isPublic,
+      mode,
+      name,
       nbLifePerPlayer: nbLife,
-      totalPlace: totalPlace,
-      nbRounds: nbRounds,
+      totalPlace,
+      nbRounds,
+      globalTime,
+      timeAfterFirstGuess,
     };
     lobbyMap.set(lobbyId, lobby);
     io.to(lobbyId).emit("updating_lobby", lobby);
@@ -320,7 +328,7 @@ export const startGame1vs1Event = (
 
   let word = get_word();
   console.log("Mot à découvrir : ", word);
-  idToWord.set(gameId, word); //the ID of the word is the same as the lobby
+  idToWord.set(gameId, word);
   let game: Game1vs1 = {
     playerOne: {
       id: playerOne.id,
@@ -472,10 +480,11 @@ export const guessWord1vs1Event = (
           } else {
             // Launch another round
             game.roundNumber++;
-            newWord1vs1(io, game, lobby);
+            let word = newWord1vs1(io, game, lobby);
 
             // Waiting 3 seconds until the next round
             setTimeout(() => {
+              setGlobalTimeout(io, game, lobby, word);
               io.to(gameId).emit("next_round", game);
             }, 3000);
           }
@@ -505,10 +514,11 @@ export const guessWord1vs1Event = (
           } else {
             // Launch another round
             game.roundNumber++;
-            newWord1vs1(io, game, lobby);
+            let word = newWord1vs1(io, game, lobby);
 
             // Waiting 3 seconds until the next round
             setTimeout(() => {
+              setGlobalTimeout(io, game, lobby, word);
               io.to(gameId).emit("next_round", game);
             }, 3000);
           }
@@ -539,10 +549,11 @@ export const guessWord1vs1Event = (
         } else {
           // Launch another round
           game.roundNumber++;
-          newWord1vs1(io, game, lobby);
+          let word = newWord1vs1(io, game, lobby);
 
           // Waiting 3 seconds until the next round
           setTimeout(() => {
+            setGlobalTimeout(io, game, lobby, word);
             io.to(gameId).emit("next_round", game);
           }, 3000);
         }
@@ -601,10 +612,11 @@ export const guessWord1vs1Event = (
         } else {
           // Launch another round
           game.roundNumber++;
-          newWord1vs1(io, game, lobby);
+          let word = newWord1vs1(io, game, lobby);
 
           // Waiting 3 seconds until the next round
           setTimeout(() => {
+            setGlobalTimeout(io, game, lobby, word);
             io.to(gameId).emit("next_round", game);
           }, 3000);
         }
@@ -631,10 +643,11 @@ export const guessWord1vs1Event = (
       } else {
         // Launch another round
         game.roundNumber++;
-        newWord1vs1(io, game, lobby);
+        let word = newWord1vs1(io, game, lobby);
 
         // Waiting 3 seconds until the next round
         setTimeout(() => {
+          setGlobalTimeout(io, game, lobby, word);
           io.to(gameId).emit("next_round", game);
         }, 3000);
       }
@@ -651,6 +664,12 @@ export const guessWord1vs1Event = (
 const ending1vs1Game = (io: Server, lobby: LobbyType, gameId: string) => {
   // We redirecting to the PreGameLobby
   lobby.state = "pre-game";
+
+  // Clear the timeout
+  let timeout = timeoutMap.get(gameId);
+  if (timeout !== undefined) {
+    clearTimeout(timeout);
+  }
   io.to(gameId).emit("ending_game", { lobby });
   io.to(gameId).socketsLeave(gameId);
   game1vs1Map.delete(gameId);
@@ -703,6 +722,7 @@ const get1vs1GameWinner = (
  * @param io - Server
  * @param game - 1vs1 GameState
  * @param lobby - Lobby of the Game
+ * @return The new word to guess
  */
 const newWord1vs1 = (io: Server, game: Game1vs1, lobby: LobbyType) => {
   if (game !== undefined) {
@@ -727,11 +747,25 @@ const newWord1vs1 = (io: Server, game: Game1vs1, lobby: LobbyType) => {
     game.firstLetter = newWord.charAt(0);
     game.length = newWord.length;
     game.playerOne.nbLife = lobby.nbLifePerPlayer;
+    game.playerOne.hasWon = false;
     game.playerTwo.nbLife = lobby.nbLifePerPlayer;
+    game.playerTwo.hasWon = false;
 
-    // Set the new timeout.
-    timeout = setTimeout(() => {
-      tempsEcoule1vs1(io, game, lobby, newWord);
+    return newWord;
+  } else {
+    return;
+  }
+};
+
+const setGlobalTimeout = (
+  io: Server,
+  game: Game1vs1 | undefined,
+  lobby: LobbyType | undefined,
+  word: string | undefined
+) => {
+  if (game !== undefined && word) {
+    let timeout = setTimeout(() => {
+      tempsEcoule1vs1(io, game, lobby, word);
     }, game.globalTime);
 
     timeoutMap.set(game.id, timeout);
