@@ -6,7 +6,9 @@ import { serverHttpUrl } from "./Const";
 import {
   BrGameInfo,
   BrGameState,
+  ChatChannel,
   ChatMessage,
+  ChattingActions,
   Game1vs1,
   LetterResult,
   Lobby,
@@ -17,6 +19,10 @@ import {
   UpdateLobbyJoinPayload,
   UpdateLobbyLeavePayload,
 } from "./types";
+
+// Here are all the api calls
+// Can be http request or websockets events
+// All the logic is here and is used by components
 
 export const guessWord = async (
   word: string,
@@ -279,10 +285,50 @@ export const getSpecificLobby = (
 
 export const addChatEvents = (
   socket: Socket,
-  setMessageHistory: Dispatch<SetStateAction<ChatMessage[]>>
+  setChattingAction: React.Dispatch<React.SetStateAction<ChattingActions>>
 ) => {
   socket.on("broadcast_message", (message: ChatMessage) => {
-    setMessageHistory((messageHistory) => [...messageHistory, message]);
+    setChattingAction((action) => {
+      return {
+        ...action,
+        channels: action.channels.map((channel) => {
+          if (channel.id === message.channelId) {
+            return {
+              ...channel,
+              messageHistory: [...channel.messageHistory, message],
+            };
+          } else {
+            return {
+              ...channel,
+            };
+          }
+        }),
+      };
+    });
+  });
+  socket.on(
+    "add_player_to_chat_channel",
+    ({ name, id, messageHistory }: ChatChannel) => {
+      setChattingAction((action) => {
+        return {
+          ...action,
+          channels: [
+            ...action.channels,
+            { name, messageHistory: messageHistory, id },
+          ],
+        };
+      });
+    }
+  );
+  socket.on("remove_player_of_chat_channel", (channel_to_remove: string) => {
+    setChattingAction((action) => {
+      return {
+        ...action,
+        channels: action.channels.filter((channel) => {
+          return channel.id !== channel_to_remove;
+        }),
+      };
+    });
   });
 
   socket.emit("join_chat_global");
@@ -290,6 +336,8 @@ export const addChatEvents = (
 
 export const removeChatEvents = (socket: Socket) => {
   socket.removeListener("broadcast_message");
+  socket.removeListener("add_player_to_chat_channel");
+  socket.removeListener("remove_player_of_chat_channel");
   socket.emit("leave_chat_global");
 };
 export const addGuessWordBrBroadcast = async (
@@ -326,6 +374,47 @@ export const addBrEvent = async (
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
     setEndpoint(arg.endTime);
+  });
+  socket?.on("win_by_forfeit", (arg) => {
+    if (arg !== playerId) {
+      toast({
+        title: "Perdu un joueur a quitter !",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      setGameState((gameSate) =>
+        gameSate.map((game) =>
+          game.playerId !== arg
+            ? { ...game, isFinished: true, hasWon: false }
+            : { ...game }
+        )
+      );
+    } else {
+      //case use when one player crash or quit
+      toast({
+        title: "GG vous avez gagné par forfait",
+        status: "success",
+        isClosable: true,
+        duration: 2500,
+      });
+      setGameState((gameSate) =>
+        gameSate.map((game) =>
+          game.playerId === arg
+            ? { ...game, isFinished: true, hasWon: true }
+            : { ...game }
+        )
+      );
+    }
+    return;
+  });
+  socket?.on("player_leave", (arg) => {
+    toast({
+      title: "le joueur " + arg + " a quitté la partie.",
+      status: "info",
+      isClosable: true,
+      duration: 2500,
+    });
   });
   socket?.on("winning_player_br", (arg) => {
     console.log("winning_player_br");
@@ -377,6 +466,8 @@ export const addBrEvent = async (
 export const removeBrEvent = (socket: Socket | null) => {
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("first_winning_player_br");
+  socket?.removeListener("player_leave");
+  socket?.removeListener("win_by_forfeit");
   socket?.removeListener("winning_player_br");
   socket?.removeListener("next_word_br");
   socket?.removeListener("draw_br");
@@ -470,6 +561,7 @@ export const lobbyOneVsOneAddEvents = (
     }
   });
   socket.on("draw_round_1vs1", () => {
+    console.log("draw_1vs1");
     setIsFinished(true);
     toast({
       title: "Egalité.",
@@ -495,6 +587,14 @@ export const lobbyOneVsOneAddEvents = (
       );
     }
   });
+  socket?.on("player_leave", (arg) => {
+    toast({
+      title: "le joueur " + arg + " a quitté la partie.",
+      status: "info",
+      isClosable: true,
+      duration: 2500,
+    });
+  });
 };
 
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
@@ -505,4 +605,14 @@ export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
   socket?.removeListener("update_word_broadcast");
   socket?.removeListener("next_round");
   socket?.removeListener("winning_game_1vs1");
+  socket?.removeListener("player_leave");
+};
+
+export const leaveGame = (
+  socket: Socket,
+  playerId: string,
+  gameId: string,
+  lobbyId?: string | undefined
+) => {
+  socket.emit("leave_game", { playerId, lobbyId, gameId }, () => {});
 };

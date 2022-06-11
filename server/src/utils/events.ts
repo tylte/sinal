@@ -4,6 +4,8 @@ import { dicoHasWord } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
 import {
+  channelIdToHistory,
+  disconnectMap,
   game1vs1Map,
   gameBrMap,
   lobbyMap,
@@ -83,8 +85,18 @@ export const createLobbyEvent = (
 
   lobbyMap.set(lobbyId, lobby);
   console.log("Lobby created notif");
+
+  // The user will join the lobby chat room
+  // For now no message history is kept on the server
+  socket.emit("add_player_to_chat_channel", {
+    name: "Lobby",
+    id: lobbyId,
+    messageHistory: [],
+  });
+
   socket.join(lobbyId);
   player.lobbyId = lobbyId;
+
   if (lobby.isPublic) {
     io.to(PUBLIC_LOBBIES).emit("lobbies_update_create", lobbyMap.get(lobbyId));
   }
@@ -96,9 +108,7 @@ export const createLobbyEvent = (
   };
 
   // If the user created a lobby, he will leave it when deconnecting
-  socket.on("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId: player!.id }, response);
-  });
+  willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId: player!.id });
   response(packet);
 };
 
@@ -174,12 +184,19 @@ export const joinLobbyEvent = (
 
   lobby.playerList.push(player);
 
+  let messageHistory = channelIdToHistory.get(lobbyId) ?? [];
+  // The user will join the lobby chat room
+  // For now no message history is kept on the server
+  socket.emit("add_player_to_chat_channel", {
+    name: "Lobby",
+    id: lobbyId,
+    messageHistory,
+  });
+
   io.to(PUBLIC_LOBBIES).to(lobbyId).emit("lobbies_update_join", { lobby });
 
   // If the user joined a lobby, he will leave it when deconnecting
-  socket.on("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId: player!.id }, response);
-  });
+  willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId: player!.id });
 
   response({
     success: true,
@@ -242,6 +259,9 @@ export const leaveLobbyEvent = (
   // Leave the room
   socket.leave(lobbyId);
 
+  // Leave the lobby chat room
+  socket.emit("remove_player_of_chat_channel", lobbyId);
+
   console.log("Joueur retiré : ", playerId, " dans le lobby : ", lobbyId, "");
   response({
     success: true,
@@ -271,9 +291,11 @@ export const willLeaveLobbyOnDisconnect = (
   socket: Socket,
   { playerId, lobbyId }: ArgLeaveLobbyType
 ) => {
-  socket.on("disconnect", () => {
+  let disconnect = () => {
     leaveLobbyEvent(io, socket, { lobbyId, playerId }, () => {});
-  });
+  };
+  disconnectMap.set(playerId + lobbyId, disconnect);
+  socket.on("disconnect", disconnect);
 };
 
 export const willNoLongerLeaveLobbyOnDisconnect = (
@@ -281,12 +303,14 @@ export const willNoLongerLeaveLobbyOnDisconnect = (
   socket: Socket,
   { playerId, lobbyId }: ArgLeaveLobbyType
 ) => {
-  socket.removeListener("disconnect", () => {
-    leaveLobbyEvent(io, socket, { lobbyId, playerId }, () => {});
-  });
+  let disconnect = disconnectMap.get(playerId + lobbyId);
+  if (disconnect !== undefined) {
+    socket.removeListener("disconnect", disconnect);
+    disconnectMap.delete(playerId + lobbyId);
+  }
 };
 
-export const startGame1vs1Event = (
+export const startGame1vs1Event = async (
   io: Server,
   { lobbyId, playerId, globalTime, timeAfterFirstGuess }: ArgStartGame1vs1Type
 ) => {
@@ -370,6 +394,29 @@ export const startGame1vs1Event = (
   game.endTime = Date.now() + globalTime;
   io.to(lobbyId).emit("starting_game_1vs1", game);
   io.to(lobbyId).socketsJoin(gameId);
+
+  //set the function of the disconnect for the first player
+  let disconnectPlayerOne = () => {
+    leaveGame1vs1(io, game, game.playerOne.id, lobby);
+  };
+  //set the function of the disconnect for the second player
+  let disconnectPlayerTwo = () => {
+    leaveGame1vs1(io, game, game.playerTwo.id, lobby);
+  };
+  let index = 0;
+  //set the map of the disconnect
+  disconnectMap.set(game.playerOne.id + game.id, disconnectPlayerOne);
+  disconnectMap.set(game.playerTwo.id + game.id, disconnectPlayerTwo);
+  let sockets = await io.to(lobbyId).allSockets();
+  sockets.forEach((socketString) => {
+    let socket = io.sockets.sockets.get(socketString);
+    if (index === 0) {
+      socket?.on("disconnect", disconnectPlayerOne);
+    } else {
+      socket?.on("disconnect", disconnectPlayerTwo);
+    }
+    index++;
+  });
 };
 
 export const updateWordEvent = (
@@ -773,7 +820,7 @@ const setGlobalTimeout = (
   }
 };
 
-export const startGameBrEvent = (
+export const startGameBrEvent = async (
   io: Server,
   {
     lobbyId,
@@ -846,6 +893,20 @@ export const startGameBrEvent = (
   gameBrMap.set(gameId, game);
   io.to(lobbyId).emit("starting_game_br", game);
   io.to(lobbyId).socketsJoin(gameId);
+
+  //get all the socket for the game
+  let sockets = await io.to(gameId).allSockets();
+  let socketsIterator = sockets.values();
+  //the order of the playerList is the same of the set of the socket so we can use the foreach of the player to get the playerId
+  game.playerList.forEach((player) => {
+    let disconnect = () => {
+      leaveGameBr(io, game, player.id);
+    };
+    //set the map for the disconnect
+    disconnectMap.set(player.id + game.id, disconnect);
+    let socket = io.sockets.sockets.get(socketsIterator.next().value);
+    socket?.on("disconnect", disconnect);
+  });
 };
 
 export const guessWordBrEvent = (
@@ -1098,7 +1159,7 @@ const tempsEcoule1vs1 = (
 
 export const sendChatMessage = (
   io: Server,
-  { content, playerId }: ReceivedChatMessageType
+  { content, playerId, channelId }: ReceivedChatMessageType
 ) => {
   const player = playerMap.get(playerId);
 
@@ -1110,10 +1171,179 @@ export const sendChatMessage = (
   let messageId = get_id();
 
   let messageToSend: ChatMessageToSend = {
+    channelId,
     author: player.name,
     content,
     id: messageId,
   };
 
-  io.to(PUBLIC_CHAT).emit("broadcast_message", messageToSend);
+  const messageHistory = channelIdToHistory.get(channelId);
+  if (messageHistory) {
+    messageHistory.push(messageToSend);
+  } else {
+    channelIdToHistory.set(channelId, [messageToSend]);
+  }
+
+  io.to(channelId).emit("broadcast_message", messageToSend);
+};
+
+/**
+ * Is called when a player leaves a battle royal game whether it is voluntary or not.
+ *
+ * @param io - The io server
+ * @param game - The game
+ * @param playerId - The id of the player
+ */
+export const leaveGameBr = async (
+  io: Server,
+  game: GameBr,
+  playerId: string
+) => {
+  //check if the player exist
+  let indexPlayer = game.playerList.findIndex(
+    (player) => playerId === player.id
+  );
+  if (game !== undefined && indexPlayer >= 0) {
+    //the current game have one less player
+    game.playersLastNextRound -= 1;
+    //Informs the other players that a player has left.
+    io.to(game.id).emit("player_leave", game.playerList[indexPlayer].name); //emit the name of the player that leave
+    let timeout;
+    let index = game.playerList.findIndex((player) => playerId === player.id);
+    //reset the disconnect listeners
+    let disconnect = disconnectMap.get(playerId + game.id);
+    if (disconnect !== undefined) {
+      //get all the socket for the lobby
+      let sockets = await io.to(game.id).allSockets();
+      sockets.forEach((socketString) => {
+        let socket = io.sockets.sockets.get(socketString);
+        //remove only the disconnect that as the same function so for one user
+        socket?.removeListener("disconnect", disconnect);
+      });
+    }
+    disconnectMap.delete(playerId + game.id);
+    if (index !== -1) {
+      //delete the player in the playerList
+      game.playerList.splice(index, 1);
+    }
+    index = game.playerFound.findIndex((player) => playerId === player.id);
+    if (index !== -1) {
+      //delete the player in the playerFound
+      game.playerFound.splice(index, 1);
+    }
+    //check if the player that leave isn't in the player that win
+    if (game.playerList.length > 0) {
+      if (game.playersLastNextRound <= 0) {
+        //1vs1 round
+        io.to(game.id).emit("win_by_forfeit", game.playerList[0].id); //One player in playerList
+        //the game is finished we delete the timeout
+        timeout = timeoutMap.get(game.id);
+        if (timeout !== undefined) clearTimeout(timeout);
+        io.to(game.id).socketsLeave(game.id);
+      } else {
+        //the game is finished without the player
+        if (game.playersLastNextRound === 1) {
+          //3 player 1 quit
+          if (game.playerFound.length === 1) {
+            io.to(game.id).emit("win_by_forfeit", game.playerFound[0].id);
+            //the game is finished we delete the timeout
+            timeout = timeoutMap.get(game.id);
+            if (timeout !== undefined) clearTimeout(timeout);
+            io.to(game.id).socketsLeave(game.id);
+          }
+        } else {
+          //case the game as many player and somebody leave the game
+          if (game.playersLastNextRound === game.playerFound.length) {
+            //if the new playersLastNextRound is the same as playerFound.length, the game is finish and the next word is send
+            if (timeout !== undefined) clearTimeout(timeout);
+            newWordBr(io, game, game.globalTime);
+            game.playersLastNextRound = Math.floor(
+              game.playersLastNextRound * (1 - game.eliminationRate / 100)
+            );
+            game.playerList = game.playerFound;
+            game.playerFound = new Array();
+
+            game.playerList.forEach((p) => {
+              p.nbLife = game.nbLifePerPlayer;
+            });
+
+            io.to(game.id).emit("next_word_br", game);
+          }
+        }
+      }
+    }
+    //save the change of the game
+    gameBrMap.set(game.id, game);
+  }
+};
+
+/**
+ * Is called when a player leaves a 1vs1 game whether it is voluntary or not.
+ *
+ * @param io - The io server
+ * @param game - The gameBr
+ * @param playerId - The id of the player that leave
+ * @param lobby - lobbyType can be undefined
+ */
+export const leaveGame1vs1 = async (
+  io: Server,
+  game: Game1vs1,
+  playerId: string,
+  lobby?: LobbyType
+) => {
+  if (game !== undefined && lobby !== undefined) {
+    //the game is finished and nobody crash
+    if (game.playerOne.id === playerId) {
+      io.to(game.id).emit("player_leave", game.playerTwo.name); //emit the name of the player that leave
+      io.to(game.id).emit("wining_player_1vs1", game.playerTwo.id);
+      lobby.state = "pre-game";
+      io.to(game.id).emit("ending_game", { lobby });
+    } else if (game.playerTwo.id === playerId) {
+      io.to(game.id).emit("player_leave", game.playerOne.name); //emit the name of the player that leave
+      io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
+      lobby.state = "pre-game";
+      io.to(game.id).emit("ending_game", { lobby });
+    }
+    //reset the disconnect listeners
+    let disconnect = disconnectMap.get(playerId + game.id);
+    if (disconnect !== undefined) {
+      //get all the socket for the lobby
+      let sockets = await io.to(lobby.id).allSockets();
+      sockets.forEach((socketString) => {
+        let socket = io.sockets.sockets.get(socketString);
+        socket?.removeListener("disconnect", disconnect);
+      });
+    }
+    disconnectMap.delete(playerId + game.id);
+    io.to(game.id).socketsLeave(game.id);
+  }
+};
+
+/**
+ * This method is called when the game is over or the player leave the game.
+ * This method get the game and call leaveGame1vs1 or leaveGameBr.
+ *
+ * @param io - The io server
+ * @param gameId - The id of the game
+ * @param lobbyId - The id of the lobby
+ * @param playerId - The id of the player
+ */
+export const leaveGame = (
+  io: Server,
+  gameId: string,
+  lobbyId: string,
+  playerId: string
+) => {
+  let game1vs1 = Game1vs1.safeParse(game1vs1Map.get(gameId));
+  let lobby = lobbyMap.get(lobbyId);
+  //if the game is a 1vs1
+  if (game1vs1.success) {
+    leaveGame1vs1(io, game1vs1.data, playerId, lobby);
+  } else {
+    //if the game is a Br
+    let gameBr = GameBr.safeParse(gameBrMap.get(gameId));
+    if (gameBr.success) {
+      leaveGameBr(io, gameBr.data, playerId);
+    }
+  }
 };

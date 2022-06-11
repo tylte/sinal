@@ -46,7 +46,8 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   }, [socket]);
 
   return (
-    <Layout variant="large">
+    <Layout variant="grid">
+      <div></div>
       <Flex direction={"column"}>
         <Text mb={5} align="center" fontSize={"3xl"}>
           Liste des lobbys
