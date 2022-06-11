@@ -120,12 +120,15 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
       <Flex direction={"column"} alignContent={"center"}>
         <Box mx="auto">
           <Text fontSize={"4xl"}>
-            {name} - {mode} - {placeStatus}
+            {name} - {mode === "battle-royale" ? "BR" : mode} - {placeStatus}
           </Text>
           <Text textAlign={"center"} fontStyle={"italic"}>
-            Vies : {nbLifePerPlayer} - Rounds : {nbRounds} - Temps global :{" "}
-            {globalTime / 60000} minutes - Temps après 1er gagnant :{" "}
-            {timeAfterFirstGuess / 1000} secondes
+            Vies : {nbLifePerPlayer}{" "}
+            {mode === "1vs1" && `- Rounds : ${nbRounds}`}
+            {mode === "battle-royale" &&
+              `- Ratio d'éliminés : ${eliminationRate}%`}{" "}
+            - Temps global : {globalTime / 60000} minutes - Temps après 1er
+            gagnant : {timeAfterFirstGuess / 1000} secondes
           </Text>
         </Box>
 

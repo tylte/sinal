@@ -55,16 +55,20 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
             {name}
           </Text>
           <HStack>
-            <Text fontStyle={"italic"}>{mode}</Text>
+            <Text fontStyle={"italic"}>
+              {mode[0].toUpperCase() + mode.slice(1)}
+            </Text>
             <Text fontStyle={"italic"}>
               {currentPlace}/{totalPlace} joueurs
             </Text>
             <Text fontStyle={"italic"}>{state}</Text>
             <Text fontStyle={"italic"}>{nbLifePerPlayer} Vies</Text>
-            <Text fontStyle={"italic"}>{nbRounds} Round(s)</Text>
+            {mode === "1vs1" && (
+              <Text fontStyle={"italic"}>{nbRounds} Round(s)</Text>
+            )}
           </HStack>
           {playerOwner !== undefined && (
-            <Text>{playerOwner.name} (owner) </Text>
+            <Text>Propriétaire : {playerOwner.name}</Text>
           )}
         </Stack>
       </LinkBox>
