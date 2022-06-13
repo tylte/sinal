@@ -140,10 +140,6 @@ export const getServer = () => {
       }
     });
 
-    socket.on("leave_player", (socket, lobbyId) => {
-      socket.leave(lobbyId);
-    });
-
     socket.on("join_lobby", (result, response: EventResponseFn) => {
       if (typeof response !== "function") {
         console.log("join_lobby : response is supposed to be a function");
