@@ -171,6 +171,7 @@ export const removeLobbiesEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_create");
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
+  socket?.removeListener("updating_lobby_broadcast");
   socket?.emit("leave_public_lobbies");
 };
 
@@ -198,6 +199,7 @@ export const addSpecificLobbiesEvent = (
 
   socket.on("starting_game_br", (game: BrGameInfo) => {
     console.log("starting-game-br");
+    console.log("GAME :", game);
     setLobby((lobby) => {
       if (lobby === null) {
         return null;
@@ -378,7 +380,7 @@ export const addBrEvent = async (
   socket?.on("win_by_forfeit", (arg) => {
     if (arg !== playerId) {
       toast({
-        title: "Perdu un joueur a quitter !",
+        title: "Perdu un joueur a quitté !",
         status: "error",
         isClosable: true,
         duration: 2500,
