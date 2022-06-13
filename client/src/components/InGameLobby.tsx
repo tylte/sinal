@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { BrGameInfo, Game1vs1, GameMode, Lobby, Player } from "../utils/types";
 import { InGameLobbyBr } from "./InGameLobbyBr";
 import { OneVsOneGameLobby } from "./OneVsOneGameLobby";
@@ -8,6 +8,7 @@ interface InGameLobbyProps {
   gameState: Game1vs1 | BrGameInfo;
   gameMode: GameMode;
   lobby: Lobby;
+  setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>;
 }
 
 export const InGameLobby: React.FC<InGameLobbyProps> = ({
@@ -15,6 +16,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
   gameState,
   gameMode,
   lobby,
+  setGameState,
 }) => {
   if (gameMode === "1vs1") {
     return (
@@ -22,6 +24,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
         lobby={lobby}
         player={player}
         gameState={gameState as Game1vs1}
+        setGameState={setGameState}
       />
     );
   } else if (gameMode === "battle-royale") {

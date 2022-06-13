@@ -1,5 +1,6 @@
 import { ToastId, UseToastOptions } from "@chakra-ui/react";
 import axios from "axios";
+import { NextRouter } from "next/router";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import { serverHttpUrl } from "./Const";
@@ -14,6 +15,7 @@ import {
   Lobby,
   Packet,
   Player,
+  Player1vs1,
   TriesHistory,
   UpdateLobbyJoinPayload,
   UpdateLobbyLeavePayload,
@@ -98,11 +100,42 @@ export const addSocketConnectionEvent = (
 
 export const addLobbiesEvent = (
   socket: Socket | null,
-  setLobbies: Dispatch<SetStateAction<Lobby[]>>
+  setLobbies: Dispatch<SetStateAction<Lobby[]>>,
+  player: Player,
+  toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
+  router: NextRouter
 ) => {
   socket?.on("lobbies_update_create", (lobby: Lobby) => {
     console.log("Lobby created notif");
     setLobbies((lobbies) => [...lobbies, lobby]);
+  });
+
+  socket?.on("updating_lobby_broadcast", (lobby: Lobby) => {
+    setLobbies((lobbies) =>
+      lobbies.map((item) => {
+        return item.id === lobby.id ? lobby : item;
+      })
+    );
+  });
+
+  socket?.on("leave_other_players", (listOfPlayers: string[]) => {
+    if (listOfPlayers.includes(player.id)) {
+      socket.emit(
+        "leave_lobby",
+        {
+          roomId: player.lobbyId,
+          playerId: player.id,
+        },
+        () => {}
+      );
+      toast({
+        title: "Vous avez été kick de la game",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      router.push("/lobby");
+    }
   });
 
   socket?.on(
@@ -164,6 +197,8 @@ export const removeLobbiesEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_create");
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
+  socket?.removeListener("updating_lobby_broadcast");
+  socket?.removeListener("kick_other_players");
   socket?.emit("leave_public_lobbies");
 };
 
@@ -184,6 +219,11 @@ export const addSpecificLobbiesEvent = (
       }
     });
   });
+
+  socket.on("updating_lobby", (lobby: Lobby) => {
+    setLobby(lobby);
+  });
+
   socket.on("starting_game_br", (game: BrGameInfo) => {
     console.log("starting-game-br");
     setGameState(game);
@@ -234,6 +274,7 @@ export const removeSpecificLobbyEvent = (socket: Socket | null) => {
   socket?.removeListener("ending_game");
   socket?.removeListener("starting_game_1vs1");
   socket?.removeListener("starting_game_br");
+  socket?.removeListener("updating_lobby");
 };
 
 export const getSpecificLobby = (
@@ -380,7 +421,7 @@ export const addBrEvent = async (
   socket?.on("win_by_forfeit", (arg) => {
     if (arg !== playerId && !spectate) {
       toast({
-        title: "Perdu un joueur a quitter !",
+        title: "Perdu un joueur a quitté !",
         status: "error",
         isClosable: true,
         duration: 2500,
@@ -494,9 +535,12 @@ export const lobbyOneVsOneAddEvents = (
   setTryHistoryP2: Dispatch<SetStateAction<TriesHistory[]>>,
   setWordP2: Dispatch<SetStateAction<string>>,
   setIsFinished: Dispatch<SetStateAction<boolean>>,
-  setEndPoint: React.Dispatch<React.SetStateAction<number>>
+  setEndPoint: React.Dispatch<React.SetStateAction<number>>,
+  setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>,
+  setTryHistory: Dispatch<SetStateAction<TriesHistory[]>>,
+  setWord: Dispatch<SetStateAction<string>>
 ) => {
-  socket.on("first_wining_player_1vs1", (req) => {
+  socket.on("first_winning_player_1vs1", (req) => {
     setEndPoint(req.endTime);
     if (
       (req.playerTwo.hasWon && req.playerTwo.id === playerId) ||
@@ -510,7 +554,45 @@ export const lobbyOneVsOneAddEvents = (
       });
     }
   });
-  socket?.on("wining_player_1vs1", (req) => {
+
+  socket.on("winning_game_1vs1", (winner: Player1vs1) => {
+    setIsFinished(true);
+    if (winner === null) {
+      toast({
+        title: "Egalité.",
+        status: "info",
+        isClosable: true,
+        duration: 2500,
+      });
+    } else if (playerId === winner.id) {
+      toast({
+        title: "Vous avez gagné la partie",
+        status: "success",
+        isClosable: true,
+        duration: 2500,
+      });
+      setHasWon(true);
+    } else {
+      toast({
+        title: "Vous avez perdu la partie",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+    }
+  });
+
+  socket.on("next_round", (game: Game1vs1) => {
+    setIsFinished(false);
+    setHasWon(false);
+    setTryHistory([]);
+    setTryHistoryP2([]);
+    setWord(game.firstLetter.toUpperCase());
+    setEndPoint(game.endTime);
+    setGameState(game);
+  });
+
+  socket?.on("winning_round_1vs1", (req) => {
     setIsFinished(true);
     if (req === playerId) {
       toast({
@@ -530,7 +612,7 @@ export const lobbyOneVsOneAddEvents = (
       setWordP2("●");
     }
   });
-  socket.on("draw_1vs1", () => {
+  socket.on("draw_round_1vs1", () => {
     console.log("draw_1vs1");
     setIsFinished(true);
     toast({
@@ -540,6 +622,7 @@ export const lobbyOneVsOneAddEvents = (
       duration: 2500,
     });
   });
+
   socket.on("guess_word_broadcast", (req) => {
     if (req.playerId !== playerId) {
       setTryHistoryP2((tryHistoryP2) => [
@@ -567,11 +650,13 @@ export const lobbyOneVsOneAddEvents = (
 };
 
 export const lobbyOneVsOneRemoveEvents = (socket: Socket) => {
-  socket?.removeListener("first_wining_player_1vs1");
-  socket?.removeListener("wining_player_1vs1");
-  socket?.removeListener("draw_1vs1");
+  socket?.removeListener("first_winning_player_1vs1");
+  socket?.removeListener("winning_round_1vs1");
+  socket?.removeListener("draw_round_1vs1");
   socket?.removeListener("guess_word_broadcast");
   socket?.removeListener("update_word_broadcast");
+  socket?.removeListener("next_round");
+  socket?.removeListener("winning_game_1vs1");
   socket?.removeListener("player_leave");
 };
 
