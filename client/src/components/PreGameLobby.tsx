@@ -134,25 +134,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           </Text>
         </Box>
 
-        <Text fontSize={"2xl"}>Joueurs</Text>
-        <Divider />
-        <List>
-          {playerList.map((player) => {
-            return (
-              <ListItem key={player.id}>
-                <HStack>
-                  {player.id === owner && (
-                    <ListIcon as={GiLaurelCrown} color="green.500" />
-                  )}
-                  <Text fontSize={"xl"}>
-                    {player.name} {player.id === playerId && "(Vous)"}
-                  </Text>
-                </HStack>
-              </ListItem>
-            );
-          })}
-        </List>
-        <HStack mx="auto">
+        <HStack mx="auto" my={4}>
           <IconButton
             aria-label="quit lobby"
             icon={<ArrowBackIcon />}
@@ -194,6 +176,25 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             Commencer
           </Button>
         </HStack>
+
+        <Text fontSize={"2xl"}>Joueurs</Text>
+        <Divider />
+        <List>
+          {playerList.map((player) => {
+            return (
+              <ListItem key={player.id}>
+                <HStack>
+                  {player.id === owner && (
+                    <ListIcon as={GiLaurelCrown} color="green.500" />
+                  )}
+                  <Text fontSize={"xl"}>
+                    {player.name} {player.id === playerId && "(Vous)"}
+                  </Text>
+                </HStack>
+              </ListItem>
+            );
+          })}
+        </List>
       </Flex>
     </>
   );

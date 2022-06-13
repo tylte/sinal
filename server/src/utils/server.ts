@@ -342,7 +342,7 @@ export const getServer = () => {
           return;
         }
 
-        let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
+        let check = ArgGuessWord.safeParse(req); // Same arguments for update_word
         if (check.success) {
           guessWordBrEvent(io, response, check.data);
         } else {

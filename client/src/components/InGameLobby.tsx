@@ -28,7 +28,7 @@ export const InGameLobby: React.FC<InGameLobbyProps> = ({
       />
     );
   } else if (gameMode === "battle-royale") {
-    return <InGameLobbyBr player={player} gameInfo={gameState as BrGameInfo} />;
+    return <InGameLobbyBr player={player} gameInfo={gameState as BrGameInfo} lobby={lobby} />;
   } else {
     return <h1>Le mode n'existe pas</h1>;
   }

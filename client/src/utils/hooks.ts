@@ -82,7 +82,11 @@ const handleWordInput = (
   // Only one alphabetic caracter in the key
   const re = /^([a-zA-Z]{1})$/;
   // more detail on e.key https://www.toptal.com/developers/keycode/for/alt
-  if (e.key.toUpperCase() === firstLetter && !focus.firstLetterWritable) {
+  if (
+    e.key.toUpperCase() === firstLetter &&
+    !focus.firstLetterWritable &&
+    focus.index === 1
+  ) {
     focus.firstLetterWritable = true;
   } else if (re.test(e.key)) {
     incrementFocus(setFocus, wordLength - 1);

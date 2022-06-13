@@ -5,7 +5,11 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { SinalContext } from "../utils/context";
 import { io, Socket } from "socket.io-client";
-import { addSocketConnectionEvent } from "src/utils/api";
+import {
+  addChatEvents,
+  addSocketConnectionEvent,
+  removeChatEvents,
+} from "src/utils/api";
 import { ChattingActions, Player } from "../utils/types";
 import { serverHttpUrl, serverWsPath, serverWsUrl } from "../utils/Const";
 
@@ -14,7 +18,8 @@ function MyApp({ Component, pageProps }: AppProps) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [player, setPlayer] = useState<Player | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [isChatting, setIsChatting] = useState<ChattingActions>({
+
+  const [chattingActions, setChattingActions] = useState<ChattingActions>({
     isChatting: false,
     channels: [{ id: "PUBLIC_CHAT", name: "Publique", messageHistory: [] }],
   });
@@ -35,6 +40,18 @@ function MyApp({ Component, pageProps }: AppProps) {
     addSocketConnectionEvent(socket, setIsConnected);
   }, []);
 
+  useEffect(() => {
+    if (socket) {
+      addChatEvents(socket, setChattingActions);
+    }
+
+    return () => {
+      if (socket) {
+        removeChatEvents(socket);
+      }
+    };
+  }, [socket]);
+
   return (
     <SinalContext.Provider
       value={{
@@ -42,7 +59,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         socket,
         playerActions: [player, setPlayer],
         isConnected,
-        chattingActions: [isChatting, setIsChatting],
+        chattingActions: [chattingActions, setChattingActions],
       }}
     >
       <ChakraProvider resetCSS theme={theme}>
