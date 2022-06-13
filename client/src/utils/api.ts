@@ -291,7 +291,6 @@ export const addGuessWordBrBroadcast = async (
 ) => {
   socket?.on("guess_word_broadcast", (arg) => {
     if (arg.playerId !== playerId) {
-      console.log("before");
       // let ret = false;
       if (
         arg.tab_res.every((element: number) => {
@@ -302,7 +301,6 @@ export const addGuessWordBrBroadcast = async (
           }
         })
       ) {
-        console.log("nb +1");
         setNumberPlayerFound((nb) => nb + 1);
       }
       setGameState((gameState) => {

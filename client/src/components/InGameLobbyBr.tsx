@@ -2,11 +2,6 @@ import {
   Box,
   Flex,
   Spinner,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
   useToast,
 } from "@chakra-ui/react";
@@ -197,10 +192,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     //start the game
     startGame();
   }, []);
-
-  useEffect(() => {
-    console.log("change");
-  }, [numberPlayerFound]);
 
   //use effect for the socket exchange
   useEffect(() => {
@@ -431,28 +422,26 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             key={playerId + i}
             onClick={() => changePlayerFocus(playerId)}
           >
-            <Text key={playerId + i} textAlign={"center"}>
-              {playerName}
-            </Text>
             <SmallPlayerGrid
               key={playerId}
               wordLength={wordLength}
               nbLife={nbLife}
               triesHistory={triesHistory}
               nbPlayer={numberPlayer}
+              namePlayer={playerName}
             />
           </button>
         );
       } else {
         items.push(
-          <Box key={playerId + i} alignContent={"center"}>
-            <Text textAlign={"center"}>{playerName}</Text>
+          <Box key={playerId + i} alignContent={"center"}>  
             <SmallPlayerGrid
               key={playerId}
               wordLength={wordLength}
               nbLife={nbLife}
               triesHistory={triesHistory}
               nbPlayer={numberPlayer}
+              namePlayer={playerName}
             />
           </Box>
         );
@@ -478,7 +467,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           {player.name}
         </Text>
         {spectate && (
-          <Text color={"green"} align="center" fontSize="medium">
+          <Text color={"green"} align="center" fontSize="sm">
             Mode spectateur
           </Text>
         )}
