@@ -5,8 +5,10 @@ import {
   SimpleGrid,
   Text,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { addLobbiesEvent, removeLobbiesEvent } from "src/utils/api";
 import { CreateLobbyModal } from "../components/CreateLobbyModal";
@@ -25,6 +27,8 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const [player] = usePlayer();
   const socket = useSocket();
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
+  const toast = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     axios.get<Lobby[]>(`${serverHttpUrl}/list_lobbies`).then(({ data }) => {
@@ -33,17 +37,17 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   }, []);
 
   useEffect(() => {
-    if (socket) {
+    if (socket && player) {
       // Update event lobbies
-      addLobbiesEvent(socket, setLobbies);
+      addLobbiesEvent(socket, setLobbies, player, toast, router);
     }
 
     return () => {
-      if (socket) {
+      if (socket && player) {
         removeLobbiesEvent(socket);
       }
     };
-  }, [socket]);
+  }, [socket, player]);
 
   return (
     <Layout variant="grid">

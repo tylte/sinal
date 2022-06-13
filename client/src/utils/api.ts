@@ -1,5 +1,6 @@
 import { ToastId, UseToastOptions } from "@chakra-ui/react";
 import axios from "axios";
+import { NextRouter } from "next/router";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import { serverHttpUrl } from "./Const";
@@ -97,7 +98,10 @@ export const addSocketConnectionEvent = (
 
 export const addLobbiesEvent = (
   socket: Socket | null,
-  setLobbies: Dispatch<SetStateAction<Lobby[]>>
+  setLobbies: Dispatch<SetStateAction<Lobby[]>>,
+  player: Player,
+  toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
+  router: NextRouter
 ) => {
   socket?.on("lobbies_update_create", (lobby: Lobby) => {
     console.log("Lobby created notif");
@@ -110,6 +114,23 @@ export const addLobbiesEvent = (
         return item.id === lobby.id ? lobby : item;
       })
     );
+  });
+
+  socket?.on("kick_other_players", (listOfPlayers: string[]) => {
+    console.log("LIST :", listOfPlayers);
+    if (listOfPlayers.includes(player.id)) {
+      socket.emit("leave_lobby", {
+        roomId: player.lobbyId,
+        playerId: player.id,
+      });
+      toast({
+        title: "Vous avez été kick de la game",
+        status: "error",
+        isClosable: true,
+        duration: 2500,
+      });
+      router.push("/lobby");
+    }
   });
 
   socket?.on(
@@ -172,6 +193,7 @@ export const removeLobbiesEvent = (socket: Socket | null) => {
   socket?.removeListener("lobbies_update_join");
   socket?.removeListener("lobbies_update_leave");
   socket?.removeListener("updating_lobby_broadcast");
+  socket?.removeListener("kick_other_players");
   socket?.emit("leave_public_lobbies");
 };
 
@@ -199,7 +221,7 @@ export const addSpecificLobbiesEvent = (
 
   socket.on("starting_game_br", (game: BrGameInfo) => {
     console.log("starting-game-br");
-    console.log("GAME :", game);
+    setGameState(game);
     setLobby((lobby) => {
       if (lobby === null) {
         return null;
@@ -207,7 +229,6 @@ export const addSpecificLobbiesEvent = (
         return { ...lobby, state: "in-game" };
       }
     });
-    setGameState(game);
   });
   socket.on(
     "lobbies_update_join",

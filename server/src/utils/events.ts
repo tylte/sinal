@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import { io } from "socket.io-client";
 import { map } from "zod";
 import { dicoHasWord } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
@@ -127,6 +128,8 @@ export const updateLobbyEvent = (
   lobbyId: string
 ) => {
   let lobby = lobbyMap.get(lobbyId);
+  let oldTotalPlace = lobby?.totalPlace;
+  let oldPlayerList = lobby?.playerList;
   if (lobby !== undefined) {
     lobby = {
       ...lobby,
@@ -138,9 +141,28 @@ export const updateLobbyEvent = (
       nbRounds,
       globalTime,
       timeAfterFirstGuess,
+      playerList: lobby.playerList.slice(0, totalPlace),
     };
+    if (
+      oldTotalPlace !== undefined &&
+      oldPlayerList !== undefined &&
+      oldTotalPlace > totalPlace
+    ) {
+      console.log("RENTRE DANS LE IF");
+      console.log("SLICE", oldPlayerList.slice(totalPlace));
+      console.log(
+        "MAP",
+        oldPlayerList.slice(totalPlace).map((player) => player.id)
+      );
+
+      io.to(lobbyId).emit(
+        "kick_other_players",
+        oldPlayerList.slice(totalPlace).map((player) => player.id)
+      );
+    }
     lobbyMap.set(lobbyId, lobby);
     io.to(lobbyId).emit("updating_lobby", lobby);
+
     if (isPublic) {
       io.to(PUBLIC_LOBBIES).emit("updating_lobby_broadcast", lobby);
     }

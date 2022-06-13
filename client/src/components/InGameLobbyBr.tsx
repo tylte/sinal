@@ -39,7 +39,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
   gameInfo,
 }) => {
-  console.log("GameInfo : ", gameInfo);
   //The number of player in the game
   const [numberPlayer, setNumberPlayer] = useState(gameInfo.playerList.length);
   //the word the player try
