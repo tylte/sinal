@@ -112,6 +112,24 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           </Text>
         </Box>
 
+        <HStack mx="auto">
+          <IconButton
+            aria-label="quit lobby"
+            icon={<ArrowBackIcon />}
+            onClick={() => router.push("/lobby")}
+          />
+          <Button
+            isDisabled={
+              playerId !== owner ||
+              (playerList.length < totalPlace && gameMode !== "battle-royale")
+            }
+            colorScheme={"green"}
+            onClick={startGame}
+          >
+            Commencer
+          </Button>
+        </HStack>
+        
         <Text fontSize={"2xl"}>Joueurs</Text>
         <Divider />
         <List>
@@ -130,23 +148,6 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             );
           })}
         </List>
-        <HStack mx="auto">
-          <IconButton
-            aria-label="quit lobby"
-            icon={<ArrowBackIcon />}
-            onClick={() => router.push("/lobby")}
-          />
-          <Button
-            isDisabled={
-              playerId !== owner ||
-              (playerList.length < totalPlace && gameMode !== "battle-royale")
-            }
-            colorScheme={"green"}
-            onClick={startGame}
-          >
-            Commencer
-          </Button>
-        </HStack>
       </Flex>
     </>
   );

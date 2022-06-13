@@ -5,7 +5,7 @@ import { getColorFromResult } from "../../utils/utils";
 
 interface SmallPlayerGridCaseProps {
   letterResult?: LetterResult;
-  nbPlayer:number;
+  nbPlayer: number;
 }
 
 export const SmallPlayerGridCase: React.FC<SmallPlayerGridCaseProps> = ({
@@ -14,15 +14,11 @@ export const SmallPlayerGridCase: React.FC<SmallPlayerGridCaseProps> = ({
 }) => {
   let color = getColorFromResult(letterResult);
 
-  let size = 100/nbPlayer
-  if (size < 100/7) size = 100/7;
+  let size = 50 / nbPlayer;
+  // if (size < 100/7) size = 100/7;
   return (
     <Flex w={size} height={size} bgColor={color}>
-      <Text
-        color={"white"}
-        m="auto"
-      >
-      </Text>
+      <Text color={"white"} m="auto"></Text>
     </Flex>
   );
 };

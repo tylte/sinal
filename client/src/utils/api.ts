@@ -286,10 +286,25 @@ export const removeChatEvents = (socket: Socket) => {
 export const addGuessWordBrBroadcast = async (
   socket: Socket,
   playerId: string,
-  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
+  setNumberPlayerFound: React.Dispatch<React.SetStateAction<number>>
 ) => {
   socket?.on("guess_word_broadcast", (arg) => {
     if (arg.playerId !== playerId) {
+      console.log("before");
+      // let ret = false;
+      if (
+        arg.tab_res.every((element: number) => {
+          if (element === 0) {
+            return true;
+          } else {
+            return false;
+          }
+        })
+      ) {
+        console.log("nb +1");
+        setNumberPlayerFound((nb) => nb + 1);
+      }
       setGameState((gameState) => {
         return gameState.map((game) =>
           game.playerId === arg.playerId
@@ -314,7 +329,8 @@ export const addBrEvent = async (
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
   setEndpoint: React.Dispatch<React.SetStateAction<number>>,
   setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
-  spectate: boolean
+  spectate: boolean,
+  setNumberPlayerWinMax: React.Dispatch<React.SetStateAction<number>>
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
     setEndpoint(arg.endTime);
@@ -360,6 +376,7 @@ export const addBrEvent = async (
     return;
   });
   socket?.on("player_leave", (arg) => {
+    setNumberPlayerWinMax((nb) => nb - 1);
     toast({
       title: "le joueur " + arg + " a quitté la partie.",
       status: "info",

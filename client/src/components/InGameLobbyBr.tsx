@@ -70,6 +70,11 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   //use for the player that loose
   const [spectate, setSpectate] = useState(false);
 
+  const [numberPlayerFound, setNumberPlayerFound] = useState(0);
+  const [numberPlayerWinMax, setNumberPlayerWinMax] = useState(
+    gameInfo.playersLastNextRound
+  );
+
   //use to force the rerender of the component react
   const [, updateState] = React.useState([]);
   const forceUpdate = React.useCallback(() => updateState([]), []);
@@ -117,9 +122,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     setGameState(newGameState);
     setWord(gameInfo.firstLetter.toUpperCase());
   };
-
   //load the new word
   const resetGame = async (gameBr: BrGameInfo) => {
+    setNumberPlayerFound(0);
+    setNumberPlayerWinMax(gameBr.playersLastNextRound);
     //check if the player win the previous word
     let playerIn =
       gameBr.playerList.find((pl) => {
@@ -192,11 +198,20 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     startGame();
   }, []);
 
+  useEffect(() => {
+    console.log("change");
+  }, [numberPlayerFound]);
+
   //use effect for the socket exchange
   useEffect(() => {
     if (socket) {
       //the broadcast of the gessWordBr
-      addGuessWordBrBroadcast(socket, player.id, setGameState);
+      addGuessWordBrBroadcast(
+        socket,
+        player.id,
+        setGameState,
+        setNumberPlayerFound
+      );
       //all the other event
       addBrEvent(
         resetGame,
@@ -205,7 +220,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         toast,
         setEndPoint,
         setGameState,
-        spectate
+        spectate,
+        setNumberPlayerWinMax
       );
     }
     return () => {
@@ -403,11 +419,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   // save the grid of player, any[] to use the pop function
   const items = [];
 
-  const tab = [];
   let j = 0;
   for (let i = 1; i < numberPlayer; ) {
     // 1 because 0 is the player
-    for (j = 0; j < 5 && i < numberPlayer; j++) {
+    for (j = 0; j < 7 && i < numberPlayer; j++) {
       const { triesHistory, nbLife, wordLength, playerId, playerName } =
         gameState?.[i] || {};
       if (spectate) {
@@ -416,7 +431,9 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             key={playerId + i}
             onClick={() => changePlayerFocus(playerId)}
           >
-            <Text>{playerName}</Text>
+            <Text key={playerId + i} textAlign={"center"}>
+              {playerName}
+            </Text>
             <SmallPlayerGrid
               key={playerId}
               wordLength={wordLength}
@@ -429,7 +446,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       } else {
         items.push(
           <Box key={playerId + i} alignContent={"center"}>
-            <Text alignContent={"center"}>{playerName}</Text>
+            <Text textAlign={"center"}>{playerName}</Text>
             <SmallPlayerGrid
               key={playerId}
               wordLength={wordLength}
@@ -442,38 +459,26 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       }
       i++;
     }
-    tab.push(<Tab textColor={""}>{i-j}-{i-1}</Tab>);
     grid.push(
-      <TabPanel>
-        <Flex key={i + "-" + i} direction={"column"} alignContent={"center"}>
-          {items.slice(i - 1 - j, i - 1)}
-        </Flex>
-      </TabPanel>
+      <Flex key={i + "-" + i} direction={"column"}>
+        {items.slice(i - 1 - j, i - 1)}
+      </Flex>
     );
   }
   return (
     <>
       {hasWon && <Confetti />}
       <Box>
-        <Flex marginLeft={0} direction={"row"} align={"center"}>
-          <Tabs
-            isLazy={true}
-            variant="soft-rounded"
-            colorScheme="green"
-            align={"center"}
-            isManual={true}
-          >
-            {numberPlayer > 5 && <TabList marginY={0}>{tab}</TabList>}
-            <TabPanels>{grid}</TabPanels>
-          </Tabs>
+        <Flex marginLeft={10} direction={"row"}>
+          {grid}
         </Flex>
       </Box>
       <Box>
-        <Text align="center" fontSize="large">
+        <Text align="center" fontSize="medium">
           {player.name}
         </Text>
         {spectate && (
-          <Text color={"green"} align="center" fontSize="larger">
+          <Text color={"green"} align="center" fontSize="medium">
             Mode spectateur
           </Text>
         )}
@@ -489,12 +494,19 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
             Round Terminé
           </Text>
         )}
+        {/*The chrono*/}
         {!isFinished && (
           <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
         )}
+        {/* The number of player that win */}
+        <Text align="center">
+          Avancée partie : {numberPlayerFound}/{numberPlayerWinMax}
+        </Text>
+        {/* use when the player is in spectate mode to show the spectate player */}
         {spectate && (
           <Text align="center">Grille du joueur : {playerName}</Text>
         )}
+
         <PlayerGrid
           focus={focus}
           isVisible={true}
