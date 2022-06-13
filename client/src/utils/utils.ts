@@ -144,19 +144,72 @@ export const getClassicKeyboardSettings = (
 };
 
 /**
- * Get the letter to color for the tries history in order to display the color on the keyboard
+ * Tells if firstRes is a better result than second res
+ *
+ * Example :
+ *    firstRes: NOT_FOUND,
+ *    secondRes: FOUND
+ *    Will return false
+ *
+ *
+ *    firstRes: FOUND,
+ *    secondRes: FOUND
+ *    Will return false
+ *
+ *
+ *    firstRes: FOUND,
+ *    secondRes: NOT_FOUND
+ *    Will return true
+ *
+ * @param firstRes
+ * @param secondRes
+ */
+export const isLetterResultBetter = (
+  firstRes: LetterResult,
+  secondRes: LetterResult
+): boolean => {
+  if (firstRes === LetterResult.NOT_FOUND) {
+    return false;
+  } else if (
+    firstRes === LetterResult.FOUND &&
+    (secondRes === LetterResult.FOUND ||
+      secondRes === LetterResult.RIGHT_POSITION)
+  ) {
+    return false;
+  } else if (
+    firstRes === LetterResult.RIGHT_POSITION &&
+    secondRes === LetterResult.RIGHT_POSITION
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Get the letter to color hashmap for the tries history in order to display the color on the keyboard
  */
 export const getLetterToColorFromTriesHistory = (
   triesHistory: TriesHistory[]
 ): Map<string, string> => {
-  const ret = new Map();
+  const ret: Map<string, string> = new Map();
+  const cache: Map<string, LetterResult> = new Map();
 
   triesHistory.forEach((oneTry) => {
     const { result, wordTried } = oneTry;
 
     for (let i = 0; i < result.length; i++) {
       const res = result[i];
-      ret.set(wordTried[i], getColorFromResult(res));
+
+      const cacheContent = cache.get(wordTried[i]);
+
+      if (
+        cacheContent === undefined ||
+        isLetterResultBetter(res, cacheContent)
+      ) {
+        cache.set(wordTried[i], res);
+        ret.set(wordTried[i], getColorFromResult(res));
+      }
     }
   });
 
