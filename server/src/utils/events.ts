@@ -236,6 +236,16 @@ export const willNoLongerLeaveLobbyOnDisconnect = (
   }
 };
 
+//=====================================================================================
+//                                events 1vs1
+//=====================================================================================
+
+/**
+ * Starting a game of 1vs1
+ * in this game, its the player finding the word with the least tries who win
+ * except if the second player takes too long to find the word (@param timeAfterFirstGuess)
+ * they have also a total time to find the word, else its a draw (@param globalTime)
+ */
 export const startGame1vs1Event = async (
   io: Server,
   { lobbyId, playerId, globalTime, timeAfterFirstGuess }: ArgStartGame1vs1Type
@@ -278,7 +288,7 @@ export const startGame1vs1Event = async (
 
   let word = get_word();
   console.log("Mot à découvrir : ", word);
-  idToWord.set(gameId, word); //the ID of the word is the same as the lobby
+  idToWord.set(gameId, word); //the ID of the word is the same as the game
   let game: Game1vs1 = {
     playerOne: {
       id: playerOne.id,
@@ -354,6 +364,13 @@ export const updateWordEvent = (
   io.to(gameId).emit("update_word_broadcast", { array, playerId });
 };
 
+/**
+ * Is called when the player send a word
+ * return to the player an array of the result of this word (right place / wrong place / not in the word) for each letter
+ * using the @param response to return this array
+ *
+ * If word was correct, manage to see which player won or set a timer if necessary
+ */
 export const guessWord1vs1Event = (
   io: Server,
   response: any,
@@ -502,6 +519,48 @@ export const guessWord1vs1Event = (
     }
   }
 };
+
+/**
+ * Is called when the timer hit 0
+ * It will end the game by choosing which player won or if its a draw
+ */
+const tempsEcoule1vs1 = (
+  io: Server,
+  game: Game1vs1 | undefined,
+  lobby?: LobbyType | undefined,
+  word?: string
+) => {
+  if (game !== undefined && lobby !== undefined && word) {
+    //initialise lastGame of the lobby (currently the game being played)
+    lobby.lastGame = {
+      gameMode: "1vs1",
+      playerList: lobby.playerList,
+      winner: undefined,
+      wordsToGuess: [word],
+      triesHistory: lobby.lastGame?.triesHistory || [[]],
+    };
+    lobby.state = "pre-game";
+
+    if (game.playerOne.hasWon && !game.playerTwo.hasWon) {
+      //player one won
+      lobby.lastGame.winner = playerMap.get(game.playerOne.id);
+      io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
+    } else if (!game.playerOne.hasWon && game.playerTwo.hasWon) {
+      //player two won
+      lobby.lastGame.winner = playerMap.get(game.playerTwo.id);
+      io.to(game.id).emit("wining_player_1vs1", game.playerTwo.id);
+    } else {
+      //nobody won, normally if both players had won then the timer is clear so tempsEcoule1vs1 is never called
+      io.to(game.id).emit("draw_1vs1");
+    }
+    io.to(game.id).emit("ending_game", { lobby });
+    io.to(game.id).socketsLeave(game.id);
+  }
+};
+
+//=====================================================================================
+//                                events battle-royale
+//=====================================================================================
 
 export const startGameBrEvent = async (
   io: Server,
@@ -794,50 +853,7 @@ const setNewTimeout = (
   }
 };
 
-const tempsEcoule1vs1 = (
-  io: Server,
-  game: Game1vs1 | undefined,
-  lobby?: LobbyType | undefined,
-  word?: string
-) => {
-  if (game !== undefined && lobby !== undefined && word) {
-    if (game.playerOne.hasWon && !game.playerTwo.hasWon) {
-      io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
-      lobby.lastGame = {
-        gameMode: "1vs1",
-        playerList: lobby.playerList,
-        winner: playerMap.get(game.playerOne.id),
-        wordsToGuess: [word],
-        triesHistory: lobby.lastGame?.triesHistory || [[]],
-      };
-      lobby.state = "pre-game";
-      io.to(game.id).emit("ending_game", { lobby });
-    } else if (!game.playerOne.hasWon && game.playerTwo.hasWon) {
-      io.to(game.id).emit("wining_player_1vs1", game.playerTwo.id);
-      lobby.lastGame = {
-        gameMode: lobby.mode,
-        playerList: lobby.playerList,
-        winner: playerMap.get(game.playerTwo.id),
-        wordsToGuess: [word],
-        triesHistory: lobby.lastGame?.triesHistory || [[]],
-      };
-      lobby.state = "pre-game";
-      io.to(game.id).emit("ending_game", { lobby });
-    } else {
-      io.to(game.id).emit("draw_1vs1");
-      lobby.lastGame = {
-        gameMode: lobby.mode,
-        playerList: lobby.playerList,
-        winner: undefined,
-        wordsToGuess: [word],
-        triesHistory: lobby.lastGame?.triesHistory || [[]],
-      };
-      lobby.state = "pre-game";
-      io.to(game.id).emit("ending_game", { lobby });
-    }
-    io.to(game.id).socketsLeave(game.id);
-  }
-};
+//=====================================================================================
 
 export const sendChatMessage = (
   io: Server,
