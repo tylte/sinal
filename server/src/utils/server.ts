@@ -305,7 +305,7 @@ export const getServer = () => {
           return;
         }
 
-        let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
+        let check = ArgGuessWord.safeParse(req); // Same arguments for update_word
         if (check.success) {
           guessWordBrEvent(io, response, check.data);
         } else {
@@ -333,12 +333,7 @@ export const getServer = () => {
           typeof request.playerId === "string" &&
           typeof request.lobbyId === "string"
         ) {
-          leaveGame(
-            io,
-            request.gameId,
-            request.lobbyId,
-            request.playerId
-          );
+          leaveGame(io, request.gameId, request.lobbyId, request.playerId);
         } else {
           console.log("leave_lobby : bad request : ", request);
         }

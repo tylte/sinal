@@ -35,7 +35,7 @@ export const Chrono: React.FC<ChronoProps> = ({ endPoint, onTimeFinish }) => {
       {/* the timer of the game */}
       <Text
         color={
-          minutesToDisplay <= 0 && secondsToDisplay <= 30 ? "red" : "white"
+          minutesToDisplay <= 0 && secondsToDisplay <= 30 ? "red" : ""
         }
         align="center"
         fontSize="larger"

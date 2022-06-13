@@ -1,13 +1,15 @@
-import { Stack } from "@chakra-ui/react";
+import { Box, Stack } from "@chakra-ui/react";
 import React from "react";
 import { TriesHistory } from "../../utils/types";
 import { SmallPlayerGridRow } from "./SmallPlayerGridRow";
+import { Text } from "@chakra-ui/react";
 
 interface SmallPlayerGridProps {
   wordLength: number;
   nbLife: number;
   triesHistory: TriesHistory[];
-  nbPlayer:number;
+  nbPlayer: number;
+  namePlayer: string;
 }
 
 export const SmallPlayerGrid: React.FC<SmallPlayerGridProps> = ({
@@ -15,12 +17,11 @@ export const SmallPlayerGrid: React.FC<SmallPlayerGridProps> = ({
   nbLife,
   triesHistory,
   nbPlayer,
+  namePlayer,
 }) => {
-
   const rowsArray = [];
 
   for (let i = 0; i < nbLife; i++) {
-
     rowsArray.push(
       <SmallPlayerGridRow
         key={i}
@@ -32,7 +33,25 @@ export const SmallPlayerGrid: React.FC<SmallPlayerGridProps> = ({
   }
 
   return (
-    <Stack spacing={1} margin={3}>
+    <Stack position={"relative"} spacing={1} margin={3}>
+      <Box
+        key={"box-" + namePlayer}
+        bg={"rgba(0, 0, 0, 0.3)"}
+        w={"100%"}
+        h={"100%"}
+        position={"absolute"}
+      ></Box>
+      <Text
+        key={"text-" + namePlayer}
+        position={"absolute"}
+        left="50%"
+        top="50%"
+        textColor={"white"}
+        transform={"translate(-50%, -50%)"}
+      >
+        {namePlayer}
+      </Text>
+
       {rowsArray}
     </Stack>
   );

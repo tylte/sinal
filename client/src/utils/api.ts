@@ -66,6 +66,7 @@ export const guessWordBr = (
   word: string,
   gameId: string | undefined,
   playerId: string,
+  lobbyId: string,
   socket: Socket | null,
   response: (response: Packet) => void
 ) => {
@@ -76,6 +77,7 @@ export const guessWordBr = (
         word,
         gameId,
         playerId,
+        lobbyId,
       },
       response
     );
@@ -184,6 +186,7 @@ export const addSpecificLobbiesEvent = (
   });
   socket.on("starting_game_br", (game: BrGameInfo) => {
     console.log("starting-game-br");
+    setGameState(game);
     setLobby((lobby) => {
       if (lobby === null) {
         return null;
@@ -191,7 +194,6 @@ export const addSpecificLobbiesEvent = (
         return { ...lobby, state: "in-game" };
       }
     });
-    setGameState(game);
   });
   socket.on(
     "lobbies_update_join",
@@ -328,10 +330,23 @@ export const removeChatEvents = (socket: Socket) => {
 export const addGuessWordBrBroadcast = async (
   socket: Socket,
   playerId: string,
-  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
+  setNumberPlayerFound: React.Dispatch<React.SetStateAction<number>>
 ) => {
   socket?.on("guess_word_broadcast", (arg) => {
     if (arg.playerId !== playerId) {
+      // let ret = false;
+      if (
+        arg.tab_res.every((element: number) => {
+          if (element === 0) {
+            return true;
+          } else {
+            return false;
+          }
+        })
+      ) {
+        setNumberPlayerFound((nb) => nb + 1);
+      }
       setGameState((gameState) => {
         return gameState.map((game) =>
           game.playerId === arg.playerId
@@ -339,7 +354,7 @@ export const addGuessWordBrBroadcast = async (
                 ...game,
                 triesHistory: [
                   ...game.triesHistory,
-                  { result: arg.tab_res, wordTried: arg.word },
+                  { result: arg.tab_res, wordTried: arg.word.toUpperCase() },
                 ],
               }
             : { ...game }
@@ -355,13 +370,15 @@ export const addBrEvent = async (
   playerId: string,
   toast: (options?: UseToastOptions | undefined) => ToastId | undefined,
   setEndpoint: React.Dispatch<React.SetStateAction<number>>,
-  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>
+  setGameState: React.Dispatch<React.SetStateAction<BrGameState[]>>,
+  spectate: boolean,
+  setNumberPlayerWinMax: React.Dispatch<React.SetStateAction<number>>
 ) => {
   socket?.on("first_winning_player_br", (arg) => {
     setEndpoint(arg.endTime);
   });
   socket?.on("win_by_forfeit", (arg) => {
-    if (arg !== playerId) {
+    if (arg !== playerId && !spectate) {
       toast({
         title: "Perdu un joueur a quitter !",
         status: "error",
@@ -375,7 +392,7 @@ export const addBrEvent = async (
             : { ...game }
         )
       );
-    } else {
+    } else if (!spectate) {
       //case use when one player crash or quit
       toast({
         title: "GG vous avez gagné par forfait",
@@ -390,10 +407,18 @@ export const addBrEvent = async (
             : { ...game }
         )
       );
+    } else {
+      toast({
+        title: "Round terminé !",
+        status: "info",
+        isClosable: true,
+        duration: 2500,
+      });
     }
     return;
   });
   socket?.on("player_leave", (arg) => {
+    setNumberPlayerWinMax((nb) => nb - 1);
     toast({
       title: "le joueur " + arg + " a quitté la partie.",
       status: "info",
@@ -403,7 +428,8 @@ export const addBrEvent = async (
   });
   socket?.on("winning_player_br", (arg) => {
     console.log("winning_player_br");
-    if (arg !== playerId) {
+    if (arg !== playerId && !spectate) {
+      console.log("enter winning");
       toast({
         title: "Perdu ! Sadge",
         status: "error",
@@ -477,7 +503,7 @@ export const lobbyOneVsOneAddEvents = (
       (req.playerOne.hasWon && req.playerOne.id === playerId)
     ) {
       toast({
-        title: "L'adversaire peut encore gagner !",
+        title: "L'adversaire peut encore gagné !",
         status: "info",
         isClosable: true,
         duration: 2500,

@@ -71,6 +71,7 @@ export type SoloGameState = {
 
 export type BrGameState = {
   playerId: string;
+  playerName: string;
   wordLength: number;
   wordId: string;
   firstLetter: string;
