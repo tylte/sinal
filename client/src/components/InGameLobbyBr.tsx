@@ -112,7 +112,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     setWord(gameInfo.firstLetter.toUpperCase());
   };
   //load the new word
-  const resetGame = async (gameBr: BrGameInfo) => {
+  const resetGame = (gameBr: BrGameInfo) => {
     setNumberPlayerFound(0);
     setNumberPlayerWinMax(gameBr.playersLastNextRound);
     //check if the player win the previous word
