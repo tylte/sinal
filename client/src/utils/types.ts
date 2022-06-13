@@ -31,11 +31,16 @@ export type Lobby = {
   name: string;
   totalPlace: number; // nombre de place que le lobby peut contenir en tt
   playerList: Player[];
+  nbLifePerPlayer: number;
+  nbRounds: number;
+  globalTime: number;
+  timeAfterFirstGuess: number;
   owner: string; // id du joueur owner
   isPublic: boolean;
   mode: GameMode;
   currentGameId: string;
   lastGame: LastGame | null;
+  eliminationRate: number;
 };
 
 export type Packet = {
@@ -57,6 +62,10 @@ export type Game1vs1 = {
   length: number;
   firstLetter: string;
   endTime: number;
+  globalTime: number;
+  timeAfterFirstGuess: number;
+  roundNumber: number;
+  nbRoundsTotal: number;
 };
 
 export type SoloGameState = {
@@ -97,6 +106,7 @@ export type BrGameInfo = {
   eliminationRate: number;
   globalTime: number;
   timeAfterFirstGuess: number;
+  nbLifePerPlayer: number;
 };
 
 export type KeyboardSettings = {
@@ -110,6 +120,7 @@ export type Player1vs1 = {
   name: string;
   nbLife: number;
   hasWon: boolean;
+  nbWins: number;
 };
 
 export type ChatMessage = {

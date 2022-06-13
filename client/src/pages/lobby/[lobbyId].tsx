@@ -97,6 +97,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
             player={player}
             gameState={gameState}
             lobby={lobby}
+            setGameState={setGameState}
           />
         </Layout>
       );
@@ -108,6 +109,7 @@ const LobbyPage: React.FC<LobbyProps> = ({}) => {
             player={player}
             gameState={gameState}
             lobby={lobby}
+            setGameState={setGameState}
           />
         </Layout>
       );

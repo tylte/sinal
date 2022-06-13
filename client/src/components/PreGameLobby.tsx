@@ -1,4 +1,4 @@
-import { ArrowBackIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, SettingsIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -11,6 +11,7 @@ import {
   ListItem,
   Stack,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React from "react";
@@ -18,13 +19,7 @@ import { GameMode, Lobby, Player } from "../utils/types";
 import { isLobbyJoinable } from "../utils/utils";
 import { GiLaurelCrown } from "react-icons/gi";
 import { useSocket } from "../utils/hooks";
-import {
-  defaultEliminationRate,
-  defaultGlobalTime1vs1,
-  defaultGlobalTimeBr,
-  defaultTimeAfterFirstGuess1vs1,
-  defaultTimeAfterFirstGuessBr,
-} from "src/utils/Const";
+import { CreateLobbyModal } from "./CreateLobbyModal";
 import { LinkAfterGame1vs1 } from "./LinkPostGame1vs1";
 
 interface PreGameLobbyProps {
@@ -34,12 +29,29 @@ interface PreGameLobbyProps {
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
-  lobby: { name, totalPlace, state, playerList, id, owner, mode, lastGame },
+  lobby: {
+    name,
+    totalPlace,
+    state,
+    playerList,
+    id,
+    owner,
+    mode,
+    lastGame,
+    currentGameId,
+    isPublic,
+    nbLifePerPlayer,
+    nbRounds,
+    globalTime,
+    timeAfterFirstGuess,
+    eliminationRate,
+  },
   player: { id: playerId },
   gameMode,
 }) => {
   const socket = useSocket();
   const router = useRouter();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const currentPlace = playerList.length;
 
@@ -48,22 +60,22 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
       socket?.emit("start_game_br", {
         lobbyId: id,
         playerId,
-        eliminationRate: defaultEliminationRate,
-        globalTime: defaultGlobalTimeBr,
-        timeAfterFirstGuess: defaultTimeAfterFirstGuessBr,
+        eliminationRate: eliminationRate,
+        globalTime: globalTime,
+        timeAfterFirstGuess: timeAfterFirstGuess,
       });
     } else if (gameMode === "1vs1") {
       socket?.emit("start_game_1vs1", {
         lobbyId: id,
         playerId,
-        globalTime: defaultGlobalTime1vs1,
-        timeAfterFirstGuess: defaultTimeAfterFirstGuess1vs1,
+        globalTime: globalTime,
+        timeAfterFirstGuess: timeAfterFirstGuess,
       });
     }
   };
 
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
-    ? `En attente de joueur ${currentPlace}/${totalPlace}`
+    ? `En attente ${currentPlace}/${totalPlace}`
     : "Plein";
 
   return (
@@ -108,28 +120,61 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
       <Flex direction={"column"} alignContent={"center"}>
         <Box mx="auto">
           <Text fontSize={"4xl"}>
-            {name} - {mode} - {placeStatus}
+            {name} - {mode === "battle-royale" ? "BR" : mode} - {placeStatus}
+          </Text>
+          <Text textAlign={"center"} fontStyle={"italic"}>
+            Vies : {nbLifePerPlayer}{" "}
+            {mode === "1vs1" && `- Rounds : ${nbRounds}`}
+            {mode === "battle-royale" &&
+              `- Ratio d'éliminés : ${eliminationRate}%`}{" "}
+            - Temps global : {globalTime / 60000} minutes - Temps après 1er
+            gagnant : {timeAfterFirstGuess / 1000} secondes
           </Text>
         </Box>
 
-        <HStack mx="auto">
+        <HStack mx="auto" my={4}>
           <IconButton
             aria-label="quit lobby"
             icon={<ArrowBackIcon />}
             onClick={() => router.push("/lobby")}
           />
+          <IconButton
+            isDisabled={playerId !== owner}
+            aria-label="option lobby"
+            icon={<SettingsIcon />}
+            onClick={onOpen}
+          />
+          <CreateLobbyModal
+            isOpen={isOpen}
+            onClose={onClose}
+            mode="Update"
+            lobby={{
+              name,
+              totalPlace,
+              state,
+              playerList,
+              id,
+              owner,
+              mode,
+              nbLifePerPlayer,
+              nbRounds,
+              isPublic,
+              currentGameId,
+              lastGame,
+              globalTime: globalTime / 60000,
+              timeAfterFirstGuess: timeAfterFirstGuess / 1000,
+              eliminationRate,
+            }}
+          />
           <Button
-            isDisabled={
-              playerId !== owner ||
-              (playerList.length < totalPlace && gameMode !== "battle-royale")
-            }
+            isDisabled={playerId !== owner || playerList.length < 2}
             colorScheme={"green"}
             onClick={startGame}
           >
             Commencer
           </Button>
         </HStack>
-        
+
         <Text fontSize={"2xl"}>Joueurs</Text>
         <Divider />
         <List>
