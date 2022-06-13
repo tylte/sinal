@@ -483,7 +483,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         )}
         {/* The number of player that win */}
         <Text align="center">
-          Joueur qualifiés : {numberPlayerFound}/{numberPlayerWinMax}
+          Joueurs qualifiés : {numberPlayerFound}/{numberPlayerWinMax}
         </Text>
         {/* use when the player is in spectate mode to show the spectate player */}
         {spectate && (
