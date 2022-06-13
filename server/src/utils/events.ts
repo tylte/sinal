@@ -764,6 +764,10 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
       game.playersLastNextRound = Math.floor(
         game.playersLastNextRound * (1 - game.eliminationRate / 100)
       );
+
+      if (game.playerFound.length < game.playersLastNextRound)
+        game.playersLastNextRound = game.playerFound.length;
+
       game.playerList = game.playerFound;
       game.playerFound = new Array();
 
