@@ -116,13 +116,16 @@ export const addLobbiesEvent = (
     );
   });
 
-  socket?.on("kick_other_players", (listOfPlayers: string[]) => {
-    console.log("LIST :", listOfPlayers);
+  socket?.on("leave_other_players", (listOfPlayers: string[]) => {
     if (listOfPlayers.includes(player.id)) {
-      socket.emit("leave_lobby", {
-        roomId: player.lobbyId,
-        playerId: player.id,
-      });
+      socket.emit(
+        "leave_lobby",
+        {
+          roomId: player.lobbyId,
+          playerId: player.id,
+        },
+        () => {}
+      );
       toast({
         title: "Vous avez été kick de la game",
         status: "error",

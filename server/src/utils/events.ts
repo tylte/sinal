@@ -148,15 +148,8 @@ export const updateLobbyEvent = (
       oldPlayerList !== undefined &&
       oldTotalPlace > totalPlace
     ) {
-      console.log("RENTRE DANS LE IF");
-      console.log("SLICE", oldPlayerList.slice(totalPlace));
-      console.log(
-        "MAP",
-        oldPlayerList.slice(totalPlace).map((player) => player.id)
-      );
-
       io.to(lobbyId).emit(
-        "kick_other_players",
+        "leave_other_players",
         oldPlayerList.slice(totalPlace).map((player) => player.id)
       );
     }
