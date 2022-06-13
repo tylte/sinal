@@ -33,7 +33,7 @@ export const SmallPlayerGrid: React.FC<SmallPlayerGridProps> = ({
   }
 
   return (
-    <Stack position={"relative"} spacing={1} margin={3}>
+    <Stack position={"relative"} overflow={"hidden"} spacing={1} margin={3}>
       <Box
         key={"box-" + namePlayer}
         bg={"rgba(0, 0, 0, 0.3)"}
@@ -46,7 +46,12 @@ export const SmallPlayerGrid: React.FC<SmallPlayerGridProps> = ({
         position={"absolute"}
         left="50%"
         top="50%"
+        width={"100%"}
+        overflow={"hidden"}
+        whiteSpace={"nowrap"}
+        textOverflow={"ellipsis"}
         textColor={"white"}
+        textAlign={"center"}
         transform={"translate(-50%, -50%)"}
       >
         {namePlayer}

@@ -1000,7 +1000,7 @@ export const guessWordBrEvent = (
 
       if (game.playerFound.length === game.playersLastNextRound) {
         game.playersLastNextRound = Math.floor(
-          game.playersLastNextRound * (1 - game.eliminationRate / 100)
+          game.playerFound.length * (1 - game.eliminationRate / 100)
         );
 
         if (game.playersLastNextRound === 0) {
@@ -1090,7 +1090,7 @@ const tempsEcouleBr = (
         io.to(game.id).socketsLeave(game.id);
       } else {
         game.playersLastNextRound = Math.floor(
-          game.playersLastNextRound * (1 - game.eliminationRate / 100)
+          game.playerFound.length * (1 - game.eliminationRate / 100)
         );
         game.playerList = game.playerFound;
         game.playerFound = new Array();
@@ -1109,7 +1109,7 @@ const tempsEcouleBr = (
       io.to(game.id).socketsLeave(game.id);
     } else {
       game.playersLastNextRound = Math.floor(
-        game.playersLastNextRound * (1 - game.eliminationRate / 100)
+        game.playerFound.length * (1 - game.eliminationRate / 100)
       );
 
       if (game.playerFound.length <= game.playersLastNextRound)
@@ -1328,7 +1328,7 @@ export const leaveGameBr = async (
             if (timeout !== undefined) clearTimeout(timeout);
             newWordBr(io, game, game.globalTime, lobbyId);
             game.playersLastNextRound = Math.floor(
-              game.playersLastNextRound * (1 - game.eliminationRate / 100)
+              game.playerFound.length * (1 - game.eliminationRate / 100)
             );
             if (game.playerFound.length <= game.playersLastNextRound)
               game.playersLastNextRound = Math.floor(
