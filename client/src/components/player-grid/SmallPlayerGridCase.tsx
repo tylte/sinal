@@ -15,6 +15,7 @@ export const SmallPlayerGridCase: React.FC<SmallPlayerGridCaseProps> = ({
   let color = getColorFromResult(letterResult);
 
   let size = 75 / nbPlayer;
+  if(size <= 75 / 10) size = 75/10;//Max size of the grid for other player
 
   return (
     <Flex w={size} height={size} bgColor={color}>
