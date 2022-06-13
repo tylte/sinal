@@ -113,6 +113,7 @@ export type Player1vs1 = {
 };
 
 export type ChatMessage = {
+  channelId: string;
   content: string;
   author: string;
   id: string;
@@ -136,3 +137,14 @@ export type LastGame = {
 export type FocusMode = "overwrite" | "insert";
 
 export const twoDigits = (num: number) => String(num).padStart(2, "0");
+
+export type ChatChannel = {
+  id: string;
+  name: string;
+  messageHistory: ChatMessage[];
+};
+
+export type ChattingActions = {
+  isChatting: boolean;
+  channels: ChatChannel[];
+};

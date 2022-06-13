@@ -1,10 +1,4 @@
-import {
-  Box,
-  Flex,
-  Spinner,
-  Text,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
@@ -434,7 +428,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         );
       } else {
         items.push(
-          <Box key={playerId + i} alignContent={"center"}>  
+          <Box key={playerId + i} alignContent={"center"}>
             <SmallPlayerGrid
               key={playerId}
               wordLength={wordLength}
