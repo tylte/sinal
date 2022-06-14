@@ -28,18 +28,17 @@ Chakra UI (UI design)
 
 Socket.io / ExpressJS (serveur)
 
-
 # Fonctionnalités
 
 Les principales fonctionalités sont le mode 1vs1 et le mode Battle Royale
 
 # Jouer en local
 
-Pour jouer en local vous avez deux choix, NodeJs ou Docker
+Pour jouer en local vous avez deux choix, avec NodeJs ou Docker
 
 ### Avec Nodejs
 
-Installer nodejs et yarn
+Installer NodeJs et yarn
 
 #### Client
 
@@ -74,7 +73,6 @@ docker-compose up -d
 
 Vous pouvez maintenant vous rendre sur [localhost:3000](http://localhost:3000)
 
-
 # Images du jeu
 
 ![image](https://user-images.githubusercontent.com/59796115/173549011-b820d7ce-7905-4d9f-9de6-80746de05333.png)
@@ -85,16 +83,13 @@ Vous pouvez maintenant vous rendre sur [localhost:3000](http://localhost:3000)
 |:--:|
 | <b>Lobby 1vs1</b>|
 
-
 ![image](https://user-images.githubusercontent.com/59796115/173544026-34666402-3b2b-4774-8e86-973700e6da88.png)
 |:--:|
 | <b>Partie de 1vs1</b>|
 
-
 ![image](https://user-images.githubusercontent.com/59796115/173546024-f3cb91d6-aeb4-496b-b6c9-ee2c93331793.png)
 |:--:|
 | <b>Fin de Partie 1vs1</b>|
-
 
 ![image](https://user-images.githubusercontent.com/59796115/173542959-33362b10-09ef-4d19-8f6b-efa9841508cf.png)
 |:--:|
