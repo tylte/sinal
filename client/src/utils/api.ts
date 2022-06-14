@@ -375,19 +375,18 @@ export const addGuessWordBrBroadcast = async (
   setNumberPlayerFound: React.Dispatch<React.SetStateAction<number>>
 ) => {
   socket?.on("guess_word_broadcast", (arg) => {
+    if (
+      arg.tab_res.every((element: number) => {
+        if (element === 0) {
+          return true;
+        } else {
+          return false;
+        }
+      })
+    ) {
+      setNumberPlayerFound((nb) => nb + 1);
+    }
     if (arg.playerId !== playerId) {
-      // let ret = false;
-      if (
-        arg.tab_res.every((element: number) => {
-          if (element === 0) {
-            return true;
-          } else {
-            return false;
-          }
-        })
-      ) {
-        setNumberPlayerFound((nb) => nb + 1);
-      }
       setGameState((gameState) => {
         return gameState.map((game) =>
           game.playerId === arg.playerId
@@ -469,22 +468,31 @@ export const addBrEvent = async (
   });
   socket?.on("winning_player_br", (arg) => {
     console.log("winning_player_br");
-    if (arg !== playerId && !spectate) {
-      console.log("enter winning");
-      toast({
-        title: "Perdu ! Sadge",
-        status: "error",
-        isClosable: true,
-        duration: 2500,
-      });
+    if (arg !== playerId) {
       setGameState((gameSate) =>
         gameSate.map((game) =>
           game.playerId !== arg
             ? { ...game, isFinished: true, hasWon: false }
-            : { ...game }
+            : { ...game, isFinished: true, hasWon: true }
         )
       );
+      if (spectate) {
+        toast({
+          title: "Round terminé !",
+          status: "info",
+          isClosable: true,
+          duration: 2500,
+        });
+      } else {
+        toast({
+          title: "Perdu ! Sadge",
+          status: "error",
+          isClosable: true,
+          duration: 2500,
+        });
+      }
     }
+
     return;
   });
   socket?.on("next_word_br", (arg) => {
