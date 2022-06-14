@@ -14,6 +14,21 @@
 SINAL est une application web reprennant les règles de sutom ou tusmo, les adaptant à un mode multijoueur, le battle royal.
 Avec d'éventuels modes de jeu suplémentaires à venir plus tard.
 
+# Techonologie utilisé
+
+Typescript pour le serveur et le client
+
+### Client
+
+React/NextJS (front-end framework)
+
+Chakra UI (UI design)
+
+### Serveur
+
+Socket.io / ExpressJS (serveur)
+
+
 # Fonctionnalités
 
 Les principales fonctionalités sont le mode 1vs1 et le mode Battle Royale
