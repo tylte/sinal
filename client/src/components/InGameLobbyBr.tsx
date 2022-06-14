@@ -341,10 +341,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         isClosable: true,
         duration: 2500,
       });
-    }
-
-    //check if the number of try exceed the nbLife
-    if (triesHistory.length + 1 === nbLife) {
+      //check if the number of try exceed the nbLife
+    } else if (triesHistory.length + 1 === nbLife) {
       setGameState(
         gameState.map((game) =>
           game.playerId === player.id
@@ -499,7 +497,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           word={word}
           triesHistory={triesHistory}
           isFinished={isFinished || isChatting}
-          keyboardSetting={keyboardSettings}
+          keyboardSetting={spectate ? undefined : keyboardSettings}
         />
       </Box>
     </>
