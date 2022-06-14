@@ -73,3 +73,31 @@ docker-compose up -d
 ```
 
 Vous pouvez maintenant vous rendre sur [localhost:3000](http://localhost:3000)
+
+
+# Images du jeu
+
+![image](https://user-images.githubusercontent.com/59796115/173543730-4ce48c50-3aa2-4753-8b70-96dcf7151ef0.png)
+|:--:|
+| <b>Lobby 1vs1</b>|
+
+
+![image](https://user-images.githubusercontent.com/59796115/173544026-34666402-3b2b-4774-8e86-973700e6da88.png)
+|:--:|
+| <b>Partie de 1vs1</b>|
+
+
+![image](https://user-images.githubusercontent.com/59796115/173546024-f3cb91d6-aeb4-496b-b6c9-ee2c93331793.png)
+|:--:|
+| <b>Fin de Partie 1vs1</b>|
+
+
+![image](https://user-images.githubusercontent.com/59796115/173543201-87ac7e1e-5537-4101-b380-403704f56f75.png)
+|:--:|
+| <b>Lobby Battle Royale</b>|
+
+
+
+![image](https://user-images.githubusercontent.com/59796115/173542959-33362b10-09ef-4d19-8f6b-efa9841508cf.png)
+|:--:|
+| <b>Partie de Battle Royale</b>|
