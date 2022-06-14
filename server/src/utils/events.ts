@@ -445,6 +445,10 @@ export const startGame1vs1Event = async (
   });
 };
 
+/**
+ * Is called each time a player enter or delete a letter,
+ * send to the two players an array of boolean, true for a letter and false for spaces
+ */
 export const updateWordEvent = (
   io: Server,
   { word, gameId, playerId }: ArgUpdateWord
@@ -773,9 +777,6 @@ const tempsEcoule1vs1 = (
   }
 };
 
-//=====================================================================================
-//                                events battle-royale
-//=====================================================================================
 /**
  * Private function which ends the game.
  * @param io - Server
@@ -894,6 +895,20 @@ const setGlobalTimeout = (
   }
 };
 
+//=====================================================================================
+//                                events battle-royale
+//=====================================================================================
+
+/**
+ * Starting a game of battle royale
+ *
+ * in this game, the @param eliminationRate % last players to find the word won't pass to the next round,
+ * until there id only one player left (the winner).
+ *
+ * Players have a total time (@param globalTime) to find the word, else another word is choose (can only happen thrice in a raw, else the game stop)
+ * After the first player find the word, other players have a limited time to find it (@param timeAfterFirstGuess)
+ * Only players who found the word can pass through the round and play the next one
+ */
 export const startGameBrEvent = async (
   io: Server,
   {
@@ -983,6 +998,13 @@ export const startGameBrEvent = async (
   });
 };
 
+/**
+ * Is called when a player send a word
+ * return to the player an array of the result of this word (right place / wrong place / not in the word) for each letter
+ * using the @param response to return this array
+ *
+ * If word was correct, manage to see if he's the first player to find it, and start a timer if so
+ */
 export const guessWordBrEvent = (
   io: Server,
   response: any,
@@ -1112,6 +1134,11 @@ export const guessWordBrEvent = (
   }
 };
 
+/**
+ * Is called when the timer hit 0
+ * It will end the round and start another one,
+ * or end the game by choosing which player won
+ */
 const tempsEcouleBr = (
   game: GameBr | undefined,
   io: Server,
@@ -1187,6 +1214,14 @@ const tempsEcouleBr = (
   }
 };
 
+/**
+ * Function which is called when we have another round.
+ * This function choose a new word to guess, and initialize all the properties of the new round.
+ * @param io - Server
+ * @param game - 1vs1 GameState
+ * @param lobby - Lobby of the Game
+ * @return The new word to guess
+ */
 const newWordBr = (
   io: Server,
   game: GameBr | undefined,
