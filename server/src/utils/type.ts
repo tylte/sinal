@@ -28,6 +28,7 @@ export const Player1vs1 = z.object({
   name: z.string(),
   nbLife: z.number(),
   hasWon: z.boolean(),
+  nbWins: z.number(), //TODO : Change in client
 });
 
 export type Player1vs1Type = z.infer<typeof Player1vs1>;
@@ -48,11 +49,16 @@ export const Lobby = z.object({
   name: z.string(),
   totalPlace: z.number(),
   playerList: Player.array(),
+  nbLifePerPlayer: z.number(),
+  nbRounds: z.number(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
   owner: z.string(), // id du joueur owner
   isPublic: z.boolean(),
   mode: GameMode,
-  currentGameId: z.nullable(z.string()),
-  lastGame: z.nullable(LastGame),
+  currentGameId: z.optional(z.string()),
+  lastGame: z.optional(LastGame),
+  eliminationRate: z.number(),
 });
 
 export const Game1vs1 = z.object({
@@ -64,6 +70,8 @@ export const Game1vs1 = z.object({
   endTime: z.optional(z.number()),
   globalTime: z.number(),
   timeAfterFirstGuess: z.number(),
+  roundNumber: z.number(),
+  nbRoundsTotal: z.number(),
 });
 
 export type Game1vs1 = z.infer<typeof Game1vs1>;
@@ -88,6 +96,7 @@ export const GameBr = z.object({
   endTime: z.optional(z.number()),
   timeAfterFirstGuess: z.number(),
   numberOfDrawStreak: z.number(),
+  nbLifePerPlayer: z.number(),
 });
 
 export type GameBr = z.infer<typeof GameBr>;
@@ -99,6 +108,23 @@ export const ArgCreateLobby = z.object({
   isPublic: z.boolean(),
   owner: Player,
   name: z.string(),
+  nbRounds: z.number(),
+  nbLife: z.number(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
+  eliminationRate: z.number(),
+});
+
+export const ArgUpdateLobby = z.object({
+  lobbyId: z.string(),
+  mode: GameMode,
+  place: z.number(),
+  isPublic: z.boolean(),
+  name: z.string(),
+  nbRounds: z.number(),
+  nbLife: z.number(),
+  globalTime: z.number(),
+  timeAfterFirstGuess: z.number(),
 });
 
 export const ArgJoinLobby = z.object({
@@ -134,6 +160,7 @@ export const ArgStartGameBr = z.object({
 export const ReceivedChatMessage = z.object({
   content: z.string(),
   playerId: z.string(),
+  channelId: z.string(),
 });
 
 export const ArgGuessWord = z.object({
@@ -146,6 +173,7 @@ export const ArgGuessWord = z.object({
 export type LobbyType = z.infer<typeof Lobby>;
 export type ArgCreateLobbyType = z.infer<typeof ArgCreateLobby>;
 export type ArgJoinLobbyType = z.infer<typeof ArgJoinLobby>;
+export type ArgUpdateLobbyType = z.infer<typeof ArgUpdateLobby>;
 export type ArgLeaveLobbyType = z.infer<typeof ArgLeaveLobby>;
 export type ArgStartGame1vs1Type = z.infer<typeof ArgStartGame1vs1>;
 export type ArgUpdateWord = z.infer<typeof ArgUpdateWord>;
@@ -169,6 +197,7 @@ export type PacketType = z.infer<typeof Packet>;
 export type EventResponseFn = (payload: PacketType) => void;
 
 export type ChatMessageToSend = {
+  channelId: string;
   content: string;
   author: string;
   id: string;

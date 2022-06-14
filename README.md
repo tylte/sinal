@@ -11,8 +11,23 @@
 
 # L'application
 
-SINAL est une application web reprennant les règles de sutom ou tusmo, les adaptant à un mode multijoueur, le battle royal.
+SINAL est une application web reprennant les règles de motus et en s'inspirant de sutom et tusmo, les adaptant à des modes multijoueurs, le battle royal et le 1vs1.
 Avec d'éventuels modes de jeu suplémentaires à venir plus tard.
+
+# Techonologies utilisées
+
+Typescript pour le serveur et le client
+
+### Client
+
+React/NextJS (front-end framework)
+
+Chakra UI (UI design)
+
+### Serveur
+
+Socket.io / ExpressJS (serveur)
+
 
 # Fonctionnalités
 
@@ -28,7 +43,7 @@ Installer nodejs et yarn
 
 #### Client
 
-Dans le dossier client installer les dependances et lancer le server
+Dans le dossier client, installer les dépendances et lancer le client
 
 ```
 cd client/
@@ -38,7 +53,7 @@ yarn build && yarn start
 
 #### Serveur
 
-Dans le dossier client installer les dependances et lancer le server
+Dans le dossier server, installer les dépendances et lancer le server
 
 ```
 cd server/

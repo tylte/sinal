@@ -5,8 +5,10 @@ import {
   SimpleGrid,
   Text,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { addLobbiesEvent, removeLobbiesEvent } from "src/utils/api";
 import { CreateLobbyModal } from "../components/CreateLobbyModal";
@@ -25,6 +27,8 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   const [player] = usePlayer();
   const socket = useSocket();
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
+  const toast = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     axios.get<Lobby[]>(`${serverHttpUrl}/list_lobbies`).then(({ data }) => {
@@ -33,20 +37,21 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
   }, []);
 
   useEffect(() => {
-    if (socket) {
+    if (socket && player) {
       // Update event lobbies
-      addLobbiesEvent(socket, setLobbies);
+      addLobbiesEvent(socket, setLobbies, player, toast, router);
     }
 
     return () => {
-      if (socket) {
+      if (socket && player) {
         removeLobbiesEvent(socket);
       }
     };
-  }, [socket]);
+  }, [socket, player]);
 
   return (
-    <Layout variant="large">
+    <Layout variant="grid">
+      <div></div>
       <Flex direction={"column"}>
         <Text mb={5} align="center" fontSize={"3xl"}>
           Liste des lobbys
@@ -61,7 +66,7 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
         </SimpleGrid>
       </Flex>
       <CreatePlayerModal isOpen={!player} onClose={createPlayerOnClose} />
-      <CreateLobbyModal isOpen={isOpen} onClose={onClose} />
+      <CreateLobbyModal isOpen={isOpen} onClose={onClose} mode="Create" />
     </Layout>
   );
 };

@@ -31,11 +31,16 @@ export type Lobby = {
   name: string;
   totalPlace: number; // nombre de place que le lobby peut contenir en tt
   playerList: Player[];
+  nbLifePerPlayer: number;
+  nbRounds: number;
+  globalTime: number;
+  timeAfterFirstGuess: number;
   owner: string; // id du joueur owner
   isPublic: boolean;
   mode: GameMode;
   currentGameId: string;
   lastGame: LastGame | null;
+  eliminationRate: number;
 };
 
 export type Packet = {
@@ -57,6 +62,10 @@ export type Game1vs1 = {
   length: number;
   firstLetter: string;
   endTime: number;
+  globalTime: number;
+  timeAfterFirstGuess: number;
+  roundNumber: number;
+  nbRoundsTotal: number;
 };
 
 export type SoloGameState = {
@@ -71,6 +80,7 @@ export type SoloGameState = {
 
 export type BrGameState = {
   playerId: string;
+  playerName: string;
   wordLength: number;
   wordId: string;
   firstLetter: string;
@@ -96,6 +106,7 @@ export type BrGameInfo = {
   eliminationRate: number;
   globalTime: number;
   timeAfterFirstGuess: number;
+  nbLifePerPlayer: number;
 };
 
 export type KeyboardSettings = {
@@ -109,9 +120,11 @@ export type Player1vs1 = {
   name: string;
   nbLife: number;
   hasWon: boolean;
+  nbWins: number;
 };
 
 export type ChatMessage = {
+  channelId: string;
   content: string;
   author: string;
   id: string;
@@ -121,6 +134,7 @@ export type MyFocus = {
   index: number;
   isBorder: boolean;
   focusMode: FocusMode;
+  firstLetterWritable: boolean;
 };
 
 export type LastGame = {
@@ -134,3 +148,14 @@ export type LastGame = {
 export type FocusMode = "overwrite" | "insert";
 
 export const twoDigits = (num: number) => String(num).padStart(2, "0");
+
+export type ChatChannel = {
+  id: string;
+  name: string;
+  messageHistory: ChatMessage[];
+};
+
+export type ChattingActions = {
+  isChatting: boolean;
+  channels: ChatChannel[];
+};

@@ -1,9 +1,11 @@
 import { Server, Socket } from "socket.io";
+import { io } from "socket.io-client";
 import { map } from "zod";
 import { dicoHasWord } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
 import { get_id, get_word } from "../Endpoint/start_game";
 import {
+  channelIdToHistory,
   disconnectMap,
   game1vs1Map,
   gameBrMap,
@@ -19,25 +21,37 @@ import {
   ArgLeaveLobbyType,
   ArgStartGame1vs1Type,
   ArgStartGameBrType,
+  ArgUpdateLobbyType,
   ArgUpdateWord,
   ChatMessageToSend,
   EventResponseFn,
   Game1vs1,
   GameBr,
+  Lobby,
   LobbyType,
   PacketType,
   Player,
+  Player1vs1Type,
   PlayerBr,
   ReceivedChatMessageType,
 } from "./type";
 import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 
-const NBLIFE = 6;
-
 export const createLobbyEvent = (
   io: Server,
   socket: Socket,
-  { isPublic, mode, name, owner, place: totalPlace }: ArgCreateLobbyType,
+  {
+    isPublic,
+    mode,
+    name,
+    owner,
+    place: totalPlace,
+    nbRounds,
+    nbLife,
+    globalTime,
+    timeAfterFirstGuess,
+    eliminationRate,
+  }: ArgCreateLobbyType,
   response: (payload: PacketType) => void
 ) => {
   let lobbyId = get_id();
@@ -47,11 +61,16 @@ export const createLobbyEvent = (
     name,
     totalPlace,
     playerList: new Array<Player>(),
+    nbLifePerPlayer: nbLife,
+    nbRounds,
     owner: owner.id,
     isPublic,
     mode,
-    currentGameId: null,
-    lastGame: null,
+    currentGameId: undefined,
+    lastGame: undefined,
+    globalTime,
+    timeAfterFirstGuess,
+    eliminationRate,
   };
 
   let player = playerMap.get(owner.id);
@@ -68,8 +87,18 @@ export const createLobbyEvent = (
 
   lobbyMap.set(lobbyId, lobby);
   console.log("Lobby created notif");
+
+  // The user will join the lobby chat room
+  // For now no message history is kept on the server
+  socket.emit("add_player_to_chat_channel", {
+    name: "Lobby",
+    id: lobbyId,
+    messageHistory: [],
+  });
+
   socket.join(lobbyId);
   player.lobbyId = lobbyId;
+
   if (lobby.isPublic) {
     io.to(PUBLIC_LOBBIES).emit("lobbies_update_create", lobbyMap.get(lobbyId));
   }
@@ -83,6 +112,55 @@ export const createLobbyEvent = (
   // If the user created a lobby, he will leave it when deconnecting
   willLeaveLobbyOnDisconnect(io, socket, { lobbyId, playerId: player!.id });
   response(packet);
+};
+
+export const updateLobbyEvent = (
+  io: Server,
+  {
+    isPublic,
+    mode,
+    name,
+    place: totalPlace,
+    nbRounds,
+    nbLife,
+    globalTime,
+    timeAfterFirstGuess,
+  }: ArgUpdateLobbyType,
+  lobbyId: string
+) => {
+  let lobby = lobbyMap.get(lobbyId);
+  let oldTotalPlace = lobby?.totalPlace;
+  let oldPlayerList = lobby?.playerList;
+  if (lobby !== undefined) {
+    lobby = {
+      ...lobby,
+      isPublic,
+      mode,
+      name,
+      nbLifePerPlayer: nbLife,
+      totalPlace,
+      nbRounds,
+      globalTime,
+      timeAfterFirstGuess,
+      playerList: lobby.playerList.slice(0, totalPlace),
+    };
+    if (
+      oldTotalPlace !== undefined &&
+      oldPlayerList !== undefined &&
+      oldTotalPlace > totalPlace
+    ) {
+      io.to(lobbyId).emit(
+        "leave_other_players",
+        oldPlayerList.slice(totalPlace).map((player) => player.id)
+      );
+    }
+    lobbyMap.set(lobbyId, lobby);
+    io.to(lobbyId).emit("updating_lobby", lobby);
+
+    if (isPublic) {
+      io.to(PUBLIC_LOBBIES).emit("updating_lobby_broadcast", lobby);
+    }
+  }
 };
 
 export const joinLobbyEvent = (
@@ -121,6 +199,15 @@ export const joinLobbyEvent = (
   player.lobbyId = lobbyId;
 
   lobby.playerList.push(player);
+
+  let messageHistory = channelIdToHistory.get(lobbyId) ?? [];
+  // The user will join the lobby chat room
+  // For now no message history is kept on the server
+  socket.emit("add_player_to_chat_channel", {
+    name: "Lobby",
+    id: lobbyId,
+    messageHistory,
+  });
 
   io.to(PUBLIC_LOBBIES).to(lobbyId).emit("lobbies_update_join", { lobby });
 
@@ -187,6 +274,9 @@ export const leaveLobbyEvent = (
   player.lobbyId = null;
   // Leave the room
   socket.leave(lobbyId);
+
+  // Leave the lobby chat room
+  socket.emit("remove_player_of_chat_channel", lobbyId);
 
   console.log("Joueur retiré : ", playerId, " dans le lobby : ", lobbyId, "");
   response({
@@ -293,20 +383,24 @@ export const startGame1vs1Event = async (
     playerOne: {
       id: playerOne.id,
       name: playerOne.name,
-      nbLife: NBLIFE,
+      nbLife: lobby.nbLifePerPlayer,
       hasWon: false,
+      nbWins: 0,
     },
     playerTwo: {
       id: playerTwo.id,
       name: playerTwo.name,
-      nbLife: NBLIFE,
+      nbLife: lobby.nbLifePerPlayer,
       hasWon: false,
+      nbWins: 0,
     },
     id: gameId,
     firstLetter: word.charAt(0),
     length: word.length,
     globalTime: globalTime,
     timeAfterFirstGuess: timeAfterFirstGuess,
+    roundNumber: 1,
+    nbRoundsTotal: lobby.nbRounds,
   };
 
   lobby.lastGame = {
@@ -423,15 +517,7 @@ export const guessWord1vs1Event = (
 
   let lobby = lobbyMap.get(lobbyId);
   if (lobby !== undefined) {
-    if (lobby.lastGame === undefined) {
-      lobby.lastGame = {
-        gameMode: "1vs1",
-        playerList: lobby.playerList,
-        winner: undefined,
-        wordsToGuess: [word],
-        triesHistory: lobby.playerList.map(() => [[0]]),
-      };
-    } else {
+    if (lobby.lastGame !== undefined) {
       for (let i = 0; i < lobby.playerList.length; i++) {
         if (lobby.playerList[i].id === playerId) {
           lobby.lastGame?.triesHistory[i].push(tab_res);
@@ -444,78 +530,207 @@ export const guessWord1vs1Event = (
 
     if (win) {
       player.hasWon = true;
+
+      // If the opposing player has already won, the round will be decided on the number of life used to guess the word
       if (otherPlayer.hasWon) {
         if (player.nbLife > otherPlayer.nbLife) {
-          io.to(gameId).emit("wining_player_1vs1", player.id);
-          lobby.lastGame = {
-            ...lobby.lastGame,
-            winner: playerMap.get(playerId),
-          };
+          // Player wins the round.
+          io.to(gameId).emit("winning_round_1vs1", player.id);
+          player.nbWins++;
 
-          lobby.state = "pre-game";
-          io.to(gameId).emit("ending_game", { lobby });
-          io.to(gameId).socketsLeave(gameId);
+          // If we have reached the final round, then, it's the end of the game
+          if (game.roundNumber >= game.nbRoundsTotal) {
+            // We get the winner of the game (or the tie if it's a tie)
+            let winner = get1vs1GameWinner(
+              io,
+              player,
+              otherPlayer,
+              gameId,
+              lobbyId
+            );
+
+            io.to(gameId).emit("winning_game_1vs1", winner);
+
+            // The game is finished, we change the lastGame informations
+            lobby.lastGame = {
+              ...lobby.lastGame,
+              winner,
+            };
+            ending1vs1Game(io, lobby, gameId);
+          } else {
+            // Launch another round
+            game.roundNumber++;
+            let word = newWord1vs1(io, game, lobby);
+
+            // Waiting 3 seconds until the next round
+            setTimeout(() => {
+              setGlobalTimeout(io, game, lobby, word);
+              io.to(gameId).emit("next_round", game);
+            }, 3000);
+          }
         } else {
-          io.to(gameId).emit("wining_player_1vs1", otherPlayer.id);
-          lobby.lastGame = {
-            ...lobby.lastGame,
-            winner: playerMap.get(otherPlayer.id),
-          };
-          lobby.state = "pre-game";
-          io.to(gameId).emit("ending_game", { lobby });
-          io.to(gameId).socketsLeave(gameId);
+          // Other player wins the round
+          io.to(gameId).emit("winning_round_1vs1", otherPlayer.id);
+          otherPlayer.nbWins++;
+
+          // If we have reached the final round, then, it's the end of the game
+          if (game.roundNumber >= game.nbRoundsTotal) {
+            let winner = get1vs1GameWinner(
+              io,
+              player,
+              otherPlayer,
+              gameId,
+              lobbyId
+            );
+
+            io.to(gameId).emit("winning_game_1vs1", winner);
+
+            // The game is finished, we change the lastGame informations
+            lobby.lastGame = {
+              ...lobby.lastGame,
+              winner,
+            };
+            ending1vs1Game(io, lobby, gameId);
+          } else {
+            // Launch another round
+            game.roundNumber++;
+            let word = newWord1vs1(io, game, lobby);
+
+            // Waiting 3 seconds until the next round
+            setTimeout(() => {
+              setGlobalTimeout(io, game, lobby, word);
+              io.to(gameId).emit("next_round", game);
+            }, 3000);
+          }
         }
       } else if (player.nbLife >= otherPlayer.nbLife - 1) {
-        io.to(gameId).emit("wining_player_1vs1", player.id);
-        lobby.lastGame = {
-          ...lobby.lastGame,
-          winner: playerMap.get(otherPlayer.id),
-        };
-        lobby.state = "pre-game";
-        io.to(gameId).emit("ending_game", { lobby });
-        io.to(gameId).socketsLeave(gameId);
+        // The player who has win has more lives left than his opponent. Even if his opponent guess the word, he will lose.
+        io.to(gameId).emit("winning_round_1vs1", player.id);
+        player.nbWins++;
+
+        if (game.roundNumber >= game.nbRoundsTotal) {
+          // We get the winner of the game (or the tie if it's a tie)
+          let winner = get1vs1GameWinner(
+            io,
+            player,
+            otherPlayer,
+            gameId,
+            lobbyId
+          );
+
+          io.to(gameId).emit("winning_game_1vs1", winner);
+
+          // The game is finished, we change the lastGame informations
+          lobby.lastGame = {
+            ...lobby.lastGame,
+            winner,
+          };
+          ending1vs1Game(io, lobby, gameId);
+        } else {
+          // Launch another round
+          game.roundNumber++;
+          let word = newWord1vs1(io, game, lobby);
+
+          // Waiting 3 seconds until the next round
+          setTimeout(() => {
+            setGlobalTimeout(io, game, lobby, word);
+            io.to(gameId).emit("next_round", game);
+          }, 3000);
+        }
       } else {
+        // If the player has guess but the opponent can guess in less tries, the opponent has (by default) 60 seconds to find the word.
         let timeout = timeoutMap.get(gameId);
-        if (timeout !== undefined) clearTimeout(timeout);
+
+        // Clear global timeout of the game
+        if (timeout !== undefined) {
+          clearTimeout(timeout);
+        }
+
+        // Execute the function after timeAfterFirstGuess (60 seconds by default)
         timeout = setTimeout(() => {
           tempsEcoule1vs1(io, game, lobby, word);
         }, game.timeAfterFirstGuess);
 
         timeoutMap.set(gameId, timeout);
 
+        // Set endTime to (now + timeAfterFirstGuess) if the global timer does not end sooner.
         if (
           game.endTime !== undefined &&
           game.endTime > Date.now() + game.timeAfterFirstGuess
         ) {
           game.endTime = game.timeAfterFirstGuess + Date.now();
         }
-        io.to(gameId).emit("first_wining_player_1vs1", game);
+
+        io.to(gameId).emit("first_winning_player_1vs1", game);
       }
     } else if (game.playerOne.nbLife === 0 && game.playerTwo.nbLife === 0) {
-      io.to(gameId).emit("draw_1vs1");
-      let lobby = lobbyMap.get(lobbyId);
+      // If neither the player or his oppenent has no more lives, it's a tie for the round.
+      io.to(gameId).emit("draw_round_1vs1");
+
       if (lobby && lobby.lastGame) {
+        if (game.roundNumber >= game.nbRoundsTotal) {
+          // We get the winner of the game (or the tie if it's a tie)
+          let winner = get1vs1GameWinner(
+            io,
+            player,
+            otherPlayer,
+            gameId,
+            lobbyId
+          );
+
+          io.to(gameId).emit("winning_game_1vs1", winner);
+
+          // The game is finished, we change the lastGame informations
+          lobby.lastGame = {
+            ...lobby.lastGame,
+            gameMode: "1vs1",
+            playerList: lobby.playerList,
+            winner,
+            triesHistory: lobby.lastGame?.triesHistory || [[]],
+          };
+          ending1vs1Game(io, lobby, gameId);
+        } else {
+          // Launch another round
+          game.roundNumber++;
+          let word = newWord1vs1(io, game, lobby);
+
+          // Waiting 3 seconds until the next round
+          setTimeout(() => {
+            setGlobalTimeout(io, game, lobby, word);
+            io.to(gameId).emit("next_round", game);
+          }, 3000);
+        }
+      }
+    } else if (player.nbLife <= otherPlayer.nbLife && otherPlayer.hasWon) {
+      io.to(gameId).emit("winning_round_1vs1", otherPlayer.id);
+      otherPlayer.nbWins++;
+      if (game.roundNumber >= game.nbRoundsTotal) {
+        let winner = get1vs1GameWinner(
+          io,
+          player,
+          otherPlayer,
+          gameId,
+          lobbyId
+        );
+
+        io.to(gameId).emit("winning_game_1vs1", winner);
+
         lobby.lastGame = {
           ...lobby.lastGame,
-          gameMode: "1vs1",
-          playerList: lobby.playerList,
-          winner: undefined,
-          triesHistory: lobby.lastGame?.triesHistory || [[]],
+          winner,
         };
-        lobby.state = "pre-game";
-        io.to(gameId).emit("ending_game", { lobby });
+        ending1vs1Game(io, lobby, gameId);
+      } else {
+        // Launch another round
+        game.roundNumber++;
+        let word = newWord1vs1(io, game, lobby);
+
+        // Waiting 3 seconds until the next round
+        setTimeout(() => {
+          setGlobalTimeout(io, game, lobby, word);
+          io.to(gameId).emit("next_round", game);
+        }, 3000);
       }
-      io.to(gameId).socketsLeave(gameId);
-      game1vs1Map.delete(gameId);
-    } else if (player.nbLife <= otherPlayer.nbLife && otherPlayer.hasWon) {
-      io.to(gameId).emit("wining_player_1vs1", otherPlayer.id);
-      lobby.lastGame = {
-        ...lobby.lastGame,
-        winner: playerMap.get(otherPlayer.id),
-      };
-      lobby.state = "pre-game";
-      io.to(gameId).emit("ending_game", { lobby });
-      io.to(gameId).socketsLeave(gameId);
     }
   }
 };
@@ -561,6 +776,123 @@ const tempsEcoule1vs1 = (
 //=====================================================================================
 //                                events battle-royale
 //=====================================================================================
+/**
+ * Private function which ends the game.
+ * @param io - Server
+ * @param lobby - Lobby of the game
+ * @param gameId - ID of the game
+ */
+const ending1vs1Game = (io: Server, lobby: LobbyType, gameId: string) => {
+  // We redirecting to the PreGameLobby
+  lobby.state = "pre-game";
+
+  // Clear the timeout
+  let timeout = timeoutMap.get(gameId);
+  if (timeout !== undefined) {
+    clearTimeout(timeout);
+  }
+  io.to(gameId).emit("ending_game", { lobby });
+  io.to(gameId).socketsLeave(gameId);
+  game1vs1Map.delete(gameId);
+};
+
+/**
+ * Private function that returns the winner of the match when all the rounds was played.
+ * @param io - Server
+ * @param player - Player
+ * @param otherPlayer - Oppenent Player
+ * @param gameId - ID of the Game
+ * @param lobbyId - ID of the Lobby
+ * @returns The winner of the match
+ */
+const get1vs1GameWinner = (
+  io: Server,
+  player: Player1vs1Type,
+  otherPlayer: Player1vs1Type,
+  gameId: string,
+  lobbyId: string
+) => {
+  let winner: Player | undefined;
+  if (player.nbWins > otherPlayer.nbWins) {
+    // If the player has won more rounds, he wins the game
+    io.to(gameId).emit("wining_game_1vs1", player.id);
+    winner = {
+      id: player.id,
+      lobbyId,
+      name: player.name,
+    };
+  } else if (player.nbWins < otherPlayer.nbWins) {
+    io.to(gameId).emit("wining_game_1vs1", otherPlayer.id);
+    winner = {
+      id: otherPlayer.id,
+      lobbyId,
+      name: otherPlayer.name,
+    };
+  } else {
+    // If they have won the same number of games, there is a tie.
+    io.to(gameId).emit("draw_game_1vs1");
+    winner = undefined;
+  }
+
+  return winner;
+};
+
+/**
+ * Function which is called when we have another round.
+ * This function choose a new word to guess, and initialize all the properties of the new round.
+ * @param io - Server
+ * @param game - 1vs1 GameState
+ * @param lobby - Lobby of the Game
+ * @return The new word to guess
+ */
+const newWord1vs1 = (io: Server, game: Game1vs1, lobby: LobbyType) => {
+  if (game !== undefined) {
+    // Clear the timeout of the game.
+    let timeout = timeoutMap.get(game.id);
+    if (timeout !== undefined) {
+      clearTimeout(timeout);
+    }
+
+    // Reset the endTime of the game.
+    game.endTime = undefined;
+
+    // Choose a new word.
+    let newWord = get_word();
+    console.log("Mot à découvrir : ", newWord);
+    idToWord.set(game.id, newWord);
+
+    // Update the wordsToGuess array of the Game.
+    lobby.lastGame?.wordsToGuess.push(newWord);
+
+    // Initialize all the properties of the new round.
+    game.firstLetter = newWord.charAt(0);
+    game.length = newWord.length;
+    game.playerOne.nbLife = lobby.nbLifePerPlayer;
+    game.playerOne.hasWon = false;
+    game.playerTwo.nbLife = lobby.nbLifePerPlayer;
+    game.playerTwo.hasWon = false;
+
+    return newWord;
+  } else {
+    return;
+  }
+};
+
+const setGlobalTimeout = (
+  io: Server,
+  game: Game1vs1 | undefined,
+  lobby: LobbyType | undefined,
+  word: string | undefined
+) => {
+  if (game !== undefined && word) {
+    let timeout = setTimeout(() => {
+      tempsEcoule1vs1(io, game, lobby, word);
+    }, game.globalTime);
+
+    timeoutMap.set(game.id, timeout);
+    game.endTime = Date.now() + game.globalTime;
+  }
+};
 
 export const startGameBrEvent = async (
   io: Server,
@@ -605,11 +937,11 @@ export const startGameBrEvent = async (
 
   let playerArray = new Array<PlayerBr>();
   lobbyPlayerList.forEach((player) => {
-    if (player !== undefined) {
+    if (player !== undefined && lobby !== undefined) {
       playerArray.push({
         id: player.id,
         name: player.name,
-        nbLife: NBLIFE,
+        nbLife: lobby?.nbLifePerPlayer,
       });
     }
   });
@@ -627,9 +959,10 @@ export const startGameBrEvent = async (
     globalTime: globalTime,
     timeAfterFirstGuess: timeAfterFirstGuess,
     numberOfDrawStreak: 0,
+    nbLifePerPlayer: lobby.nbLifePerPlayer,
   };
 
-  newWordBr(io, game, globalTime);
+  newWordBr(io, game, globalTime, lobbyId);
 
   gameBrMap.set(gameId, game);
   io.to(lobbyId).emit("starting_game_br", game);
@@ -641,7 +974,7 @@ export const startGameBrEvent = async (
   //the order of the playerList is the same of the set of the socket so we can use the foreach of the player to get the playerId
   game.playerList.forEach((player) => {
     let disconnect = () => {
-      leaveGameBr(io, game, player.id);
+      leaveGameBr(io, game, player.id, lobbyId);
     };
     //set the map for the disconnect
     disconnectMap.set(player.id + game.id, disconnect);
@@ -653,12 +986,18 @@ export const startGameBrEvent = async (
 export const guessWordBrEvent = (
   io: Server,
   response: any,
-  { word, gameId, playerId }: ArgUpdateWord
+  { word, gameId, playerId, lobbyId }: ArgGuessWordType
 ) => {
   let timeout;
   let game = gameBrMap.get(gameId);
+  let lobby = lobbyMap.get(lobbyId);
   if (game === undefined) {
     console.log("guess_word_br : there is no game unsing this gameId");
+    return;
+  }
+
+  if (lobby === undefined) {
+    console.log("guess_word_br : there is no lobby unsing this lobbyId");
     return;
   }
 
@@ -699,7 +1038,7 @@ export const guessWordBrEvent = (
       game.playerFound.push(player);
       game.numberOfDrawStreak = 0;
 
-      setNewTimeout(io, game, game.timeAfterFirstGuess);
+      setNewTimeout(io, game, game.timeAfterFirstGuess, lobbyId);
 
       io.to(gameId).emit("first_winning_player_br", game);
       if (game.playerFound.length === game.playersLastNextRound) {
@@ -707,6 +1046,8 @@ export const guessWordBrEvent = (
         timeout = timeoutMap.get(game.id);
         if (timeout !== undefined) clearTimeout(timeout);
         io.to(gameId).emit("winning_player_br", playerId);
+        lobby.state = "pre-game";
+        io.to(gameId).emit("ending_game", { lobby });
         io.to(gameId).socketsLeave(gameId);
       }
     } else if (game.playerFound.length >= game.playersLastNextRound) {
@@ -717,7 +1058,7 @@ export const guessWordBrEvent = (
 
       if (game.playerFound.length === game.playersLastNextRound) {
         game.playersLastNextRound = Math.floor(
-          game.playersLastNextRound * (1 - game.eliminationRate / 100)
+          game.playerFound.length * (1 - game.eliminationRate / 100)
         );
 
         if (game.playersLastNextRound === 0) {
@@ -725,18 +1066,20 @@ export const guessWordBrEvent = (
           timeout = timeoutMap.get(game.id);
           if (timeout !== undefined) clearTimeout(timeout);
           io.to(gameId).emit("winning_player_br", playerId);
+          lobby.state = "pre-game";
+          io.to(gameId).emit("ending_game", { lobby });
           io.to(gameId).socketsLeave(gameId);
         } else if (game.playersLastNextRound === 1) {
           game.playerList = game.playerFound;
           game.playerFound = new Array();
-          newWordBr(io, game, game.globalTime);
+          newWordBr(io, game, game.globalTime, lobbyId);
 
           io.to(gameId).emit("next_word_br", game);
           //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
         } else {
           game.playerList = game.playerFound;
           game.playerFound = new Array();
-          newWordBr(io, game, game.globalTime);
+          newWordBr(io, game, game.globalTime, lobbyId);
 
           io.to(gameId).emit("next_word_br", game);
         }
@@ -757,7 +1100,7 @@ export const guessWordBrEvent = (
 
       game.playerFound = new Array();
 
-      newWordBr(io, game, game.globalTime);
+      newWordBr(io, game, game.globalTime, lobbyId);
 
       io.to(gameId).emit("next_word_br", game);
     } else {
@@ -769,26 +1112,52 @@ export const guessWordBrEvent = (
   }
 };
 
-const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
+const tempsEcouleBr = (
+  game: GameBr | undefined,
+  io: Server,
+  lobbyId: string
+) => {
   if (game !== undefined) {
+    let lobby = lobbyMap.get(lobbyId);
     let timeout = timeoutMap.get(game.id);
     if (timeout !== undefined) clearTimeout(timeout);
-    newWordBr(io, game, game.globalTime);
+    newWordBr(io, game, game.globalTime, lobbyId);
+    if (lobby !== undefined) {
+      if (game.playerFound.length === 0) {
+        if (game.numberOfDrawStreak < 3) {
+          game.numberOfDrawStreak++;
+          game.playerList.forEach((p) => {
+            p.nbLife = game.nbLifePerPlayer;
+          });
 
-    if (game.playerFound.length === 0) {
-      if (game.numberOfDrawStreak < 3) {
-        game.numberOfDrawStreak++;
-        game.playerList.forEach((p) => {
-          p.nbLife = NBLIFE;
-        });
-
-        io.to(game.id).emit("draw_br");
-        io.to(game.id).emit("next_word_br", game);
-      } else {
+          io.to(game.id).emit("draw_br");
+          io.to(game.id).emit("next_word_br", game);
+        } else {
+          //the game is finished we delete the timeout
+          timeout = timeoutMap.get(game.id);
+          if (timeout !== undefined) clearTimeout(timeout);
+          io.to(game.id).emit("end_of_game_draw", game);
+        }
+      } else if (game.playerFound.length === 1) {
+        io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
         //the game is finished we delete the timeout
         timeout = timeoutMap.get(game.id);
         if (timeout !== undefined) clearTimeout(timeout);
-        io.to(game.id).emit("end_of_game_draw", game);
+        lobby.state = "pre-game";
+        io.to(game.id).emit("ending_game", { lobby });
+        io.to(game.id).socketsLeave(game.id);
+      } else {
+        game.playersLastNextRound = Math.floor(
+          game.playerFound.length * (1 - game.eliminationRate / 100)
+        );
+        game.playerList = game.playerFound;
+        game.playerFound = new Array();
+
+        game.playerList.forEach((p) => {
+          p.nbLife = game.nbLifePerPlayer;
+        });
+
+        io.to(game.id).emit("next_word_br", game);
       }
     } else if (game.playerFound.length === 1) {
       io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
@@ -798,13 +1167,19 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
       io.to(game.id).socketsLeave(game.id);
     } else {
       game.playersLastNextRound = Math.floor(
-        game.playersLastNextRound * (1 - game.eliminationRate / 100)
+        game.playerFound.length * (1 - game.eliminationRate / 100)
       );
+
+      if (game.playerFound.length <= game.playersLastNextRound)
+        game.playersLastNextRound = Math.floor(
+          game.playerFound.length * (1 - game.eliminationRate / 100)
+        );
+
       game.playerList = game.playerFound;
       game.playerFound = new Array();
 
       game.playerList.forEach((p) => {
-        p.nbLife = NBLIFE;
+        p.nbLife = game.nbLifePerPlayer;
       });
 
       io.to(game.id).emit("next_word_br", game);
@@ -812,7 +1187,12 @@ const tempsEcouleBr = (game: GameBr | undefined, io: Server) => {
   }
 };
 
-const newWordBr = (io: Server, game: GameBr | undefined, newTime: number) => {
+const newWordBr = (
+  io: Server,
+  game: GameBr | undefined,
+  newTime: number,
+  lobbyId: string
+) => {
   if (game !== undefined) {
     let time = timeoutMap.get(game.id);
     if (time !== undefined) {
@@ -826,17 +1206,18 @@ const newWordBr = (io: Server, game: GameBr | undefined, newTime: number) => {
     game.length = newWord.length;
 
     game.playerList.forEach((p) => {
-      p.nbLife = NBLIFE;
+      p.nbLife = game.nbLifePerPlayer;
     });
 
-    setNewTimeout(io, game, newTime);
+    setNewTimeout(io, game, newTime, lobbyId);
   }
 };
 
 const setNewTimeout = (
   io: Server,
   game: GameBr | undefined,
-  newTime: number
+  newTime: number,
+  lobbyId: string
 ) => {
   if (game !== undefined) {
     if (game.endTime === undefined || game.endTime > Date.now() + newTime) {
@@ -844,7 +1225,7 @@ const setNewTimeout = (
       if (timeout !== undefined) clearTimeout(timeout);
 
       timeout = setTimeout(() => {
-        tempsEcouleBr(game, io);
+        tempsEcouleBr(game, io, lobbyId);
       }, newTime);
 
       game.endTime = Date.now() + newTime;
@@ -857,7 +1238,7 @@ const setNewTimeout = (
 
 export const sendChatMessage = (
   io: Server,
-  { content, playerId }: ReceivedChatMessageType
+  { content, playerId, channelId }: ReceivedChatMessageType
 ) => {
   const player = playerMap.get(playerId);
 
@@ -869,12 +1250,20 @@ export const sendChatMessage = (
   let messageId = get_id();
 
   let messageToSend: ChatMessageToSend = {
+    channelId,
     author: player.name,
     content,
     id: messageId,
   };
 
-  io.to(PUBLIC_CHAT).emit("broadcast_message", messageToSend);
+  const messageHistory = channelIdToHistory.get(channelId);
+  if (messageHistory) {
+    messageHistory.push(messageToSend);
+  } else {
+    channelIdToHistory.set(channelId, [messageToSend]);
+  }
+
+  io.to(channelId).emit("broadcast_message", messageToSend);
 };
 
 /**
@@ -887,13 +1276,15 @@ export const sendChatMessage = (
 export const leaveGameBr = async (
   io: Server,
   game: GameBr,
-  playerId: string
+  playerId: string,
+  lobbyId: string
 ) => {
   //check if the player exist
   let indexPlayer = game.playerList.findIndex(
     (player) => playerId === player.id
   );
-  if (game !== undefined && indexPlayer >= 0) {
+  let lobby = lobbyMap.get(lobbyId);
+  if (game !== undefined && indexPlayer >= 0 && lobby != undefined) {
     //the current game have one less player
     game.playersLastNextRound -= 1;
     //Informs the other players that a player has left.
@@ -929,6 +1320,8 @@ export const leaveGameBr = async (
         //the game is finished we delete the timeout
         timeout = timeoutMap.get(game.id);
         if (timeout !== undefined) clearTimeout(timeout);
+        lobby.state = "pre-game";
+        io.to(game.id).emit("ending_game", { lobby });
         io.to(game.id).socketsLeave(game.id);
       } else {
         //the game is finished without the player
@@ -939,6 +1332,8 @@ export const leaveGameBr = async (
             //the game is finished we delete the timeout
             timeout = timeoutMap.get(game.id);
             if (timeout !== undefined) clearTimeout(timeout);
+            lobby.state = "pre-game";
+            io.to(game.id).emit("ending_game", { lobby });
             io.to(game.id).socketsLeave(game.id);
           }
         } else {
@@ -946,15 +1341,20 @@ export const leaveGameBr = async (
           if (game.playersLastNextRound === game.playerFound.length) {
             //if the new playersLastNextRound is the same as playerFound.length, the game is finish and the next word is send
             if (timeout !== undefined) clearTimeout(timeout);
-            newWordBr(io, game, game.globalTime);
+            newWordBr(io, game, game.globalTime, lobbyId);
             game.playersLastNextRound = Math.floor(
-              game.playersLastNextRound * (1 - game.eliminationRate / 100)
+              game.playerFound.length * (1 - game.eliminationRate / 100)
             );
+            if (game.playerFound.length <= game.playersLastNextRound)
+              game.playersLastNextRound = Math.floor(
+                game.playerFound.length * (1 - game.eliminationRate / 100)
+              );
+
             game.playerList = game.playerFound;
             game.playerFound = new Array();
 
             game.playerList.forEach((p) => {
-              p.nbLife = NBLIFE;
+              p.nbLife = game.nbLifePerPlayer;
             });
 
             io.to(game.id).emit("next_word_br", game);
@@ -1033,7 +1433,7 @@ export const leaveGame = (
     //if the game is a Br
     let gameBr = GameBr.safeParse(gameBrMap.get(gameId));
     if (gameBr.success) {
-      leaveGameBr(io, gameBr.data, playerId);
+      leaveGameBr(io, gameBr.data, playerId, lobbyId);
     }
   }
 };

@@ -1,5 +1,5 @@
 import { Box, Flex, Text, useToast } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
   leaveGame,
@@ -13,6 +13,7 @@ import {
   useSocket,
 } from "../utils/hooks";
 import {
+  BrGameInfo,
   Game1vs1,
   KeyboardSettings,
   Lobby,
@@ -29,6 +30,7 @@ interface OneVsOneGameLobbyProps {
   player: Player;
   gameState: Game1vs1;
   lobby: Lobby;
+  setGameState: Dispatch<SetStateAction<Game1vs1 | BrGameInfo | null>>;
 }
 
 export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
@@ -40,8 +42,11 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     id: gameId,
     length: game_length,
     endTime,
+    roundNumber,
+    nbRoundsTotal,
   },
   lobby: lobby,
+  setGameState,
 }) => {
   const socket = useSocket();
   const dictionary = useDictionary();
@@ -65,6 +70,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     index: 1,
     isBorder: false,
     focusMode: "overwrite",
+    firstLetterWritable: false,
   });
 
   const adversaire: Player1vs1 =
@@ -81,7 +87,10 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
         setTryHistoryP2,
         setWordP2,
         setIsFinished,
-        setEndPoint
+        setEndPoint,
+        setGameState,
+        setTryHistory,
+        setWord
       );
     }
     return () => {
@@ -154,6 +163,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
     onEnter,
     focus,
     setFocus,
+    firstLetter.toUpperCase(),
     isFinished || isChatting
   );
 
@@ -176,7 +186,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
             <PlayerGrid
               isVisible={false}
               wordLength={game_length}
-              nbLife={6}
+              nbLife={playerOne.nbLife}
               firstLetter={firstLetter}
               word={wordP2}
               triesHistory={tryHistoryP2}
@@ -201,6 +211,9 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
             {!hasWon && "PERDU"}
           </Text>
         )}
+        <Text align={"center"}>
+          Round {roundNumber}/{nbRoundsTotal}
+        </Text>
         {!isFinished && (
           <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
         )}
@@ -208,7 +221,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
           focus={focus}
           isVisible={true}
           wordLength={game_length}
-          nbLife={6}
+          nbLife={playerOne.nbLife}
           firstLetter={firstLetter.toUpperCase()}
           word={word}
           triesHistory={tryHistory}

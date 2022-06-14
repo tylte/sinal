@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useContext, useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { SinalContext } from "./context";
-import { MyFocus, Player } from "./types";
+import { ChattingActions, MyFocus, Player } from "./types";
 import {
   classicWordDelete,
   classicWordWriting,
@@ -42,7 +42,7 @@ export const usePlayer = (): [
  */
 export const useIsChatting = (): boolean => {
   let {
-    chattingActions: [isChatting],
+    chattingActions: [{ isChatting }],
   } = useContext(SinalContext);
   return isChatting;
 };
@@ -51,8 +51,8 @@ export const useIsChatting = (): boolean => {
  * @returns get an array, first element tells if the user is chatting, the second element can set the state chatting
  */
 export const useChattingActions = (): [
-  isChatting: boolean,
-  setIsChatting: Dispatch<SetStateAction<boolean>> | null
+  isChatting: ChattingActions,
+  setIsChatting: Dispatch<SetStateAction<ChattingActions>> | null
 ] => {
   let { chattingActions } = useContext(SinalContext);
   return chattingActions;
@@ -76,12 +76,19 @@ const handleWordInput = (
   wordLength: number,
   onEnter: () => void,
   focus: MyFocus,
-  setFocus: Dispatch<SetStateAction<MyFocus>>
+  setFocus: Dispatch<SetStateAction<MyFocus>>,
+  firstLetter: string
 ) => {
   // Only one alphabetic caracter in the key
   const re = /^([a-zA-Z]{1})$/;
   // more detail on e.key https://www.toptal.com/developers/keycode/for/alt
-  if (re.test(e.key)) {
+  if (
+    e.key.toUpperCase() === firstLetter &&
+    !focus.firstLetterWritable &&
+    focus.index === 1
+  ) {
+    focus.firstLetterWritable = true;
+  } else if (re.test(e.key)) {
     incrementFocus(setFocus, wordLength - 1);
     classicWordWriting(e.key, setWord, wordLength, focus);
   } else if (e.key === "Backspace") {
@@ -118,10 +125,19 @@ export const useClassicWordInput = (
   onEnter: () => void,
   focus: MyFocus,
   setFocus: Dispatch<SetStateAction<MyFocus>>,
+  firstLetter: string,
   stopListening?: boolean
 ) => {
   const handleInput = (e: KeyboardEvent) => {
-    handleWordInput(e, setWord, wordLength, onEnter, focus, setFocus);
+    handleWordInput(
+      e,
+      setWord,
+      wordLength,
+      onEnter,
+      focus,
+      setFocus,
+      firstLetter
+    );
   };
   useEffect(() => {
     if (!stopListening) {

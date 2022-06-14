@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { createServer } from "http";
+import { createServer, request } from "http";
 import { Server } from "socket.io";
 import { get_dictionary } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
@@ -18,16 +18,20 @@ import {
   sendChatMessage,
   startGame1vs1Event,
   startGameBrEvent,
+  updateLobbyEvent,
   updateWordEvent,
 } from "./events";
+import { lobbyMap } from "./maps";
 import {
   ArgCreateLobby,
   ArgGuessWord,
   ArgJoinLobby,
+  ArgUpdateLobby,
   ArgStartGame1vs1,
   ArgStartGameBr,
   ArgUpdateWord,
   EventResponseFn,
+  LobbyType,
   PacketType,
   ReceivedChatMessage,
 } from "./type";
@@ -89,6 +93,15 @@ export const getServer = () => {
           console.log("create_lobby : response is supposed to be a function");
           return;
         }
+        /**
+         * @param request.mode - GameMode of the Lobby
+         * @param request.place - Number of places in the Lobby
+         * @param request.isPublic - Visibility of the Lobby
+         * @param request.owner - Owner of the Lobby
+         * @param request.name - Name of the Lobby
+         * @param request.nbRounds - Number of rounds (only for 1vs1 Mode)
+         * @param request.nbLife - Number of lifes
+         */
 
         let check = ArgCreateLobby.safeParse(request);
         if (check.success) {
@@ -106,6 +119,26 @@ export const getServer = () => {
         }
       }
     );
+
+    socket.on("update_lobby", (request) => {
+      /**
+       * @param request.lobbyId - Lobby of the ID
+       * @param request.mode - GameMode of the Lobby
+       * @param request.place - Number of places in the Lobby
+       * @param request.isPublic - Visibility of the Lobby
+       * @param request.name - Name of the Lobby
+       * @param request.nbRounds - Number of rounds (only for 1vs1 Mode)
+       * @param request.nbLife - Number of lifes
+       */
+
+      let check = ArgUpdateLobby.safeParse(request);
+      if (check.success) {
+        updateLobbyEvent(io, check.data, request.lobbyId);
+      } else {
+        console.log("update_lobby payload : ", request);
+        console.log("update_lobby : ", check.error);
+      }
+    });
 
     socket.on("join_lobby", (result, response: EventResponseFn) => {
       if (typeof response !== "function") {
@@ -305,7 +338,7 @@ export const getServer = () => {
           return;
         }
 
-        let check = ArgUpdateWord.safeParse(req); // Same arguments for update_word
+        let check = ArgGuessWord.safeParse(req); // Same arguments for update_word
         if (check.success) {
           guessWordBrEvent(io, response, check.data);
         } else {
@@ -333,12 +366,7 @@ export const getServer = () => {
           typeof request.playerId === "string" &&
           typeof request.lobbyId === "string"
         ) {
-          leaveGame(
-            io,
-            request.gameId,
-            request.lobbyId,
-            request.playerId
-          );
+          leaveGame(io, request.gameId, request.lobbyId, request.playerId);
         } else {
           console.log("leave_lobby : bad request : ", request);
         }

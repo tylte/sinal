@@ -21,6 +21,7 @@ import {
   BrGameInfo,
   KeyboardSettings,
   MyFocus,
+  Lobby,
 } from "../utils/types";
 import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
@@ -30,6 +31,7 @@ import { Chrono } from "./Chrono";
 interface InGameLobbyBrProps {
   player: Player;
   gameInfo: BrGameInfo;
+  lobby: Lobby;
 }
 
 const NOT_ENOUGH_LETTER = "NOLETTER";
@@ -38,6 +40,7 @@ const NOT_IN_DICTIONARY = "NODICTIONARY";
 export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   player,
   gameInfo,
+  lobby,
 }) => {
   //The number of player in the game
   const [numberPlayer, setNumberPlayer] = useState(gameInfo.playerList.length);
@@ -53,11 +56,24 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   const [endPoint, setEndPoint] = useState(gameInfo.endTime);
 
+  //use for the player that loose
+  const [spectate, setSpectate] = useState(false);
+
+  const [numberPlayerFound, setNumberPlayerFound] = useState(0);
+  const [numberPlayerWinMax, setNumberPlayerWinMax] = useState(
+    gameInfo.playersLastNextRound
+  );
+
+  //use to force the rerender of the component react
+  const [, updateState] = React.useState([]);
+  const forceUpdate = React.useCallback(() => updateState([]), []);
+
   //the focus in the grid
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
     isBorder: false,
     focusMode: "overwrite",
+    firstLetterWritable: false,
   });
 
   //start the game
@@ -67,9 +83,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     let newGameState = [];
     newGameState.push({
       playerId: player.id,
+      playerName: player.name,
       firstLetter: gameInfo.firstLetter.toUpperCase(),
       isFinished: false,
-      nbLife: 6,
+      nbLife: gameInfo.nbLifePerPlayer,
       triesHistory: [],
       wordLength: gameInfo.length,
       hasWon: false,
@@ -80,9 +97,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       if (player.id !== pl.id) {
         newGameState.push({
           playerId: pl.id,
+          playerName: pl.name,
           firstLetter: gameInfo.firstLetter.toUpperCase(),
           isFinished: false,
-          nbLife: 6,
+          nbLife: gameInfo.nbLifePerPlayer,
           triesHistory: [],
           wordLength: gameInfo.length,
           hasWon: false,
@@ -93,9 +111,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     setGameState(newGameState);
     setWord(gameInfo.firstLetter.toUpperCase());
   };
-
   //load the new word
   const resetGame = (gameBr: BrGameInfo) => {
+    setNumberPlayerFound(0);
+    setNumberPlayerWinMax(gameBr.playersLastNextRound);
     //check if the player win the previous word
     let playerIn =
       gameBr.playerList.find((pl) => {
@@ -107,9 +126,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       //the first player
       newGameState.push({
         playerId: player.id,
+        playerName: player.name,
         firstLetter: gameBr.firstLetter.toUpperCase(),
         isFinished: false,
-        nbLife: 6,
+        nbLife: gameBr.nbLifePerPlayer,
         triesHistory: [],
         wordLength: gameBr.length,
         hasWon: false,
@@ -122,9 +142,10 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         if (player.id !== pl.id) {
           newGameState.push({
             playerId: pl.id,
+            playerName: pl.name,
             firstLetter: gameBr.firstLetter.toUpperCase(),
             isFinished: false,
-            nbLife: 6,
+            nbLife: gameBr.nbLifePerPlayer,
             triesHistory: [],
             wordLength: gameBr.length,
             hasWon: false,
@@ -137,14 +158,26 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       setWord(gameBr.firstLetter.toUpperCase());
       setEndPoint(gameBr.endTime);
     } else {
-      // set the game for the looser
-      setGameState((gameSate) =>
-        gameSate.map((game) =>
-          game.playerId === player.id
-            ? { ...game, isFinished: true, hasWon: false }
-            : { ...game }
-        )
-      );
+      setSpectate(true);
+      setEndPoint(gameBr.endTime);
+      let newGameState: BrGameState[] = [];
+      //the first grid to display
+      setNumberPlayer(gameBr.playerList.length + 1);
+      gameBr.playerList.forEach((pl) => {
+        newGameState.push({
+          playerId: pl.id,
+          playerName: pl.name,
+          firstLetter: gameBr.firstLetter.toUpperCase(),
+          isFinished: false,
+          nbLife: 6,
+          triesHistory: [],
+          wordLength: gameBr.length,
+          hasWon: false,
+          wordId: gameBr.id,
+        });
+      });
+      setGameState(newGameState);
+      setWord(gameBr.firstLetter.toUpperCase());
     }
   };
 
@@ -158,7 +191,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   useEffect(() => {
     if (socket) {
       //the broadcast of the gessWordBr
-      addGuessWordBrBroadcast(socket, player.id, setGameState);
+      addGuessWordBrBroadcast(
+        socket,
+        player.id,
+        setGameState,
+        setNumberPlayerFound
+      );
       //all the other event
       addBrEvent(
         resetGame,
@@ -166,17 +204,19 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         player.id,
         toast,
         setEndPoint,
-        setGameState
+        setGameState,
+        spectate,
+        setNumberPlayerWinMax
       );
     }
     return () => {
       if (socket) {
         //remove all the event
         removeBrEvent(socket);
-        leaveGame(socket, player.id, gameInfo.id, "");
+        leaveGame(socket, player.id, gameInfo.id, lobby.id);
       }
     };
-  }, [socket]);
+  }, [socket, spectate]);
 
   const toast = useToast();
 
@@ -193,10 +233,21 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     );
   };
 
+  const changePlayerFocus = (playerId: string) => {
+    let index = gameState.findIndex((game) => game.playerId === playerId);
+    setGameState((gameState) => {
+      let gameTmp = gameState[index];
+      gameState[index] = gameState[0];
+      gameState[0] = gameTmp;
+      return gameState;
+    });
+    forceUpdate();
+  };
+
   /**
    * Call when the touch enter is pressed.
-   * 
-   * @returns 
+   *
+   * @returns
    */
   const onEnter = async () => {
     if (gameState === null) {
@@ -240,13 +291,20 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
     //check the word
     let result = await new Promise<number[]>((resolve) =>
-      guessWordBr(lowerCaseWord, gameInfo.id, player.id, socket, (arg) => {
-        if (arg.success) {
-          resolve(arg.data);
-        } else {
-          resolve([]);
+      guessWordBr(
+        lowerCaseWord,
+        gameInfo.id,
+        player.id,
+        lobby.id,
+        socket,
+        (arg) => {
+          if (arg.success) {
+            resolve(arg.data);
+          } else {
+            resolve([]);
+          }
         }
-      })
+      )
     );
     //set the triesHistory
     let newState = {
@@ -255,7 +313,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         ...triesHistory,
         {
           result,
-          wordTried: word,
+          wordTried: word.toUpperCase(),
         },
       ],
     };
@@ -310,7 +368,8 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     onEnter,
     focus,
     setFocus,
-    gameState[0]?.isFinished || isChatting
+    word.charAt(0).toUpperCase(),
+    gameState[0]?.isFinished || isChatting || spectate
   );
 
   const keyboardSettings: KeyboardSettings = getClassicKeyboardSettings(
@@ -330,32 +389,61 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     );
   }
   //the param of the current player
-  const { hasWon, triesHistory, firstLetter, nbLife, wordLength, isFinished } =
-    gameState[0];
+  const {
+    hasWon,
+    triesHistory,
+    firstLetter,
+    nbLife,
+    wordLength,
+    isFinished,
+    playerName,
+  } = gameState[0];
 
   //the component of the player, any[] to use the pop function
   const grid = [];
   // save the grid of player, any[] to use the pop function
   const items = [];
+
   let j = 0;
   for (let i = 1; i < numberPlayer; ) {
     // 1 because 0 is the player
-    for (j = 0; j < 6 && i < numberPlayer; j++) {
-      const { triesHistory, nbLife, wordLength, playerId } =
+    for (j = 0; j < 7 && i < numberPlayer; j++) {
+      const { triesHistory, nbLife, wordLength, playerId, playerName } =
         gameState?.[i] || {};
-      items.push(
-        <SmallPlayerGrid
-          key={playerId}
-          wordLength={wordLength}
-          nbLife={nbLife}
-          triesHistory={triesHistory}
-          nbPlayer={numberPlayer}
-        />
-      );
+      if (spectate) {
+        items.push(
+          <button
+            key={playerId + i}
+            onClick={() => changePlayerFocus(playerId)}
+          >
+            <SmallPlayerGrid
+              key={playerId}
+              wordLength={wordLength}
+              nbLife={nbLife}
+              triesHistory={triesHistory}
+              nbPlayer={numberPlayer}
+              namePlayer={playerName}
+            />
+          </button>
+        );
+      } else {
+        items.push(
+          <Box key={playerId + i} alignContent={"center"}>
+            <SmallPlayerGrid
+              key={playerId}
+              wordLength={wordLength}
+              nbLife={nbLife}
+              triesHistory={triesHistory}
+              nbPlayer={numberPlayer}
+              namePlayer={playerName}
+            />
+          </Box>
+        );
+      }
       i++;
     }
     grid.push(
-      <Flex key={i} direction={"column"} alignContent={"center"}>
+      <Flex key={i + "-" + i} direction={"column"}>
         {items.slice(i - 1 - j, i - 1)}
       </Flex>
     );
@@ -364,28 +452,44 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     <>
       {hasWon && <Confetti />}
       <Box>
-        <Flex marginLeft={10} direction={"row"} alignContent={"center"}>
+        <Flex marginLeft={10} direction={"row"}>
           {grid}
         </Flex>
       </Box>
       <Box>
-        <Text align="center" fontSize="large">
+        <Text align="center" fontSize="medium">
           {player.name}
         </Text>
+        {spectate && (
+          <Text color={"green"} align="center" fontSize="sm">
+            Mode spectateur
+          </Text>
+        )}
         {/* the result of the game */}
-        {isFinished && (
-          <Text
-            color={!hasWon ? "red" : "white"}
-            align="center"
-            fontSize="larger"
-          >
+        {isFinished && !spectate && (
+          <Text color={!hasWon ? "red" : ""} align="center" fontSize="larger">
             {hasWon && "GAGNER"}
             {!hasWon && "PERDU"}
           </Text>
         )}
+        {isFinished && spectate && (
+          <Text align="center" fontSize="larger">
+            Round Terminé
+          </Text>
+        )}
+        {/*The chrono*/}
         {!isFinished && (
           <Chrono endPoint={endPoint} onTimeFinish={onTimeFinish}></Chrono>
         )}
+        {/* The number of player that win */}
+        <Text align="center">
+          Joueurs qualifiés : {numberPlayerFound}/{numberPlayerWinMax}
+        </Text>
+        {/* use when the player is in spectate mode to show the spectate player */}
+        {spectate && (
+          <Text align="center">Grille du joueur : {playerName}</Text>
+        )}
+
         <PlayerGrid
           focus={focus}
           isVisible={true}
