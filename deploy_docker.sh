@@ -1,13 +1,17 @@
 #!/bin/sh
 
-docker build server/. -t sinal/server
+if [[ $# -eq 1 ]]; then
+    docker build server/. -t sinal/server
 
-docker build -f client/Dockerfile.prod client/. -t sinal/client
+    docker build -f client/Dockerfile.prod client/. -t sinal/client
 
-docker save sinal/server | bzip2 | pv | ssh sinal@51.91.57.172 docker load
+    docker save sinal/server | bzip2 | pv | ssh $1 docker load
 
-docker save sinal/client | bzip2 | pv | ssh sinal@51.91.57.172 docker load
+    docker save sinal/client | bzip2 | pv | ssh $1 docker load
 
-ssh sinal@51.91.57.172 mkdir -p /home/sinal/prod/
+    ssh $1 mkdir -p /home/sinal/prod/
 
-scp docker-compose.prod.yml sinal@51.91.57.172:/home/sinal/prod/docker-compose.yml
+    scp docker-compose.prod.yml $1:/home/sinal/prod/docker-compose.yml
+else
+  echo "Provide 1 arguments: ip addrs to send it to"
+fi
