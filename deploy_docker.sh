@@ -9,9 +9,9 @@ if [[ $# -eq 1 ]]; then
 
     docker save sinal/client | bzip2 | pv | ssh $1 docker load
 
-    ssh $1 mkdir -p /home/sinal/prod/
+    ssh $1 "mkdir -p ~/prod/"
 
-    scp docker-compose.prod.yml $1:/home/sinal/prod/docker-compose.yml
+    scp docker-compose.prod.yml $1:~/prod/docker-compose.yml
 else
   echo "Provide 1 arguments: ip addrs to send it to"
 fi
