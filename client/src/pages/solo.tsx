@@ -109,7 +109,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
     if (isWordCorrect(result)) {
       setGameState({ ...newState, isFinished: true, hasWon: true });
       toast({
-        title: "GGEZ 😎",
+        title: "Gagné !",
         status: "success",
         isClosable: true,
         duration: 2500,
@@ -120,7 +120,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
     if (triesHistory.length + 1 === nbLife) {
       setGameState({ ...newState, isFinished: true, hasWon: false });
       toast({
-        title: "Perdu ! Sadge",
+        title: "Perdu !",
         status: "error",
         isClosable: true,
         duration: 2500,

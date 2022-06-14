@@ -336,7 +336,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         )
       );
       toast({
-        title: "GGEZ 😎",
+        title: "Bravo ! Le mot est correct",
         status: "success",
         isClosable: true,
         duration: 2500,
@@ -353,7 +353,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         )
       );
       toast({
-        title: "Perdu ! Sadge",
+        title: "Perdu !",
         status: "error",
         isClosable: true,
         duration: 2500,
@@ -468,7 +468,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
         {/* the result of the game */}
         {isFinished && !spectate && (
           <Text color={!hasWon ? "red" : ""} align="center" fontSize="larger">
-            {hasWon && "GAGNER"}
+            {hasWon && "GAGNÉ"}
             {!hasWon && "PERDU"}
           </Text>
         )}
