@@ -86,6 +86,10 @@ export const getServer = () => {
   io.on("connection", (socket) => {
     console.log("le client est connecté au serveur");
 
+    /**
+     * Create a lobby
+     * @param {mode, place, isPublic, owner, name}
+     */
     socket.on(
       "create_lobby",
       (request, response: (payload: PacketType) => void) => {
@@ -140,6 +144,10 @@ export const getServer = () => {
       }
     });
 
+    /**
+     * Join a lobby
+     * @param {lobbyId, playerId}
+     */
     socket.on("join_lobby", (result, response: EventResponseFn) => {
       if (typeof response !== "function") {
         console.log("join_lobby : response is supposed to be a function");
@@ -161,6 +169,10 @@ export const getServer = () => {
       }
     });
 
+    /**
+     * The player with playerId leaves the room
+     * @param {roomId, playerId}
+     */
     socket.on(
       "leave_lobby",
       (request, response: (payload: PacketType) => void) => {
@@ -168,11 +180,7 @@ export const getServer = () => {
           console.log("leave_lobby : response is supposed to be a function");
           return;
         }
-        /**
-         * @param request.roomId - Room of the player
-         * @param request.playerId - ID of the player who have to be removed
-         *
-         */
+
         if (
           request !== undefined &&
           typeof request.roomId === "string" &&
@@ -193,6 +201,10 @@ export const getServer = () => {
       }
     );
 
+    /**
+     * Create a player
+     * @param playerName
+     */
     socket.on(
       "create_player",
       (playerName, response: (payload: PacketType) => void) => {
@@ -215,6 +227,7 @@ export const getServer = () => {
 
     /**
      * start_game_1vs1
+     * @param
      * @param { lobbyId, playerId, globalTime, timeAfterFirstGuess }
      * no response,
      * broadcast "starting_game" on all player in the lobby
@@ -273,7 +286,7 @@ export const getServer = () => {
      * only use for tests
      * get_word
      * @param gameId
-     * resopnse : the word soluce
+     * response : the word soluce
      */
     socket.on(
       "get_word",
