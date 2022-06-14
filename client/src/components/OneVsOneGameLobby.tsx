@@ -207,7 +207,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
             align="center"
             fontSize="larger"
           >
-            {hasWon && "GAGNER"}
+            {hasWon && "GAGNÉ"}
             {!hasWon && "PERDU"}
           </Text>
         )}
