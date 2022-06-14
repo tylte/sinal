@@ -326,6 +326,16 @@ export const willNoLongerLeaveLobbyOnDisconnect = (
   }
 };
 
+//=====================================================================================
+//                                events 1vs1
+//=====================================================================================
+
+/**
+ * Starting a game of 1vs1
+ * in this game, its the player finding the word with the least tries who win
+ * except if the second player takes too long to find the word (@param timeAfterFirstGuess)
+ * they have also a total time to find the word, else its a draw (@param globalTime)
+ */
 export const startGame1vs1Event = async (
   io: Server,
   { lobbyId, playerId, globalTime, timeAfterFirstGuess }: ArgStartGame1vs1Type
@@ -368,7 +378,7 @@ export const startGame1vs1Event = async (
 
   let word = get_word();
   console.log("Mot à découvrir : ", word);
-  idToWord.set(gameId, word);
+  idToWord.set(gameId, word); //the ID of the word is the same as the game
   let game: Game1vs1 = {
     playerOne: {
       id: playerOne.id,
@@ -435,6 +445,10 @@ export const startGame1vs1Event = async (
   });
 };
 
+/**
+ * Is called each time a player enter or delete a letter,
+ * send to the two players an array of boolean, true for a letter and false for spaces
+ */
 export const updateWordEvent = (
   io: Server,
   { word, gameId, playerId }: ArgUpdateWord
@@ -448,6 +462,13 @@ export const updateWordEvent = (
   io.to(gameId).emit("update_word_broadcast", { array, playerId });
 };
 
+/**
+ * Is called when the player send a word
+ * return to the player an array of the result of this word (right place / wrong place / not in the word) for each letter
+ * using the @param response to return this array
+ *
+ * If word was correct, manage to see which player won or set a timer if necessary
+ */
 export const guessWord1vs1Event = (
   io: Server,
   response: any,
@@ -719,6 +740,44 @@ export const guessWord1vs1Event = (
 };
 
 /**
+ * Is called when the timer hit 0
+ * It will end the game by choosing which player won or if its a draw
+ */
+const tempsEcoule1vs1 = (
+  io: Server,
+  game: Game1vs1 | undefined,
+  lobby?: LobbyType | undefined,
+  word?: string
+) => {
+  if (game !== undefined && lobby !== undefined && word) {
+    //initialise lastGame of the lobby (currently the game being played)
+    lobby.lastGame = {
+      gameMode: "1vs1",
+      playerList: lobby.playerList,
+      winner: undefined,
+      wordsToGuess: [word],
+      triesHistory: lobby.lastGame?.triesHistory || [[]],
+    };
+    lobby.state = "pre-game";
+
+    if (game.playerOne.hasWon && !game.playerTwo.hasWon) {
+      //player one won
+      lobby.lastGame.winner = playerMap.get(game.playerOne.id);
+      io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
+    } else if (!game.playerOne.hasWon && game.playerTwo.hasWon) {
+      //player two won
+      lobby.lastGame.winner = playerMap.get(game.playerTwo.id);
+      io.to(game.id).emit("wining_player_1vs1", game.playerTwo.id);
+    } else {
+      //nobody won, normally if both players had won then the timer is clear so tempsEcoule1vs1 is never called
+      io.to(game.id).emit("draw_1vs1");
+    }
+    io.to(game.id).emit("ending_game", { lobby });
+    io.to(game.id).socketsLeave(game.id);
+  }
+};
+
+/**
  * Private function which ends the game.
  * @param io - Server
  * @param lobby - Lobby of the game
@@ -836,6 +895,20 @@ const setGlobalTimeout = (
   }
 };
 
+//=====================================================================================
+//                                events battle-royale
+//=====================================================================================
+
+/**
+ * Starting a game of battle royale
+ *
+ * in this game, the @param eliminationRate % last players to find the word won't pass to the next round,
+ * until there id only one player left (the winner).
+ *
+ * Players have a total time (@param globalTime) to find the word, else another word is choose (can only happen thrice in a raw, else the game stop)
+ * After the first player find the word, other players have a limited time to find it (@param timeAfterFirstGuess)
+ * Only players who found the word can pass through the round and play the next one
+ */
 export const startGameBrEvent = async (
   io: Server,
   {
@@ -925,6 +998,13 @@ export const startGameBrEvent = async (
   });
 };
 
+/**
+ * Is called when a player send a word
+ * return to the player an array of the result of this word (right place / wrong place / not in the word) for each letter
+ * using the @param response to return this array
+ *
+ * If word was correct, manage to see if he's the first player to find it, and start a timer if so
+ */
 export const guessWordBrEvent = (
   io: Server,
   response: any,
@@ -1054,6 +1134,11 @@ export const guessWordBrEvent = (
   }
 };
 
+/**
+ * Is called when the timer hit 0
+ * It will end the round and start another one,
+ * or end the game by choosing which player won
+ */
 const tempsEcouleBr = (
   game: GameBr | undefined,
   io: Server,
@@ -1129,6 +1214,14 @@ const tempsEcouleBr = (
   }
 };
 
+/**
+ * Function which is called when we have another round.
+ * This function choose a new word to guess, and initialize all the properties of the new round.
+ * @param io - Server
+ * @param game - 1vs1 GameState
+ * @param lobby - Lobby of the Game
+ * @return The new word to guess
+ */
 const newWordBr = (
   io: Server,
   game: GameBr | undefined,
@@ -1176,50 +1269,7 @@ const setNewTimeout = (
   }
 };
 
-const tempsEcoule1vs1 = (
-  io: Server,
-  game: Game1vs1 | undefined,
-  lobby?: LobbyType | undefined,
-  word?: string
-) => {
-  if (game !== undefined && lobby !== undefined && word) {
-    if (game.playerOne.hasWon && !game.playerTwo.hasWon) {
-      io.to(game.id).emit("wining_player_1vs1", game.playerOne.id);
-      lobby.lastGame = {
-        gameMode: "1vs1",
-        playerList: lobby.playerList,
-        winner: playerMap.get(game.playerOne.id),
-        wordsToGuess: [word],
-        triesHistory: lobby.lastGame?.triesHistory || [[]],
-      };
-      lobby.state = "pre-game";
-      io.to(game.id).emit("ending_game", { lobby });
-    } else if (!game.playerOne.hasWon && game.playerTwo.hasWon) {
-      io.to(game.id).emit("wining_player_1vs1", game.playerTwo.id);
-      lobby.lastGame = {
-        gameMode: lobby.mode,
-        playerList: lobby.playerList,
-        winner: playerMap.get(game.playerTwo.id),
-        wordsToGuess: [word],
-        triesHistory: lobby.lastGame?.triesHistory || [[]],
-      };
-      lobby.state = "pre-game";
-      io.to(game.id).emit("ending_game", { lobby });
-    } else {
-      io.to(game.id).emit("draw_1vs1");
-      lobby.lastGame = {
-        gameMode: lobby.mode,
-        playerList: lobby.playerList,
-        winner: undefined,
-        wordsToGuess: [word],
-        triesHistory: lobby.lastGame?.triesHistory || [[]],
-      };
-      lobby.state = "pre-game";
-      io.to(game.id).emit("ending_game", { lobby });
-    }
-    io.to(game.id).socketsLeave(game.id);
-  }
-};
+//=====================================================================================
 
 export const sendChatMessage = (
   io: Server,
