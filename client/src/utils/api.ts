@@ -341,8 +341,8 @@ export const addChatEvents = (
         return {
           ...action,
           channels: [
-            ...action.channels,
             { name, messageHistory: messageHistory, id },
+            ...action.channels,
           ],
         };
       });

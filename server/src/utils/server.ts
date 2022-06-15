@@ -21,7 +21,7 @@ import {
   updateLobbyEvent,
   updateWordEvent,
 } from "./events";
-import { lobbyMap } from "./maps";
+import { idToWord, lobbyMap } from "./maps";
 import {
   ArgCreateLobby,
   ArgGuessWord,
@@ -37,7 +37,6 @@ import {
 } from "./type";
 import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 
-export var idToWord: Map<string, string> = new Map();
 export const getServer = () => {
   const app = express();
 

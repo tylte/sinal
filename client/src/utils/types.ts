@@ -124,6 +124,7 @@ export type Player1vs1 = {
 };
 
 export type ChatMessage = {
+  isAnnoncement: boolean;
   channelId: string;
   content: string;
   author: string;

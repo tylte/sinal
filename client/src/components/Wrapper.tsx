@@ -1,6 +1,6 @@
 import { Box, Grid } from "@chakra-ui/layout";
 import React from "react";
-import { Chat } from "./Chat";
+import { Chat } from "./chat/Chat";
 
 export type WrapperVariant = "small" | "regular" | "large" | "grid";
 

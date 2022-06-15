@@ -197,8 +197,14 @@ export type PacketType = z.infer<typeof Packet>;
 export type EventResponseFn = (payload: PacketType) => void;
 
 export type ChatMessageToSend = {
+  isAnnoncement: boolean;
   channelId: string;
   content: string;
   author: string;
   id: string;
+};
+
+export type AnnounceChatMessage = {
+  channelId: string;
+  content: string;
 };
