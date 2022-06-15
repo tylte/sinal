@@ -39,7 +39,7 @@ export const Wrapper: React.FC<WrapperProps> = ({
     );
   } else {
     return (
-      <Box mt={8} w="100%" maxW={variantSize(variant)} mx="auto">
+      <Box mt={8} w="fit-content" maxW={variantSize(variant)} mx="auto">
         {children}
       </Box>
     );

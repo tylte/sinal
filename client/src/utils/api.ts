@@ -485,7 +485,7 @@ export const addBrEvent = async (
         });
       } else {
         toast({
-          title: "Perdu ! Sadge",
+          title: "Perdu !",
           status: "error",
           isClosable: true,
           duration: 2500,
@@ -604,7 +604,7 @@ export const lobbyOneVsOneAddEvents = (
     setIsFinished(true);
     if (req === playerId) {
       toast({
-        title: "GGEZ 😎",
+        title: "Bravo ! vous avez gagné la manche",
         status: "success",
         isClosable: true,
         duration: 2500,
@@ -612,7 +612,7 @@ export const lobbyOneVsOneAddEvents = (
       setHasWon(true);
     } else {
       toast({
-        title: "Perdu ! Sadge",
+        title: "Perdu !",
         status: "error",
         isClosable: true,
         duration: 2500,
