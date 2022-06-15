@@ -1203,6 +1203,7 @@ const tempsEcouleBr = (
           p.nbLife = game.nbLifePerPlayer;
         });
 
+        sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
         io.to(game.id).emit("next_word_br", game);
       }
     } else if (game.playerFound.length === 1) {
