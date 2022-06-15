@@ -16,7 +16,11 @@ export const Layout: React.FC<LayoutProps> = ({ variant, children }) => {
       <Head>
         <title>Sutom is not about luck</title>
         <meta property="og:title" content="SINAL - Sutom is not about luck" />
-        <meta property="og:description" content="Affrontez vos amis au Sutom" />
+        <meta
+          property="og:description"
+          content="Affrontez vos amis au Sutom"
+          key="description"
+        />
       </Head>
       <Header />
       <Wrapper variant={variant}>{children}</Wrapper>
