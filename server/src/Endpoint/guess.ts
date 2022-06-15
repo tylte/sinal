@@ -13,17 +13,15 @@ export function get_guess(id: string, word: string, tab: Map<string, string>) {
   //initialise the return array with RIGHT_POSITION if the character is the same, else with NOT_FOUND
   for (let i = 0; i < word.length; i++) {
     let char = soluce.charAt(i);
-    if (!found.has(char)) found.set(char, 1);
-    else {
-      let nb = found.get(char);
-      if (nb === undefined) nb = 0;
-      found.set(char, nb + 1);
-    }
+    if (!found.has(char)) found.set(char, 0);
+    let nb = found.get(char);
+    if (nb === undefined) nb = 0;
 
     if (word.charAt(i) == char) {
       ret[i] = LetterResult.RIGHT_POSITION;
     } else {
       ret[i] = LetterResult.NOT_FOUND;
+      found.set(char, nb + 1);
     }
   }
 
