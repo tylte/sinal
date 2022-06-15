@@ -1165,7 +1165,6 @@ const tempsEcouleBr = (
     let lobby = lobbyMap.get(lobbyId);
     let timeout = timeoutMap.get(game.id);
     if (timeout !== undefined) clearTimeout(timeout);
-    newWordBr(io, game, game.globalTime, lobbyId);
     if (lobby !== undefined) {
       if (game.playerFound.length === 0) {
         if (game.numberOfDrawStreak < 3) {
@@ -1233,6 +1232,8 @@ const tempsEcouleBr = (
       sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
       io.to(game.id).emit("next_word_br", game);
     }
+
+    newWordBr(io, game, game.globalTime, lobbyId);
   }
 };
 
