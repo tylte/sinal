@@ -7,8 +7,8 @@ import {
   Text,
 } from "@chakra-ui/react";
 import React from "react";
-import { useChattingActions } from "../utils/hooks";
-import { ChatPanel } from "./chat/ChatPanel";
+import { useChattingActions } from "../../utils/hooks";
+import { ChatPanel } from "./ChatPanel";
 
 interface ChatProps {}
 

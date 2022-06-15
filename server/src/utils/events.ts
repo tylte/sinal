@@ -9,12 +9,13 @@ import {
   disconnectMap,
   game1vs1Map,
   gameBrMap,
+  idToWord,
   lobbyMap,
   playerMap,
   timeoutMap,
 } from "./maps";
-import { idToWord } from "./server";
 import {
+  AnnounceChatMessage,
   ArgCreateLobbyType,
   ArgGuessWordType,
   ArgJoinLobbyType,
@@ -562,6 +563,7 @@ export const guessWord1vs1Event = (
             };
             ending1vs1Game(io, lobby, gameId);
           } else {
+            sendAnnounceChatMessageWord(io, "round", lobby.id, game.id);
             // Launch another round
             game.roundNumber++;
             let word = newWord1vs1(io, game, lobby);
@@ -600,6 +602,7 @@ export const guessWord1vs1Event = (
             game.roundNumber++;
             let word = newWord1vs1(io, game, lobby);
 
+            sendAnnounceChatMessageWord(io, "round", lobby.id, game.id);
             // Waiting 3 seconds until the next round
             setTimeout(() => {
               setGlobalTimeout(io, game, lobby, word);
@@ -631,6 +634,7 @@ export const guessWord1vs1Event = (
           };
           ending1vs1Game(io, lobby, gameId);
         } else {
+          sendAnnounceChatMessageWord(io, "round", lobby.id, game.id);
           // Launch another round
           game.roundNumber++;
           let word = newWord1vs1(io, game, lobby);
@@ -694,6 +698,7 @@ export const guessWord1vs1Event = (
           };
           ending1vs1Game(io, lobby, gameId);
         } else {
+          sendAnnounceChatMessageWord(io, "round", lobby.id, game.id);
           // Launch another round
           game.roundNumber++;
           let word = newWord1vs1(io, game, lobby);
@@ -725,6 +730,7 @@ export const guessWord1vs1Event = (
         };
         ending1vs1Game(io, lobby, gameId);
       } else {
+        sendAnnounceChatMessageWord(io, "round", lobby.id, game.id);
         // Launch another round
         game.roundNumber++;
         let word = newWord1vs1(io, game, lobby);
@@ -760,6 +766,9 @@ const tempsEcoule1vs1 = (
     };
     lobby.state = "pre-game";
 
+    // FIXME: For the moment context is "finished" whatever happens, but move and change to "round" where necessary
+    sendAnnounceChatMessageWord(io, "finished", lobby.id, game.id);
+
     if (game.playerOne.hasWon && !game.playerTwo.hasWon) {
       //player one won
       lobby.lastGame.winner = playerMap.get(game.playerOne.id);
@@ -785,6 +794,7 @@ const tempsEcoule1vs1 = (
  */
 const ending1vs1Game = (io: Server, lobby: LobbyType, gameId: string) => {
   // We redirecting to the PreGameLobby
+  sendAnnounceChatMessageWord(io, "finished", lobby.id, gameId);
   lobby.state = "pre-game";
 
   // Clear the timeout
@@ -1065,6 +1075,7 @@ export const guessWordBrEvent = (
       io.to(gameId).emit("first_winning_player_br", game);
       if (game.playerFound.length === game.playersLastNextRound) {
         //the game is finished we delete the timeout
+        sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
         timeout = timeoutMap.get(game.id);
         if (timeout !== undefined) clearTimeout(timeout);
         io.to(gameId).emit("winning_player_br", playerId);
@@ -1085,6 +1096,7 @@ export const guessWordBrEvent = (
 
         if (game.playersLastNextRound === 0) {
           //the game is finished we delete the timeout
+          sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
           timeout = timeoutMap.get(game.id);
           if (timeout !== undefined) clearTimeout(timeout);
           io.to(gameId).emit("winning_player_br", playerId);
@@ -1092,6 +1104,8 @@ export const guessWordBrEvent = (
           io.to(gameId).emit("ending_game", { lobby });
           io.to(gameId).socketsLeave(gameId);
         } else if (game.playersLastNextRound === 1) {
+          sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
+
           game.playerList = game.playerFound;
           game.playerFound = new Array();
           newWordBr(io, game, game.globalTime, lobbyId);
@@ -1099,6 +1113,7 @@ export const guessWordBrEvent = (
           io.to(gameId).emit("next_word_br", game);
           //TODO finale (BO3 ?) il peut y avoir + de 2 joueurs en cas d'eliminationRate élevé /!\
         } else {
+          sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
           game.playerList = game.playerFound;
           game.playerFound = new Array();
           newWordBr(io, game, game.globalTime, lobbyId);
@@ -1117,6 +1132,7 @@ export const guessWordBrEvent = (
   });
   if (noOneAlive && game.playerFound.length === 0) {
     if (game.numberOfDrawStreak < 3) {
+      sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
       game.numberOfDrawStreak++;
       io.to(gameId).emit("draw_br");
 
@@ -1127,6 +1143,7 @@ export const guessWordBrEvent = (
       io.to(gameId).emit("next_word_br", game);
     } else {
       //the game is finished we delete the timeout
+      sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
       timeout = timeoutMap.get(game.id);
       if (timeout !== undefined) clearTimeout(timeout);
       io.to(gameId).emit("end_of_game_draw", game);
@@ -1157,15 +1174,18 @@ const tempsEcouleBr = (
             p.nbLife = game.nbLifePerPlayer;
           });
 
+          sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
           io.to(game.id).emit("draw_br");
           io.to(game.id).emit("next_word_br", game);
         } else {
           //the game is finished we delete the timeout
+          sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
           timeout = timeoutMap.get(game.id);
           if (timeout !== undefined) clearTimeout(timeout);
           io.to(game.id).emit("end_of_game_draw", game);
         }
       } else if (game.playerFound.length === 1) {
+        sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
         io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
         //the game is finished we delete the timeout
         timeout = timeoutMap.get(game.id);
@@ -1187,6 +1207,7 @@ const tempsEcouleBr = (
         io.to(game.id).emit("next_word_br", game);
       }
     } else if (game.playerFound.length === 1) {
+      sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
       io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
       //the game is finished we delete the timeout
       timeout = timeoutMap.get(game.id);
@@ -1209,6 +1230,7 @@ const tempsEcouleBr = (
         p.nbLife = game.nbLifePerPlayer;
       });
 
+      sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
       io.to(game.id).emit("next_word_br", game);
     }
   }
@@ -1289,7 +1311,10 @@ export const sendChatMessage = (
     author: player.name,
     content,
     id: messageId,
+    isAnnoncement: false,
   };
+
+  io.to(channelId).emit("broadcast_message", messageToSend);
 
   const messageHistory = channelIdToHistory.get(channelId);
   if (messageHistory) {
@@ -1297,8 +1322,58 @@ export const sendChatMessage = (
   } else {
     channelIdToHistory.set(channelId, [messageToSend]);
   }
+};
+
+/**
+ * Send an annoncement when word changes so that players are aware of the last word to discover
+ * @param io
+ * @param context Context about the game, if it's finished or just changement of round
+ * @param lobbyId
+ * @param gameId
+ */
+export const sendAnnounceChatMessageWord = (
+  io: Server,
+  context: "finished" | "round",
+  lobbyId: string,
+  gameId: string
+) => {
+  let word = idToWord.get(gameId);
+
+  if (word) {
+    let content = "Partie terminée !";
+
+    if (context === "round") {
+      content = "Round terminé,";
+    }
+
+    sendAnnounceChatMessage(io, {
+      content: `${content} Le mot était : ${word}`,
+      channelId: lobbyId,
+    });
+  }
+};
+
+export const sendAnnounceChatMessage = (
+  io: Server,
+  { content, channelId }: AnnounceChatMessage
+) => {
+  let messageId = get_id();
+
+  let messageToSend: ChatMessageToSend = {
+    isAnnoncement: true,
+    channelId,
+    author: "",
+    content,
+    id: messageId,
+  };
 
   io.to(channelId).emit("broadcast_message", messageToSend);
+  const messageHistory = channelIdToHistory.get(channelId);
+  if (messageHistory) {
+    messageHistory.push(messageToSend);
+  } else {
+    channelIdToHistory.set(channelId, [messageToSend]);
+  }
 };
 
 /**
