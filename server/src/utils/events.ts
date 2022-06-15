@@ -1175,36 +1175,18 @@ const tempsEcouleBr = (
             p.nbLife = game.nbLifePerPlayer;
           });
 
-          sendAnnounceChatMessageWordWithWord(
-            io,
-            "round",
-            lobbyId,
-            game.id,
-            word
-          );
+          sendAnnounceChatMessageWordWithWord(io, "round", lobbyId, word);
           io.to(game.id).emit("draw_br");
           io.to(game.id).emit("next_word_br", game);
         } else {
           //the game is finished we delete the timeout
-          sendAnnounceChatMessageWordWithWord(
-            io,
-            "finished",
-            lobbyId,
-            game.id,
-            word
-          );
+          sendAnnounceChatMessageWordWithWord(io, "finished", lobbyId, word);
           timeout = timeoutMap.get(game.id);
           if (timeout !== undefined) clearTimeout(timeout);
           io.to(game.id).emit("end_of_game_draw", game);
         }
       } else if (game.playerFound.length === 1) {
-        sendAnnounceChatMessageWordWithWord(
-          io,
-          "finished",
-          lobbyId,
-          game.id,
-          word
-        );
+        sendAnnounceChatMessageWordWithWord(io, "finished", lobbyId, word);
         io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
         //the game is finished we delete the timeout
         timeout = timeoutMap.get(game.id);
@@ -1223,23 +1205,11 @@ const tempsEcouleBr = (
           p.nbLife = game.nbLifePerPlayer;
         });
 
-        sendAnnounceChatMessageWordWithWord(
-          io,
-          "round",
-          lobbyId,
-          game.id,
-          word
-        );
+        sendAnnounceChatMessageWordWithWord(io, "round", lobbyId, word);
         io.to(game.id).emit("next_word_br", game);
       }
     } else if (game.playerFound.length === 1) {
-      sendAnnounceChatMessageWordWithWord(
-        io,
-        "finished",
-        lobbyId,
-        game.id,
-        word
-      );
+      sendAnnounceChatMessageWordWithWord(io, "finished", lobbyId, word);
       io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
       //the game is finished we delete the timeout
       timeout = timeoutMap.get(game.id);
@@ -1262,7 +1232,7 @@ const tempsEcouleBr = (
         p.nbLife = game.nbLifePerPlayer;
       });
 
-      sendAnnounceChatMessageWordWithWord(io, "round", lobbyId, game.id, word);
+      sendAnnounceChatMessageWordWithWord(io, "round", lobbyId, word);
       io.to(game.id).emit("next_word_br", game);
     }
   }
@@ -1367,21 +1337,18 @@ export const sendAnnounceChatMessageWordWithWord = (
   io: Server,
   context: "finished" | "round",
   lobbyId: string,
-  gameId: string,
   word: string
 ) => {
-  if (word) {
-    let content = "Partie terminée !";
+  let content = "Partie terminée";
 
-    if (context === "round") {
-      content = "Round terminé,";
-    }
-
-    sendAnnounceChatMessage(io, {
-      content: `${content} Le mot était : ${word}`,
-      channelId: lobbyId,
-    });
+  if (context === "round") {
+    content = "Round terminé";
   }
+
+  sendAnnounceChatMessage(io, {
+    content: `${content} Le mot était : ${word} !`,
+    channelId: lobbyId,
+  });
 };
 
 /**
@@ -1400,14 +1367,14 @@ export const sendAnnounceChatMessageWord = (
   let word = idToWord.get(gameId);
 
   if (word) {
-    let content = "Partie terminée !";
+    let content = "Partie terminée";
 
     if (context === "round") {
-      content = "Round terminé,";
+      content = "Round terminé";
     }
 
     sendAnnounceChatMessage(io, {
-      content: `${content} Le mot était : ${word}`,
+      content: `${content} Le mot était : ${word} !`,
       channelId: lobbyId,
     });
   }
