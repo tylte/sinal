@@ -8,6 +8,7 @@ idToWord.set("d", "trottez");
 idToWord.set("e", "fermons");
 idToWord.set("f", "ffffa");
 idToWord.set("g", "provenir");
+idToWord.set("h", "invitee");
 
 describe("testing get_guess", () => {
   test("tout bon", () => {
@@ -99,6 +100,17 @@ describe("testing get_guess", () => {
       LetterResult.NOT_FOUND,
       LetterResult.NOT_FOUND,
       LetterResult.NOT_FOUND,
+    ]);
+  });
+  test("invitée", () => {
+    expect(get_guess("h", "initiee", idToWord)).toStrictEqual([
+      LetterResult.RIGHT_POSITION,
+      LetterResult.RIGHT_POSITION,
+      LetterResult.FOUND,
+      LetterResult.FOUND,
+      LetterResult.NOT_FOUND,
+      LetterResult.RIGHT_POSITION,
+      LetterResult.RIGHT_POSITION,
     ]);
   });
 });
