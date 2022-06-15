@@ -1165,6 +1165,8 @@ const tempsEcouleBr = (
     let lobby = lobbyMap.get(lobbyId);
     let timeout = timeoutMap.get(game.id);
     if (timeout !== undefined) clearTimeout(timeout);
+    let word = idToWord.get(game.id) ?? "";
+    newWordBr(io, game, game.globalTime, lobbyId);
     if (lobby !== undefined) {
       if (game.playerFound.length === 0) {
         if (game.numberOfDrawStreak < 3) {
@@ -1173,18 +1175,36 @@ const tempsEcouleBr = (
             p.nbLife = game.nbLifePerPlayer;
           });
 
-          sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
+          sendAnnounceChatMessageWordWithWord(
+            io,
+            "round",
+            lobbyId,
+            game.id,
+            word
+          );
           io.to(game.id).emit("draw_br");
           io.to(game.id).emit("next_word_br", game);
         } else {
           //the game is finished we delete the timeout
-          sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
+          sendAnnounceChatMessageWordWithWord(
+            io,
+            "finished",
+            lobbyId,
+            game.id,
+            word
+          );
           timeout = timeoutMap.get(game.id);
           if (timeout !== undefined) clearTimeout(timeout);
           io.to(game.id).emit("end_of_game_draw", game);
         }
       } else if (game.playerFound.length === 1) {
-        sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
+        sendAnnounceChatMessageWordWithWord(
+          io,
+          "finished",
+          lobbyId,
+          game.id,
+          word
+        );
         io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
         //the game is finished we delete the timeout
         timeout = timeoutMap.get(game.id);
@@ -1203,11 +1223,23 @@ const tempsEcouleBr = (
           p.nbLife = game.nbLifePerPlayer;
         });
 
-        sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
+        sendAnnounceChatMessageWordWithWord(
+          io,
+          "round",
+          lobbyId,
+          game.id,
+          word
+        );
         io.to(game.id).emit("next_word_br", game);
       }
     } else if (game.playerFound.length === 1) {
-      sendAnnounceChatMessageWord(io, "finished", lobbyId, game.id);
+      sendAnnounceChatMessageWordWithWord(
+        io,
+        "finished",
+        lobbyId,
+        game.id,
+        word
+      );
       io.to(game.id).emit("winning_player_br", game.playerFound[0].id);
       //the game is finished we delete the timeout
       timeout = timeoutMap.get(game.id);
@@ -1230,11 +1262,9 @@ const tempsEcouleBr = (
         p.nbLife = game.nbLifePerPlayer;
       });
 
-      sendAnnounceChatMessageWord(io, "round", lobbyId, game.id);
+      sendAnnounceChatMessageWordWithWord(io, "round", lobbyId, game.id, word);
       io.to(game.id).emit("next_word_br", game);
     }
-
-    newWordBr(io, game, game.globalTime, lobbyId);
   }
 };
 
@@ -1323,6 +1353,34 @@ export const sendChatMessage = (
     messageHistory.push(messageToSend);
   } else {
     channelIdToHistory.set(channelId, [messageToSend]);
+  }
+};
+
+/**
+ * Send an annoncement when word changes so that players are aware of the last word to discover
+ * @param io
+ * @param context Context about the game, if it's finished or just changement of round
+ * @param lobbyId
+ * @param gameId
+ */
+export const sendAnnounceChatMessageWordWithWord = (
+  io: Server,
+  context: "finished" | "round",
+  lobbyId: string,
+  gameId: string,
+  word: string
+) => {
+  if (word) {
+    let content = "Partie terminée !";
+
+    if (context === "round") {
+      content = "Round terminé,";
+    }
+
+    sendAnnounceChatMessage(io, {
+      content: `${content} Le mot était : ${word}`,
+      channelId: lobbyId,
+    });
   }
 };
 
