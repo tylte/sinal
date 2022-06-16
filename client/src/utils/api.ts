@@ -461,9 +461,7 @@ export const addBrEvent = async (
     setGameState((gameState) => {
       let index = gameState.findIndex((game) => game.playerId === arg.playerId);
       if (index !== -1) {
-        console.log(gameState);
         gameState.splice(index, 1);
-        console.log(gameState);
         setNumberPlayerWinMax((nb) => nb - 1);
       }
       return gameState;

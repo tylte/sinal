@@ -126,7 +126,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           {items.slice(i - 1 - j, i - 1)}
         </Flex>
       );
-      console.log("grid : ", grid);
     }
     return grid;
   }, [gameState, gameState[0], gameState.length]);
