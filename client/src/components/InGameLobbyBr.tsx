@@ -76,12 +76,11 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     firstLetterWritable: false,
   });
 
-  // save the grid of player, any[] to use the pop function
-  const items: JSX.Element[] = [];
-  //the component of the player, any[] to use the pop function
-  const grid: JSX.Element[] = [];
-
   const opponent = useMemo(() => {
+    // save the grid of player, any[] to use the pop function
+    const items: JSX.Element[] = [];
+    //the component of the player, any[] to use the pop function
+    const grid: JSX.Element[] = [];
     let j = 0;
     for (let i = 1; i < numberPlayer; ) {
       // 1 because 0 is the player
