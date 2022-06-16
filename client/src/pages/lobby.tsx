@@ -57,7 +57,14 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
           Liste des lobbys
         </Text>
         <Box mx="auto" my="4">
-          <Button onClick={onOpen}>Créer un lobby</Button>
+          <Button
+            onClick={() => {
+              console.log(player);
+              onOpen();
+            }}
+          >
+            Créer un lobby
+          </Button>
         </Box>
         <SimpleGrid minChildWidth="250px" spacing="40px">
           {lobbies.map((lobby) => (
@@ -66,7 +73,14 @@ const PublicLobby: React.FC<PublicLobbyProps> = ({}) => {
         </SimpleGrid>
       </Flex>
       <CreatePlayerModal isOpen={!player} onClose={createPlayerOnClose} />
-      <CreateLobbyModal isOpen={isOpen} onClose={onClose} mode="Create" />
+      {player && (
+        <CreateLobbyModal
+          owner={player}
+          isOpen={isOpen}
+          onClose={onClose}
+          mode="Create"
+        />
+      )}
     </Layout>
   );
 };
