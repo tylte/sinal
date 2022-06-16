@@ -7,6 +7,7 @@ import request from "supertest";
 import { sleep } from "../src/utils/utils";
 import {
   ArgCreateLobby,
+  ArgCreateLobbyType,
   LobbyType,
   Packet,
   PacketType,
@@ -69,7 +70,7 @@ describe("Web socket testing", () => {
         done(e);
       }
     });
-    let createLobbyArg = {
+    let createLobbyArg: ArgCreateLobbyType = {
       mode: "1vs1",
       place: 2,
       isPublic: true,
@@ -79,11 +80,16 @@ describe("Web socket testing", () => {
         lobbyId: null,
       },
       name: "lobby test",
+      nbRounds: 1,
+      nbLife: 6,
+      globalTime: 1000,
+      timeAfterFirstGuess: 500,
+      eliminationRate: 100,
     };
   });
   test("Create lobby success case owner doesn't exist", (done) => {
     let playerId: string = "";
-    let createLobbyArg = {
+    let createLobbyArg: ArgCreateLobbyType = {
       mode: "1vs1",
       place: 2,
       isPublic: true,
@@ -93,6 +99,11 @@ describe("Web socket testing", () => {
         lobbyId: null,
       },
       name: "lobby test",
+      nbRounds: 1,
+      nbLife: 6,
+      globalTime: 1000,
+      timeAfterFirstGuess: 500,
+      eliminationRate: 100,
     };
     clientSocket.emit("create_player", "bob", (res: PacketType) => {
       try {
@@ -110,12 +121,11 @@ describe("Web socket testing", () => {
         });
       } catch (e) {
         done(e);
-      } finally {
       }
     });
   });
   test("Join lobby of player success case", (done) => {
-    let createLobbyArg = {
+    let createLobbyArg: ArgCreateLobbyType = {
       mode: "1vs1",
       place: 2,
       isPublic: true,
@@ -125,6 +135,11 @@ describe("Web socket testing", () => {
         lobbyId: null,
       },
       name: "lobby test",
+      nbRounds: 1,
+      nbLife: 6,
+      globalTime: 1000,
+      timeAfterFirstGuess: 500,
+      eliminationRate: 100,
     };
     clientSocket.emit("create_player", "bob", (player: PacketType) => {
       createLobbyArg.owner.id = player.data.id;
@@ -157,6 +172,11 @@ describe("Web socket testing", () => {
         lobbyId: null,
       },
       name: "lobby test",
+      nbRounds: 1,
+      nbLife: 6,
+      globalTime: 1000,
+      timeAfterFirstGuess: 500,
+      eliminationRate: 100,
     };
     clientSocket.emit("create_player", "bob", (player: PacketType) => {
       createLobbyArg.owner.id = player.data.id;
@@ -201,6 +221,11 @@ describe("Web socket testing", () => {
         lobbyId: null,
       },
       name: "lobby test",
+      nbRounds: 1,
+      nbLife: 6,
+      globalTime: 1000,
+      timeAfterFirstGuess: 500,
+      eliminationRate: 100,
     };
     clientSocket.emit("create_player", "Joueur 1", (player1: PacketType) => {
       createLobbyArg.owner.id = player1.data.id;
@@ -239,6 +264,11 @@ describe("Web socket testing", () => {
         lobbyId: null,
       },
       name: "lobby test",
+      nbRounds: 1,
+      nbLife: 6,
+      globalTime: 1000,
+      timeAfterFirstGuess: 500,
+      eliminationRate: 100,
     };
     clientSocket.emit("create_player", "bob", (player: PacketType) => {
       createLobbyArg.owner.id = player.data.id;
@@ -277,6 +307,11 @@ describe("Web socket testing", () => {
         lobbyId: null,
       },
       name: "lobby test",
+      nbRounds: 1,
+      nbLife: 6,
+      globalTime: 1000,
+      timeAfterFirstGuess: 500,
+      eliminationRate: 100,
     };
     clientSocket.emit("create_player", "bob", (player: PacketType) => {
       createLobbyArg.owner.id = player.data.id;
