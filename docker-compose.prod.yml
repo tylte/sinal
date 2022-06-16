@@ -2,11 +2,17 @@ version: "3.9"
 services:
   server:
     image: sinal/server:latest
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
     environment:
-      CORS_ORIGIN: "https://sinal.ovoleur.dev"
+      CORS_ORIGIN: "https://example.com"
     ports:
       - "4000:4000"
   client:
     image: sinal/client:latest
+    build:
+      context: ./client/
+      dockerfile: Dockerfile.prod
     ports:
       - "3000:3000"

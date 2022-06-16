@@ -40,31 +40,60 @@ Pour jouer en local vous avez deux choix, avec NodeJs ou Docker
 
 Installer NodeJs et yarn
 
-#### Client
+#### Dev build
 
 Dans le dossier client, installer les dépendances et lancer le client
 
 ```
 cd client/
 yarn
-yarn build && yarn start
+yarn dev
 ```
-
-#### Serveur
 
 Dans le dossier server, installer les dépendances et lancer le server
 
 ```
 cd server/
 yarn
-yarn build && yarn start
+yarn dev
 ```
 
-Vous pouvez maintenant vous rendre sur [localhost:3000](http://localhost:3000)
+Vous pouvez maintenant vous rendre sur [http://localhost:3000](http://localhost:3000)
+
+#### Production build
+
+Pour le client, vous avez besoin de mettre en place .env.production, vous pouvez vous inspirer du .env.example.
+
+Il faut donner pour NEXT_PUBLIC_SERVER_HTTP_URL le lien http vers le server par example : https://api-example.com
+Il faut donner pour NEXT_PUBLIC_SERVER_WS_URL le lien websocket vers le server par example : wss://api-example.com
+
+puis faire
+
+```
+cd client/
+yarn
+yarn build
+yarn start
+```
+
+Pour le server, vous devez mettre en place .env.
+
+Il faut donner pour CORS_ORIGIN le domain du client, par example https://example.com
+
+puis faire
+
+```
+cd server/
+yarn
+yarn build
+yarn start
+```
 
 ### Avec Docker
 
 Installer docker et docker-compose
+
+#### Local build
 
 ```
 docker-compose build
@@ -72,6 +101,28 @@ docker-compose up -d
 ```
 
 Vous pouvez maintenant vous rendre sur [localhost:3000](http://localhost:3000)
+
+#### Production build
+
+Pour le client, vous avez besoin de mettre en place .env.production, vous pouvez vous inspirer du .env.example.
+
+Il faut donner pour NEXT_PUBLIC_SERVER_HTTP_URL le lien http vers le server par example : https://api-example.com
+Il faut donner pour NEXT_PUBLIC_SERVER_WS_URL le lien websocket vers le server par example : wss://api-example.com
+
+Vous devez aussi adapter la variable d'environement CORS_ORIGIN du service server dans docker-compose.prod.yml
+
+puis faire :
+
+```
+docker-compose -f docker-compose.prod.yml build
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+Pour stopper l'application, vous pouvez faire
+
+```
+docker-compose down
+```
 
 # Images du jeu
 
