@@ -58,14 +58,16 @@ yarn
 yarn dev
 ```
 
-Vous pouvez maintenant vous rendre sur [http://localhost:3000](http://localhost:3000)
+Vous pouvez maintenant vous rendre sur http://localhost:3000
 
 #### Production build
 
-Pour le client, vous avez besoin de mettre en place .env.production, vous pouvez vous inspirer du .env.example.
+Pour le client, vous pouvez mettre en place .env.production, vous pouvez vous inspirer du .env.example.
 
 Il faut donner pour NEXT_PUBLIC_SERVER_HTTP_URL le lien http vers le server par example : https://api-example.com
 Il faut donner pour NEXT_PUBLIC_SERVER_WS_URL le lien websocket vers le server par example : wss://api-example.com
+
+En laissant vide .env.production, les valeurs par défauts sont http://localhost:3000 et ws://localhost:3000
 
 puis faire
 
@@ -79,6 +81,8 @@ yarn start
 Pour le server, vous devez mettre en place .env.
 
 Il faut donner pour CORS_ORIGIN le domain du client, par example https://example.com
+
+En laissant vide .env, la valeur par défaut est http://localhost:4000
 
 puis faire
 
@@ -100,7 +104,7 @@ docker-compose build
 docker-compose up -d
 ```
 
-Vous pouvez maintenant vous rendre sur [localhost:3000](http://localhost:3000)
+Vous pouvez maintenant vous rendre sur http://localhost:3000
 
 #### Production build
 
