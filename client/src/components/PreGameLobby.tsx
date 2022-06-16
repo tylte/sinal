@@ -47,12 +47,14 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
     timeAfterFirstGuess,
     eliminationRate,
   },
-  player: { id: playerId },
+  player,
   gameMode,
 }) => {
   const socket = useSocket();
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const { id: playerId } = player;
 
   const currentPlace = playerList.length;
 
@@ -161,6 +163,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             onClick={onOpen}
           />
           <CreateLobbyModal
+            owner={player}
             isOpen={isOpen}
             onClose={onClose}
             mode="Update"
