@@ -36,6 +36,10 @@ Les principales fonctionalités sont le mode 1vs1 et le mode Battle Royale
 
 Voir le fichier `INSTALL.md`
 
+# Video de présentation
+
+https://www.youtube.com/watch?v=8N_v0ZA4MdM
+
 # Images du jeu
 
 ![image](https://user-images.githubusercontent.com/59796115/173549011-b820d7ce-7905-4d9f-9de6-80746de05333.png)
