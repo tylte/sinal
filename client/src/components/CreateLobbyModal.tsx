@@ -45,7 +45,7 @@ interface CreateLobbyModalProps {
   onClose: () => void;
   mode: string;
   lobby?: Lobby;
-  owner: Player | null;
+  owner: Player;
 }
 export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   isOpen,
@@ -58,7 +58,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   const router = useRouter();
 
   const [lobbyName, setLobbyName] = useState(
-    lobby ? lobby.name : `Lobby de ${owner?.name}`
+    lobby ? lobby.name : `Lobby de ${owner.name}`
   );
   const [gameMode, setGameMode] = useState(lobby ? lobby.mode : "1vs1");
   const [isPublic, setIsPublic] = useState(lobby ? lobby.isPublic : true);
