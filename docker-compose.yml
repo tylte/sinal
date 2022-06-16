@@ -10,9 +10,5 @@ services:
   client:
     image: sinal/client:latest
     build: ./client
-    environment:
-      NEXT_PUBLIC_SERVER_HTTP_URL: "http://localhost:4000/api"
-      NEXT_PUBLIC_SERVER_WS_URL: "ws://localhost:4000"
-      NEXT_PUBLIC_SERVER_WS_PATH: "/api/socket.io"
     ports:
       - "3000:3000"

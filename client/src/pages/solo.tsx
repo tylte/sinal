@@ -5,7 +5,7 @@ import Confetti from "react-confetti";
 import { Layout } from "../components/Layout";
 import { PlayerGrid } from "../components/player-grid/PlayerGrid";
 import { guessWord } from "../utils/api";
-import { serverHttpUrl } from "../utils/Const";
+import { serverHttpUrl } from "../utils/const";
 import { useClassicWordInput, useDictionary } from "../utils/hooks";
 import {
   KeyboardSettings,

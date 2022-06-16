@@ -15,7 +15,7 @@ import { CreateLobbyModal } from "../components/CreateLobbyModal";
 import { CreatePlayerModal } from "../components/CreatePlayerModal";
 import { Layout } from "../components/Layout";
 import { LobbyProfile } from "../components/LobbyProfile";
-import { serverHttpUrl } from "../utils/Const";
+import { serverHttpUrl } from "../utils/const";
 import { usePlayer, useSocket } from "../utils/hooks";
 import { Lobby } from "../utils/types";
 
