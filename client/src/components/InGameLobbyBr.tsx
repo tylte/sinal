@@ -1,5 +1,5 @@
 import { Box, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Confetti from "react-confetti";
 import {
   addBrEvent,
@@ -27,6 +27,7 @@ import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
 import { getClassicKeyboardSettings } from "../utils/utils";
 import { Chrono } from "./Chrono";
+import { PlayerGridBr } from "./PlayerGridBr";
 
 interface InGameLobbyBrProps {
   player: Player;
@@ -75,6 +76,59 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     focusMode: "overwrite",
     firstLetterWritable: false,
   });
+
+  // save the grid of player, any[] to use the pop function
+  const items: JSX.Element[] = [];
+  //the component of the player, any[] to use the pop function
+  const grid: JSX.Element[] = [];
+
+  const tmp = useMemo(() => {
+    let j = 0;
+    for (let i = 1; i < numberPlayer; ) {
+      // 1 because 0 is the player
+      for (j = 0; j < 7 && i < numberPlayer; j++) {
+        const { triesHistory, nbLife, wordLength, playerId, playerName } =
+          gameState?.[i] || {};
+        if (spectate) {
+          items.push(
+            <button
+              key={playerId + i}
+              onClick={() => changePlayerFocus(playerId)}
+            >
+              <SmallPlayerGrid
+                key={playerId}
+                wordLength={wordLength}
+                nbLife={nbLife}
+                triesHistory={triesHistory}
+                nbPlayer={numberPlayer}
+                namePlayer={playerName}
+              />
+            </button>
+          );
+        } else {
+          items.push(
+            <Box key={playerId + i} alignContent={"center"}>
+              <SmallPlayerGrid
+                key={playerId}
+                wordLength={wordLength}
+                nbLife={nbLife}
+                triesHistory={triesHistory}
+                nbPlayer={numberPlayer}
+                namePlayer={playerName}
+              />
+            </Box>
+          );
+        }
+        i++;
+      }
+      grid.push(
+        <Flex key={i + "-" + i} direction={"column"}>
+          {items.slice(i - 1 - j, i - 1)}
+        </Flex>
+      );
+    }
+    return grid;
+  }, [gameState]);
 
   //start the game
   const startGame = () => {
@@ -397,61 +451,12 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
     playerName,
   } = gameState[0];
 
-  //the component of the player, any[] to use the pop function
-  const grid = [];
-  // save the grid of player, any[] to use the pop function
-  const items = [];
-
-  let j = 0;
-  for (let i = 1; i < numberPlayer; ) {
-    // 1 because 0 is the player
-    for (j = 0; j < 7 && i < numberPlayer; j++) {
-      const { triesHistory, nbLife, wordLength, playerId, playerName } =
-        gameState?.[i] || {};
-      if (spectate) {
-        items.push(
-          <button
-            key={playerId + i}
-            onClick={() => changePlayerFocus(playerId)}
-          >
-            <SmallPlayerGrid
-              key={playerId}
-              wordLength={wordLength}
-              nbLife={nbLife}
-              triesHistory={triesHistory}
-              nbPlayer={numberPlayer}
-              namePlayer={playerName}
-            />
-          </button>
-        );
-      } else {
-        items.push(
-          <Box key={playerId + i} alignContent={"center"}>
-            <SmallPlayerGrid
-              key={playerId}
-              wordLength={wordLength}
-              nbLife={nbLife}
-              triesHistory={triesHistory}
-              nbPlayer={numberPlayer}
-              namePlayer={playerName}
-            />
-          </Box>
-        );
-      }
-      i++;
-    }
-    grid.push(
-      <Flex key={i + "-" + i} direction={"column"}>
-        {items.slice(i - 1 - j, i - 1)}
-      </Flex>
-    );
-  }
   return (
     <>
       {hasWon && <Confetti />}
       <Box>
         <Flex marginLeft={10} direction={"row"}>
-          {grid}
+          {tmp}
         </Flex>
       </Box>
       <Box>
@@ -499,6 +504,17 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           isFinished={isFinished || isChatting}
           keyboardSetting={spectate ? undefined : keyboardSettings}
         />
+        {/* <PlayerGridBr
+          gameState={gameState[0]}
+          spectate={spectate}
+          isChatting={isChatting}
+          keyboardSettings={keyboardSettings}
+          word={word}
+          setWord={setWord}
+          focus={focus}
+          setFocus={setFocus}
+          onEnter={onEnter()}
+        ></PlayerGridBr> */}
       </Box>
     </>
   );
