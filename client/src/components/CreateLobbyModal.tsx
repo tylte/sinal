@@ -36,7 +36,7 @@ import {
   maxPlayerBr,
   minPlayer1vs1,
   minPlayerBr,
-} from "src/utils/Const";
+} from "src/utils/const";
 import { usePlayer, useSocket } from "src/utils/hooks";
 import { GameMode, Lobby, Packet, Player } from "src/utils/types";
 
