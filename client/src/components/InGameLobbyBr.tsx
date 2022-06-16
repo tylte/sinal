@@ -82,7 +82,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
   //the component of the player, any[] to use the pop function
   const grid: JSX.Element[] = [];
 
-  const tmp = useMemo(() => {
+  const opponent = useMemo(() => {
     let j = 0;
     for (let i = 1; i < numberPlayer; ) {
       // 1 because 0 is the player
@@ -456,7 +456,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       {hasWon && <Confetti />}
       <Box>
         <Flex marginLeft={10} direction={"row"}>
-          {tmp}
+          {opponent}
         </Flex>
       </Box>
       <Box>
