@@ -27,7 +27,6 @@ import { PlayerGrid } from "./player-grid/PlayerGrid";
 import { SmallPlayerGrid } from "./player-grid/SmallPlayerGrid";
 import { getClassicKeyboardSettings } from "../utils/utils";
 import { Chrono } from "./Chrono";
-import { PlayerGridBr } from "./PlayerGridBr";
 
 interface InGameLobbyBrProps {
   player: Player;
@@ -504,17 +503,6 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
           isFinished={isFinished || isChatting}
           keyboardSetting={spectate ? undefined : keyboardSettings}
         />
-        {/* <PlayerGridBr
-          gameState={gameState[0]}
-          spectate={spectate}
-          isChatting={isChatting}
-          keyboardSettings={keyboardSettings}
-          word={word}
-          setWord={setWord}
-          focus={focus}
-          setFocus={setFocus}
-          onEnter={onEnter()}
-        ></PlayerGridBr> */}
       </Box>
     </>
   );
