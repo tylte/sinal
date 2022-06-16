@@ -1,20 +1,14 @@
 /**
- * http url of the server
+ * http url of the server. default : http://localhost:4000
  */
 export const serverHttpUrl =
-  process.env.NEXT_PUBLIC_SERVER_HTTP_URL || "http://localhost:4000/api";
+  process.env.NEXT_PUBLIC_SERVER_HTTP_URL || "http://localhost:4000";
 
 /**
- * websocket url of the server
+ * websocket url of the server. defaut : ws://localhost:4000
  */
 export const serverWsUrl =
   process.env.NEXT_PUBLIC_SERVER_WS_URL || "ws://localhost:4000";
-
-/**
- * websocket path
- */
-export const serverWsPath =
-  process.env.NEXT_PUBLIC_SERVER_WS_PATH || "/api/socket.io";
 
 /**
  * Number of life (default)

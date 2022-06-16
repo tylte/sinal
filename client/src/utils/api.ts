@@ -3,7 +3,7 @@ import axios from "axios";
 import { NextRouter } from "next/router";
 import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
-import { serverHttpUrl } from "./Const";
+import { serverHttpUrl } from "./const";
 import {
   BrGameInfo,
   BrGameState,
