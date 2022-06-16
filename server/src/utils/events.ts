@@ -1425,7 +1425,7 @@ export const leaveGameBr = async (
     //the current game have one less player
     game.playersLastNextRound -= 1;
     //Informs the other players that a player has left.
-    io.to(game.id).emit("player_leave", game.playerList[indexPlayer].name); //emit the name of the player that leave
+    io.to(game.id).emit("player_leave", {playerId:game.playerList[indexPlayer].id, playerName:game.playerList[indexPlayer].name}); //emit the name of the player that leave
     let timeout;
     let index = game.playerList.findIndex((player) => playerId === player.id);
     //reset the disconnect listeners

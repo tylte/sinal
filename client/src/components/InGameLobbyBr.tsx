@@ -87,35 +87,37 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       for (j = 0; j < 7 && i < numberPlayer; j++) {
         const { triesHistory, nbLife, wordLength, playerId, playerName } =
           gameState?.[i] || {};
-        if (spectate) {
-          items.push(
-            <button
-              key={playerId + i}
-              onClick={() => changePlayerFocus(playerId)}
-            >
-              <SmallPlayerGrid
-                key={playerId}
-                wordLength={wordLength}
-                nbLife={nbLife}
-                triesHistory={triesHistory}
-                nbPlayer={numberPlayer}
-                namePlayer={playerName}
-              />
-            </button>
-          );
-        } else {
-          items.push(
-            <Box key={playerId + i} alignContent={"center"}>
-              <SmallPlayerGrid
-                key={playerId}
-                wordLength={wordLength}
-                nbLife={nbLife}
-                triesHistory={triesHistory}
-                nbPlayer={numberPlayer}
-                namePlayer={playerName}
-              />
-            </Box>
-          );
+        if (playerId !== undefined) {
+          if (spectate) {
+            items.push(
+              <button
+                key={playerId + i}
+                onClick={() => changePlayerFocus(playerId)}
+              >
+                <SmallPlayerGrid
+                  key={playerId}
+                  wordLength={wordLength}
+                  nbLife={nbLife}
+                  triesHistory={triesHistory}
+                  nbPlayer={numberPlayer}
+                  namePlayer={playerName}
+                />
+              </button>
+            );
+          } else {
+            items.push(
+              <Box key={playerId + i} alignContent={"center"}>
+                <SmallPlayerGrid
+                  key={playerId}
+                  wordLength={wordLength}
+                  nbLife={nbLife}
+                  triesHistory={triesHistory}
+                  nbPlayer={numberPlayer}
+                  namePlayer={playerName}
+                />
+              </Box>
+            );
+          }
         }
         i++;
       }
@@ -126,7 +128,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
       );
     }
     return grid;
-  }, [gameState]);
+  }, [gameState, gameState[0], gameState.length]);
 
   //start the game
   const startGame = () => {

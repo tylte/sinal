@@ -458,9 +458,17 @@ export const addBrEvent = async (
     return;
   });
   socket?.on("player_leave", (arg) => {
-    setNumberPlayerWinMax((nb) => nb - 1);
+    setGameState((gameState) => {
+      let index = gameState.findIndex((game) => game.playerId === arg.playerId);
+      if (index !== -1) {
+        gameState.splice(index, 1);
+        setNumberPlayerWinMax((nb) => nb - 1);
+      }
+      return gameState;
+    });
+
     toast({
-      title: "le joueur " + arg + " a quitté la partie.",
+      title: "le joueur " + arg.playerName + " a quitté la partie.",
       status: "info",
       isClosable: true,
       duration: 2500,
