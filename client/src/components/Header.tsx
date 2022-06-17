@@ -37,7 +37,18 @@ export const Header: React.FC<HeaderProps> = ({}) => {
         fontWeight="extrabold"
       >
         <Link as={NextLink} href="/about">
-          About
+          A propos
+        </Link>
+      </Text>
+      <Text
+        userSelect={"none"}
+        fontSize="xl"
+        my={2}
+        ml={35}
+        fontWeight="extrabold"
+      >
+        <Link as={NextLink} href="/rules">
+          Règles
         </Link>
       </Text>
       <Spacer />
