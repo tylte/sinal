@@ -36,6 +36,21 @@ Les principales fonctionalités sont le mode 1vs1 et le mode Battle Royale
 
 Voir le fichier `INSTALL.md`
 
+# Jouer en ligne
+
+Sinal est disponible en ligne sur le lien : https://sinal.ovoleur.dev/
+
+# Perfomance
+
+Pour lancer le serveur et le client, il faut prévoir 200Mb de RAM.
+En allant sur le site depuis un navigateur, peu de ressources sont utilisées lors de la navigation et lors d'une partie.
+
+Avec un Dell laptop, with Intel Core i7-4712HQ @ 2.30GHz 8Gb RAM :
+
+RAM : 600 Mb : serveur + client + firefox
+
+CPU : Utilisation entre 2 et 5 % d'utilisation du CPU par l'application. Navigation et partie fluide sur le site.
+
 # Video de présentation
 
 https://www.youtube.com/watch?v=8N_v0ZA4MdM
