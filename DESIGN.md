@@ -14,4 +14,4 @@
 ![Lancer une partie](https://user-images.githubusercontent.com/77294608/174082371-25def1ca-e33d-48c8-b33e-57319e4d7de5.jpeg)
 - Deviner le mot
 
-![Deviner le mot](https://user-images.githubusercontent.com/77294608/174082369-39eebaa0-f55b-4a67-9887-0ffb36d5bf84.jpeg)
+![Deviner le mot](https://user-images.githubusercontent.com/77294608/174286059-0c1da37e-19c4-44b5-a6d2-749aebbd5d51.jpeg)
