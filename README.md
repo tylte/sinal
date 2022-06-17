@@ -40,7 +40,7 @@ Voir le fichier `INSTALL.md`
 
 Sinal est disponible en ligne sur le lien : https://sinal.ovoleur.dev/
 
-# Perfomance
+# Performance
 
 Pour lancer le serveur et le client, il faut prévoir 200Mb de RAM.
 En allant sur le site depuis un navigateur, peu de ressources sont utilisées lors de la navigation et lors d'une partie.
