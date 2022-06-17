@@ -21,6 +21,7 @@ import { GiLaurelCrown } from "react-icons/gi";
 import { useSocket } from "../utils/hooks";
 import { CreateLobbyModal } from "./CreateLobbyModal";
 import { LinkAfterGame1vs1 } from "./LinkPostGame1vs1";
+import Head from "next/head";
 
 interface PreGameLobbyProps {
   lobby: Lobby;
@@ -46,12 +47,14 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
     timeAfterFirstGuess,
     eliminationRate,
   },
-  player: { id: playerId },
+  player,
   gameMode,
 }) => {
   const socket = useSocket();
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const { id: playerId } = player;
 
   const currentPlace = playerList.length;
 
@@ -74,12 +77,27 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
     }
   };
 
+  const textGameMode =
+    gameMode === "1vs1"
+      ? "1 vs 1"
+      : gameMode === "battle-royale"
+      ? "Battle Royale"
+      : "";
+
   const placeStatus = isLobbyJoinable(currentPlace, totalPlace, state)
     ? `En attente ${currentPlace}/${totalPlace}`
     : "Plein";
 
   return (
     <>
+      <Head>
+        <meta
+          property="og:description"
+          content={`Rejoignez-moi dans une partie de ${textGameMode} !`}
+          key="description"
+        />
+      </Head>
+
       <Box pt={8} pl={8}>
         {lastGame != null && (
           <>
@@ -145,6 +163,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             onClick={onOpen}
           />
           <CreateLobbyModal
+            owner={player}
             isOpen={isOpen}
             onClose={onClose}
             mode="Update"

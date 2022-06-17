@@ -36,8 +36,8 @@ import {
   maxPlayerBr,
   minPlayer1vs1,
   minPlayerBr,
-} from "src/utils/Const";
-import { usePlayer, useSocket } from "src/utils/hooks";
+} from "src/utils/const";
+import { useSocket } from "src/utils/hooks";
 import { GameMode, Lobby, Packet, Player } from "src/utils/types";
 
 interface CreateLobbyModalProps {
@@ -45,19 +45,20 @@ interface CreateLobbyModalProps {
   onClose: () => void;
   mode: string;
   lobby?: Lobby;
+  owner: Player;
 }
 export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
   isOpen,
   onClose,
   mode,
   lobby,
+  owner,
 }) => {
-  const [owner] = usePlayer();
   const socket = useSocket();
   const router = useRouter();
 
   const [lobbyName, setLobbyName] = useState(
-    lobby ? lobby.name : `Lobby de ${owner?.name}`
+    lobby ? lobby.name : `Lobby de ${owner.name}`
   );
   const [gameMode, setGameMode] = useState(lobby ? lobby.mode : "1vs1");
   const [isPublic, setIsPublic] = useState(lobby ? lobby.isPublic : true);

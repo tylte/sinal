@@ -11,7 +11,7 @@ import {
   removeChatEvents,
 } from "src/utils/api";
 import { ChattingActions, Player } from "../utils/types";
-import { serverHttpUrl, serverWsPath, serverWsUrl } from "../utils/Const";
+import { serverHttpUrl, serverWsUrl } from "../utils/const";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [dictionary, setDictionnary] = useState<Set<string>>(new Set());
@@ -33,7 +33,6 @@ function MyApp({ Component, pageProps }: AppProps) {
       setDictionnary(set);
     });
     let socket = io(serverWsUrl, {
-      path: serverWsPath,
       transports: ["websocket"],
     });
     setSocket(socket);

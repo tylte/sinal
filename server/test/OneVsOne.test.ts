@@ -1,7 +1,11 @@
 import { io as connect, Socket as ClientSocket } from "socket.io-client";
 import { getServer } from "../src/utils/server";
 import { Server as HTTPServer } from "http";
-import { PacketType } from "../src/utils/type";
+import {
+  ArgCreateLobbyType,
+  ArgGuessWordType,
+  PacketType,
+} from "../src/utils/type";
 import { LetterResult } from "../src/Endpoint/guess";
 
 describe("testing 1vs1", () => {
@@ -30,16 +34,16 @@ describe("testing 1vs1", () => {
 
   test("Normal game of 1vs1", (done) => {
     clientSocket.emit("create_player", "Bob", (playerOne: PacketType) => {
-      clientSocket.on("wining_player_1vs1", (playerId) => {
+      clientSocket.on("winning_game_1vs1", (winner) => {
         try {
-          expect(playerId).toBe(playerOne.data.id);
+          expect(winner.id).toBe(playerOne.data.id);
           done();
         } catch (e) {
           done(e);
         }
       });
 
-      let createLobbyArg = {
+      let createLobbyArg: ArgCreateLobbyType = {
         mode: "1vs1",
         place: 2,
         isPublic: true,
@@ -49,6 +53,11 @@ describe("testing 1vs1", () => {
           lobbyId: null,
         },
         name: "lobby test",
+        nbRounds: 1,
+        nbLife: 6,
+        globalTime: 1000,
+        timeAfterFirstGuess: 500,
+        eliminationRate: 100,
       };
       clientSocket.emit("create_lobby", createLobbyArg, (lobby: PacketType) => {
         otherClientSocket.emit(
@@ -70,25 +79,22 @@ describe("testing 1vs1", () => {
 
             clientSocket.on("starting_game_1vs1", (game) => {
               clientSocket.emit("get_word", game.id, (soluce: PacketType) => {
-                let testWord: string = soluce.data;
-                if (testWord[testWord.length - 1] !== "W")
-                  testWord = testWord.slice(0, testWord.length - 1) + "W";
-                else testWord = testWord.slice(0, testWord.length - 1) + "Z";
+                let testWord: string = "etre-la";
                 otherClientSocket.emit(
                   "guess_word_1vs1",
                   {
                     word: testWord,
                     gameId: game.id,
                     playerId: playerTwo.data.id,
+                    lobbyId: lobby.data,
                   },
                   (tab_res: PacketType) => {
                     let array = Array<LetterResult>(testWord.length).fill(
                       LetterResult.RIGHT_POSITION
                     );
-                    array[array.length - 1] = LetterResult.NOT_FOUND;
 
                     try {
-                      expect(tab_res.data).toStrictEqual(array);
+                      expect(tab_res.data).not.toStrictEqual(array);
                     } catch (e) {
                       done(e);
                     }
@@ -100,6 +106,7 @@ describe("testing 1vs1", () => {
                     word: soluce.data,
                     gameId: game.id,
                     playerId: playerOne.data.id,
+                    lobbyId: lobby.data,
                   },
                   () => {}
                 );

@@ -7,3 +7,5 @@ export const gameBrMap: Map<string, GameBr> = new Map();
 export const timeoutMap: Map<string, NodeJS.Timeout> = new Map();
 export const disconnectMap: Map<string, any> = new Map();
 export const channelIdToHistory: Map<string, ChatMessageToSend[]> = new Map();
+
+export const idToWord: Map<string, string> = new Map();

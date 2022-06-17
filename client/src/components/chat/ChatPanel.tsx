@@ -1,5 +1,6 @@
 import {
   Alert,
+  AlertDescription,
   AlertIcon,
   Box,
   Flex,
@@ -115,14 +116,32 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       </Box>
       <Flex direction={"column"}>
         {messageHistory.map((mess) => {
-          return (
-            <Box overflowX={"hidden"} key={mess.id}>
-              <Text fontWeight={"bold"}>{mess.author}:</Text>
-              <Text ml={2} wordBreak={"break-word"}>
-                {mess.content}
-              </Text>
-            </Box>
-          );
+          if (!mess.isAnnoncement) {
+            return (
+              <Box overflowX={"hidden"} key={mess.id}>
+                <Text fontWeight={"bold"}>{mess.author}:</Text>
+                <Text ml={2} wordBreak={"break-word"}>
+                  {mess.content}
+                </Text>
+              </Box>
+            );
+          } else {
+            return (
+              <Box overflowX={"hidden"} key={mess.id}>
+                <Alert
+                  status="info"
+                  variant="subtle"
+                  alignItems="center"
+                  justifyContent="center"
+                  textAlign="center"
+                >
+                  <AlertDescription maxWidth="sm">
+                    {mess.content}
+                  </AlertDescription>
+                </Alert>
+              </Box>
+            );
+          }
         })}
       </Flex>
     </Flex>

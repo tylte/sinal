@@ -32,46 +32,28 @@ Socket.io / ExpressJS (serveur)
 
 Les principales fonctionalités sont le mode 1vs1 et le mode Battle Royale
 
-# Jouer en local
+# Jouer en local - Déployer
 
-Pour jouer en local vous avez deux choix, avec NodeJs ou Docker
+Voir le fichier `INSTALL.md`
 
-### Avec Nodejs
+# Jouer en ligne
 
-Installer NodeJs et yarn
+Sinal est disponible en ligne sur le lien : https://sinal.ovoleur.dev/
 
-#### Client
+# Performance
 
-Dans le dossier client, installer les dépendances et lancer le client
+Pour lancer le serveur et le client, il faut prévoir 200Mb de RAM.
+En allant sur le site depuis un navigateur, peu de ressources sont utilisées lors de la navigation et lors d'une partie.
 
-```
-cd client/
-yarn
-yarn build && yarn start
-```
+Avec un ordinateur portable Dell, avec Intel Core i7-4712HQ @ 2.30GHz et 8Gb RAM :
 
-#### Serveur
+RAM : 600 Mb : serveur + client + firefox
 
-Dans le dossier server, installer les dépendances et lancer le server
+CPU : Utilisation entre 2 et 5 % d'utilisation du CPU par l'application. Navigation et partie fluide sur le site.
 
-```
-cd server/
-yarn
-yarn build && yarn start
-```
+# Video de présentation
 
-Vous pouvez maintenant vous rendre sur [localhost:3000](http://localhost:3000)
-
-### Avec Docker
-
-Installer docker et docker-compose
-
-```
-docker-compose build
-docker-compose up -d
-```
-
-Vous pouvez maintenant vous rendre sur [localhost:3000](http://localhost:3000)
+https://www.youtube.com/watch?v=8N_v0ZA4MdM
 
 # Images du jeu
 
