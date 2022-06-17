@@ -45,7 +45,7 @@ Sinal est disponible en ligne sur le lien : https://sinal.ovoleur.dev/
 Pour lancer le serveur et le client, il faut prévoir 200Mb de RAM.
 En allant sur le site depuis un navigateur, peu de ressources sont utilisées lors de la navigation et lors d'une partie.
 
-Avec un Dell laptop, with Intel Core i7-4712HQ @ 2.30GHz 8Gb RAM :
+Avec un ordinateur portable Dell, avec Intel Core i7-4712HQ @ 2.30GHz et 8Gb RAM :
 
 RAM : 600 Mb : serveur + client + firefox
 
