@@ -564,7 +564,7 @@ export const guessWord1vs1Event = (
           } else {
             // Launch another round
             game.roundNumber++;
-            let word = newWord1vs1(io, game, lobby);
+            newWord1vs1(game, lobby);
 
             // Waiting 3 seconds until the next round
             setTimeout(() => {
@@ -598,7 +598,7 @@ export const guessWord1vs1Event = (
           } else {
             // Launch another round
             game.roundNumber++;
-            let word = newWord1vs1(io, game, lobby);
+            newWord1vs1(game, lobby);
 
             // Waiting 3 seconds until the next round
             setTimeout(() => {
@@ -633,7 +633,7 @@ export const guessWord1vs1Event = (
         } else {
           // Launch another round
           game.roundNumber++;
-          let word = newWord1vs1(io, game, lobby);
+          newWord1vs1(game, lobby);
 
           // Waiting 3 seconds until the next round
           setTimeout(() => {
@@ -696,7 +696,7 @@ export const guessWord1vs1Event = (
         } else {
           // Launch another round
           game.roundNumber++;
-          let word = newWord1vs1(io, game, lobby);
+          newWord1vs1(game, lobby);
 
           // Waiting 3 seconds until the next round
           setTimeout(() => {
@@ -727,7 +727,7 @@ export const guessWord1vs1Event = (
       } else {
         // Launch another round
         game.roundNumber++;
-        let word = newWord1vs1(io, game, lobby);
+        newWord1vs1(game, lobby);
 
         // Waiting 3 seconds until the next round
         setTimeout(() => {
@@ -764,22 +764,24 @@ const tempsEcoule1vs1 = (
     lobby.state = "pre-game";
 
     if (game.playerOne.hasWon && !game.playerTwo.hasWon) {
-      //player one won
+      // Player One has Won
       lobby.lastGame.winner = playerMap.get(game.playerOne.id);
       game.playerOne.nbWins++;
+
       io.to(game.id).emit("winning_round_1vs1", game.playerOne.id);
     } else if (!game.playerOne.hasWon && game.playerTwo.hasWon) {
-      //player two won
+      // Player Two has Won
       lobby.lastGame.winner = playerMap.get(game.playerTwo.id);
       game.playerTwo.nbWins++;
+
       io.to(game.id).emit("winning_round_1vs1", game.playerTwo.id);
     } else {
-      //nobody won, normally if both players had won then the timer is clear so tempsEcoule1vs1 is never called
+      // nobody won, normally if both players had won then the timer is clear so tempsEcoule1vs1 is never called
       io.to(game.id).emit("draw_round_1vs1");
     }
     if (game.roundNumber < game.nbRoundsTotal) {
       game.roundNumber++;
-      let word = newWord1vs1(io, game, lobby);
+      newWord1vs1(game, lobby);
 
       // Waiting 3 seconds until the next round
       setTimeout(() => {
@@ -845,14 +847,12 @@ const get1vs1GameWinner = (
   let winner: Player | undefined;
   if (player.nbWins > otherPlayer.nbWins) {
     // If the player has won more rounds, he wins the game
-    io.to(gameId).emit("wining_game_1vs1", player.id);
     winner = {
       id: player.id,
       lobbyId,
       name: player.name,
     };
   } else if (player.nbWins < otherPlayer.nbWins) {
-    io.to(gameId).emit("wining_game_1vs1", otherPlayer.id);
     winner = {
       id: otherPlayer.id,
       lobbyId,
@@ -860,7 +860,6 @@ const get1vs1GameWinner = (
     };
   } else {
     // If they have won the same number of games, there is a tie.
-    io.to(gameId).emit("draw_game_1vs1");
     winner = undefined;
   }
 
@@ -870,12 +869,11 @@ const get1vs1GameWinner = (
 /**
  * Function which is called when we have another round.
  * This function choose a new word to guess, and initialize all the properties of the new round.
- * @param io - Server
  * @param game - 1vs1 GameState
  * @param lobby - Lobby of the Game
  * @return The new word to guess
  */
-const newWord1vs1 = (io: Server, game: Game1vs1, lobby: LobbyType) => {
+const newWord1vs1 = (game: Game1vs1, lobby: LobbyType) => {
   if (game !== undefined) {
     // Clear the timeout of the game.
     let timeout = timeoutMap.get(game.id);
@@ -901,10 +899,6 @@ const newWord1vs1 = (io: Server, game: Game1vs1, lobby: LobbyType) => {
     game.playerOne.hasWon = false;
     game.playerTwo.nbLife = lobby.nbLifePerPlayer;
     game.playerTwo.hasWon = false;
-
-    return newWord;
-  } else {
-    return;
   }
 };
 
