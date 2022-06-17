@@ -740,7 +740,6 @@ const tempsEcoule1vs1 = (
     lobby.state = "pre-game";
 
     // FIXME: For the moment context is "finished" whatever happens, but move and change to "round" where necessary
-    sendAnnounceChatMessageWord(io, "finished", lobby.id, game.id);
 
     if (game.playerOne.hasWon && !game.playerTwo.hasWon) {
       // Player One has Won
@@ -761,6 +760,8 @@ const tempsEcoule1vs1 = (
     if (game.roundNumber < game.nbRoundsTotal) {
       game.roundNumber++;
       newWord1vs1(game, lobby);
+
+      sendAnnounceChatMessageWord(io, "round", lobby.id, game.id);
 
       // Waiting 3 seconds until the next round
       setTimeout(() => {
@@ -1351,14 +1352,14 @@ export const sendAnnounceChatMessageWord = (
   let word = idToWord.get(gameId);
 
   if (word) {
-    let content = "Partie terminée";
+    let content = "Partie terminée.";
 
     if (context === "round") {
-      content = "Round terminé";
+      content = "Round terminé.";
     }
 
     sendAnnounceChatMessage(io, {
-      content: `${content} Le mot était : ${word} !`,
+      content: `${content} Le mot était : ${word.toUpperCase()} !`,
       channelId: lobbyId,
     });
   }
@@ -1409,7 +1410,10 @@ export const leaveGameBr = async (
     //the current game have one less player
     game.playersLastNextRound -= 1;
     //Informs the other players that a player has left.
-    io.to(game.id).emit("player_leave", {playerId:game.playerList[indexPlayer].id, playerName:game.playerList[indexPlayer].name}); //emit the name of the player that leave
+    io.to(game.id).emit("player_leave", {
+      playerId: game.playerList[indexPlayer].id,
+      playerName: game.playerList[indexPlayer].name,
+    }); //emit the name of the player that leave
     let timeout;
     let index = game.playerList.findIndex((player) => playerId === player.id);
     //reset the disconnect listeners
