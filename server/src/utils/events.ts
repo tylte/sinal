@@ -545,13 +545,7 @@ export const guessWord1vs1Event = (
           // If we have reached the final round, then, it's the end of the game
           if (game.roundNumber >= game.nbRoundsTotal) {
             // We get the winner of the game (or the tie if it's a tie)
-            let winner = get1vs1GameWinner(
-              io,
-              player,
-              otherPlayer,
-              gameId,
-              lobbyId
-            );
+            let winner = get1vs1GameWinner(player, otherPlayer, lobbyId);
 
             io.to(gameId).emit("winning_game_1vs1", winner);
 
@@ -579,13 +573,7 @@ export const guessWord1vs1Event = (
 
           // If we have reached the final round, then, it's the end of the game
           if (game.roundNumber >= game.nbRoundsTotal) {
-            let winner = get1vs1GameWinner(
-              io,
-              player,
-              otherPlayer,
-              gameId,
-              lobbyId
-            );
+            let winner = get1vs1GameWinner(player, otherPlayer, lobbyId);
 
             io.to(gameId).emit("winning_game_1vs1", winner);
 
@@ -614,13 +602,7 @@ export const guessWord1vs1Event = (
 
         if (game.roundNumber >= game.nbRoundsTotal) {
           // We get the winner of the game (or the tie if it's a tie)
-          let winner = get1vs1GameWinner(
-            io,
-            player,
-            otherPlayer,
-            gameId,
-            lobbyId
-          );
+          let winner = get1vs1GameWinner(player, otherPlayer, lobbyId);
 
           io.to(gameId).emit("winning_game_1vs1", winner);
 
@@ -674,13 +656,7 @@ export const guessWord1vs1Event = (
       if (lobby && lobby.lastGame) {
         if (game.roundNumber >= game.nbRoundsTotal) {
           // We get the winner of the game (or the tie if it's a tie)
-          let winner = get1vs1GameWinner(
-            io,
-            player,
-            otherPlayer,
-            gameId,
-            lobbyId
-          );
+          let winner = get1vs1GameWinner(player, otherPlayer, lobbyId);
 
           io.to(gameId).emit("winning_game_1vs1", winner);
 
@@ -709,13 +685,7 @@ export const guessWord1vs1Event = (
       io.to(gameId).emit("winning_round_1vs1", otherPlayer.id);
       otherPlayer.nbWins++;
       if (game.roundNumber >= game.nbRoundsTotal) {
-        let winner = get1vs1GameWinner(
-          io,
-          player,
-          otherPlayer,
-          gameId,
-          lobbyId
-        );
+        let winner = get1vs1GameWinner(player, otherPlayer, lobbyId);
 
         io.to(gameId).emit("winning_game_1vs1", winner);
 
@@ -789,13 +759,7 @@ const tempsEcoule1vs1 = (
         io.to(game.id).emit("next_round", game);
       }, 3000);
     } else {
-      let winner = get1vs1GameWinner(
-        io,
-        game.playerOne,
-        game.playerTwo,
-        game.id,
-        lobby.id
-      );
+      let winner = get1vs1GameWinner(game.playerOne, game.playerTwo, lobby.id);
 
       io.to(game.id).emit("winning_game_1vs1", winner);
 
@@ -838,10 +802,8 @@ const ending1vs1Game = (io: Server, lobby: LobbyType, gameId: string) => {
  * @returns The winner of the match
  */
 const get1vs1GameWinner = (
-  io: Server,
   player: Player1vs1Type,
   otherPlayer: Player1vs1Type,
-  gameId: string,
   lobbyId: string
 ) => {
   let winner: Player | undefined;
