@@ -28,9 +28,11 @@ import {
 export const guessWord = async (
   word: string,
   id: string
-): Promise<LetterResult[]> => {
+): Promise<{ result: LetterResult[]; word?: string }> => {
   try {
-    const { data } = await axios.post<LetterResult[]>(
+    const {
+      data: { result, word: actualWord },
+    } = await axios.post<{ result: LetterResult[]; word?: string }>(
       `${serverHttpUrl}/guess`,
       {
         word,
@@ -38,12 +40,12 @@ export const guessWord = async (
       }
     );
 
-    return data;
+    return { result, word: actualWord };
   } catch (e) {
     console.error(e);
   }
   // Error
-  return [];
+  return { result: [] };
 };
 
 export const guessWordMulti = async (

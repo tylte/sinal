@@ -9,3 +9,4 @@ export const disconnectMap: Map<string, any> = new Map();
 export const channelIdToHistory: Map<string, ChatMessageToSend[]> = new Map();
 
 export const idToWord: Map<string, string> = new Map();
+export const idToLife: Map<string, number> = new Map();

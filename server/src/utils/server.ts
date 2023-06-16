@@ -21,7 +21,7 @@ import {
   updateLobbyEvent,
   updateWordEvent,
 } from "./events";
-import { idToWord, lobbyMap } from "./maps";
+import { idToLife, idToWord, lobbyMap } from "./maps";
 import {
   ArgCreateLobby,
   ArgGuessWord,
@@ -66,6 +66,7 @@ export const getServer = () => {
     let id = get_id();
     let word = get_word();
     idToWord.set(id, word);
+    idToLife.set(id, 6);
     console.log("word of the game : ", word);
     res.send({
       length: word.length,
@@ -78,7 +79,39 @@ export const getServer = () => {
   app.post("/guess", (req, res) => {
     let id = req.body.id;
     let word = req.body.word;
-    res.send(get_guess(id, word, idToWord));
+    let soluce = idToWord.get(id);
+    if (!soluce) {
+      console.error(`No soluce for given id : ${id}`);
+      res.status(400);
+      return;
+    }
+
+    let nbLife = idToLife.get(id);
+    if (!nbLife) {
+      console.error(`No life for given id : ${id}`);
+      res.status(400);
+      return;
+    }
+
+    let lifeNow = nbLife - 1;
+
+    let result = get_guess(id, word, idToWord);
+
+    console.log(`nbLife : ${nbLife}`);
+
+    if (lifeNow == 0) {
+      if (result.every((v) => v == 0)) {
+        res.send({ result });
+      } else {
+        // Player lost, we send the real word as well
+        res.send({ result, word: soluce });
+      }
+      idToLife.delete(id);
+      idToWord.delete(id);
+    } else {
+      res.send({ result });
+      idToLife.set(id, lifeNow);
+    }
   });
 
   io.on("connection", (socket) => {

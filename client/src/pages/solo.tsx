@@ -92,7 +92,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
       return { ...focus, index: 1, isBorder: false };
     });
 
-    const result = await guessWord(lowerCaseWord, wordId);
+    const { result, word: actualWord } = await guessWord(lowerCaseWord, wordId);
 
     let newState = {
       ...gameState,
@@ -120,7 +120,7 @@ const Solo: React.FC<SoloProps> = ({}) => {
     if (triesHistory.length + 1 === nbLife) {
       setGameState({ ...newState, isFinished: true, hasWon: false });
       toast({
-        title: "Perdu !",
+        title: `Perdu ! le mot était : ${actualWord}`,
         status: "error",
         isClosable: true,
         duration: 2500,
