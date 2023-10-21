@@ -9,9 +9,9 @@ export function getId() {
 export function getWord(language: LanguageType): string {
   let content = null;
   if (language === "french") {
-    content = dicoFr.contentArray;
+    content = dicoFr.pickableWords;
   } else if (language === "english") {
-    content = dicoEn.contentArray;
+    content = dicoEn.pickableWords;
   }
   if (!content) {
     throw "No content found";

@@ -75,7 +75,7 @@ export const getServer = () => {
   app.post("/start_game", (req, res) => {
     let id = getId();
 
-    let lang = Language.parse(req.query.language);
+    let lang = Language.parse(req.body.language);
 
     let word = getWord(lang);
     idToWord.set(id, word);

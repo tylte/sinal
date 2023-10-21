@@ -221,9 +221,9 @@ export type AnnounceChatMessage = {
 
 export type ServerDictionnary = {
   // Used to get word O(1) when choosing random word
-  contentArray: string[];
+  pickableWords: string[];
   // Used to get word O(1) when checking if word in dictionary
-  content: Set<string>;
+  tryableWords: Set<string>;
   hash: string;
   language: LanguageType;
 };
