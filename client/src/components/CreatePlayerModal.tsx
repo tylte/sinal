@@ -32,7 +32,6 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
 }) => {
   const router = useRouter();
   const socket = useSocket();
-  console.log(router.route);
   const [_, setPlayer] = usePlayer();
 
   const [pseudo, setPseudo] = useState("");
