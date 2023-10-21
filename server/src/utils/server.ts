@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import { createServer, request } from "http";
 import { Server } from "socket.io";
-import { get_dictionary } from "../Endpoint/dictionary";
+import { getUnknownDictionaries } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
 import { get_lobbies, get_lobby_id } from "../Endpoint/lobbies";
 import { get_id, get_word } from "../Endpoint/start_game";
@@ -34,6 +34,7 @@ import {
   LobbyType,
   PacketType,
   ReceivedChatMessage,
+  StringArray,
 } from "./type";
 import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 
@@ -50,8 +51,10 @@ export const getServer = () => {
   app.use(express.json());
   app.use(cors());
 
-  app.get("/dictionary", (_, res) => {
-    res.send(get_dictionary());
+  app.get("/dictionary", (req, res) => {
+    let hashes = StringArray.parse(req.query.hashes);
+
+    res.send(getUnknownDictionaries(hashes));
   });
 
   app.get("/list_lobbies", (_, res) => {

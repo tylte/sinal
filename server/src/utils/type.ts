@@ -208,3 +208,13 @@ export type AnnounceChatMessage = {
   channelId: string;
   content: string;
 };
+
+export type Dictionnary = {
+  content: Set<string>;
+  hash: string;
+  language: Language;
+};
+
+export type Language = "french" | "english";
+
+export const StringArray = z.string().array();
