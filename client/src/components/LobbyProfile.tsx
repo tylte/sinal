@@ -36,9 +36,7 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
     <Tooltip label={name}>
       <LinkBox borderWidth="1px" borderRadius="lg" p={2}>
         {isJoinable && (
-          <NextLink href={`/lobby/${id}`} passHref>
-            <LinkOverlay></LinkOverlay>
-          </NextLink>
+          <LinkOverlay as={NextLink} href={`/lobby/${id}`}></LinkOverlay>
         )}
         <Stack p={2}>
           <Text
@@ -67,6 +65,7 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
             {mode === "1vs1" && (
               <Text fontStyle={"italic"}>{nbRounds} Round(s)</Text>
             )}
+            <Text fontStyle={"italic"}>Langue : {language}</Text>
           </HStack>
           {playerOwner !== undefined && (
             <Text>Propriétaire : {playerOwner.name}</Text>
