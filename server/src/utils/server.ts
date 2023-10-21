@@ -1,7 +1,8 @@
+// FIXME: Find a way not to use require
+const compression = require("compression");
 import cors from "cors";
 import express from "express";
-const compression = require("compression");
-import { createServer, request } from "http";
+import { createServer } from "http";
 import { Server } from "socket.io";
 import { getUnknownDictionaries } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
@@ -14,7 +15,6 @@ import {
   guessWordBrEvent,
   joinLobbyEvent,
   leaveGame,
-  leaveGame1vs1,
   leaveLobbyEvent,
   sendChatMessage,
   startGame1vs1Event,
@@ -22,7 +22,7 @@ import {
   updateLobbyEvent,
   updateWordEvent,
 } from "./events";
-import { idToLife, idToWord, lobbyMap } from "./maps";
+import { idToLife, idToWord } from "./maps";
 import {
   ArgCreateLobby,
   ArgGuessWord,
@@ -32,7 +32,6 @@ import {
   ArgStartGameBr,
   ArgUpdateWord,
   EventResponseFn,
-  LobbyType,
   PacketType,
   ReceivedChatMessage,
   StringArray,
