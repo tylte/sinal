@@ -38,7 +38,7 @@ import {
   minPlayerBr,
 } from "src/utils/const";
 import { useSocket } from "src/utils/hooks";
-import { GameMode, Lobby, Packet, Player } from "src/utils/types";
+import { GameMode, Language, Lobby, Packet, Player } from "src/utils/types";
 
 interface CreateLobbyModalProps {
   isOpen: boolean;
@@ -87,11 +87,14 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
     lobby ? lobby.timeAfterFirstGuess : defaultTimeAfterFirstGuess1vs1 / 1000
   );
 
+  const [language, setLanguage] = useState<Language>("french");
+
   const handleButton = (socket: Socket | null, owner: Player | null) => {
     if (mode === "Update" && lobby !== undefined) {
       socket?.emit("update_lobby", {
         lobbyId: lobby.id,
         mode: gameMode,
+        language,
         place: nbPlaces,
         isPublic,
         owner,
@@ -107,6 +110,7 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
         "create_lobby",
         {
           mode: gameMode,
+          language,
           place: nbPlaces,
           isPublic,
           owner,
@@ -340,7 +344,20 @@ export const CreateLobbyModal: React.FC<CreateLobbyModalProps> = ({
                 </NumberInputStepper>
               </NumberInput>
             </Box>
-            {/* Accessibilité du lobby */}
+            {/* Language of lobby */}
+            <Box pt={8}>
+              <Text pb={2}>Langue</Text>
+              <RadioGroup
+                onChange={(v) => setLanguage(v as Language)}
+                value={language}
+              >
+                <Stack direction="row">
+                  <Radio value="french">Français</Radio>
+                  <Radio value="english">English</Radio>
+                </Stack>
+              </RadioGroup>
+            </Box>
+            {/* Accessibility of lobby */}
             <Box pt={8}>
               <Text pb={2}>Visibilité</Text>
               <RadioGroup onChange={handleIsPublic} value={isPublic.toString()}>

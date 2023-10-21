@@ -26,6 +26,7 @@ export const LobbyProfile: React.FC<LobbyProfileProps> = ({
     playerList,
     nbLifePerPlayer,
     nbRounds,
+    language,
   },
 }) => {
   const currentPlace = playerList.length;

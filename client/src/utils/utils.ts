@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 import {
   FocusMode,
   KeyboardSettings,
+  Language,
   LastGame,
   LetterResult,
   LobbyState,
@@ -333,4 +334,15 @@ export const getStringFromHistory = (
     }
   }
   return ret;
+};
+
+export const languageToCountryCode = (language: Language) => {
+  if (language === "english") {
+    return "US";
+  } else if (language === "french") {
+    return "FR";
+  } else {
+    // By default fr ig
+    return "FR";
+  }
 };
