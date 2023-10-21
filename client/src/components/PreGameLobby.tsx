@@ -149,6 +149,9 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
             - Temps global : {globalTime / 60000} minutes - Temps après 1er
             gagnant : {timeAfterFirstGuess / 1000} secondes
           </Text>
+          <Text textAlign={"center"} fontStyle={"italic"}>
+            Langue : {language}
+          </Text>
         </Box>
 
         <HStack mx="auto" my={4}>

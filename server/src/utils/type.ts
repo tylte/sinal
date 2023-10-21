@@ -128,6 +128,7 @@ export const ArgCreateLobby = z.object({
 export const ArgUpdateLobby = z.object({
   lobbyId: z.string(),
   mode: GameMode,
+  language: Language,
   place: z.number(),
   isPublic: z.boolean(),
   name: z.string(),

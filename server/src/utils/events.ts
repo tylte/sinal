@@ -128,6 +128,7 @@ export const updateLobbyEvent = (
     nbLife,
     globalTime,
     timeAfterFirstGuess,
+    language,
   }: ArgUpdateLobbyType,
   lobbyId: string
 ) => {
@@ -139,6 +140,7 @@ export const updateLobbyEvent = (
       ...lobby,
       isPublic,
       mode,
+      language,
       name,
       nbLifePerPlayer: nbLife,
       totalPlace,
