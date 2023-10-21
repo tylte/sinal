@@ -1,6 +1,10 @@
 import dict_full_fr from "../../data/fr/dictionary_full.json";
 import dict_full_en from "../../data/en/dictionary_full.json";
-import { Dictionnary, Language } from "src/utils/type";
+import {
+  ServerDictionnary,
+  LanguageType,
+  ClientDictionnary,
+} from "src/utils/type";
 import { createHash } from "crypto";
 
 const createDicoHash = (words: string[]) => {
@@ -8,11 +12,12 @@ const createDicoHash = (words: string[]) => {
 };
 
 const createDico = (
-  dicos: Dictionnary[],
+  dicos: ServerDictionnary[],
   words: string[],
-  language: Language
+  language: LanguageType
 ) => {
-  const dico: Dictionnary = {
+  const dico: ServerDictionnary = {
+    contentArray: words,
     content: new Set(words),
     hash: createDicoHash(words),
     language,
@@ -23,16 +28,23 @@ const createDico = (
   return dico;
 };
 
-const dicos: Dictionnary[] = [];
+const dicos: ServerDictionnary[] = [];
 
-const dicoFr = createDico(dicos, dict_full_fr, "french");
-const dicoEn = createDico(dicos, dict_full_en, "english");
+export const dicoFr = createDico(dicos, dict_full_fr, "french");
+export const dicoEn = createDico(dicos, dict_full_en, "english");
 
-export function getUnknownDictionaries(known_hashes: string[]): Dictionnary[] {
-  return dicos.filter((d) => known_hashes.includes(d.hash));
+export function getUnknownDictionaries(
+  known_hashes: string[]
+): ClientDictionnary[] {
+  return dicos
+    .filter((d) => !known_hashes.includes(d.hash))
+    .map(({ contentArray, hash, language }) => {
+      let dico: ClientDictionnary = { content: contentArray, hash, language };
+      return dico;
+    });
 }
 
-export function dicoHasWord(word: string, language: Language): boolean {
+export function dicoHasWord(word: string, language: LanguageType): boolean {
   if (language === "french") {
     return dicoFr.content.has(word);
   } else if (language === "english") {

@@ -8,6 +8,14 @@ export const Player = z.object({
 
 export type Player = z.infer<typeof Player>;
 
+const LanguageEnum = {
+  fr: "french",
+  en: "english",
+} as const;
+
+export const Language = z.nativeEnum(LanguageEnum);
+export type LanguageType = z.infer<typeof Language>;
+
 const GameModeEnum = {
   Mod1: "1vs1",
   Mod2: "battle-royale",
@@ -56,6 +64,7 @@ export const Lobby = z.object({
   owner: z.string(), // id du joueur owner
   isPublic: z.boolean(),
   mode: GameMode,
+  language: Language,
   currentGameId: z.optional(z.string()),
   lastGame: z.optional(LastGame),
   eliminationRate: z.number(),
@@ -104,6 +113,7 @@ export type GameBr = z.infer<typeof GameBr>;
 //use in create_lobby
 export const ArgCreateLobby = z.object({
   mode: GameMode,
+  language: Language,
   place: z.number(),
   isPublic: z.boolean(),
   owner: Player,
@@ -209,12 +219,19 @@ export type AnnounceChatMessage = {
   content: string;
 };
 
-export type Dictionnary = {
+export type ServerDictionnary = {
+  // Used to get word O(1) when choosing random word
+  contentArray: string[];
+  // Used to get word O(1) when checking if word in dictionary
   content: Set<string>;
   hash: string;
-  language: Language;
+  language: LanguageType;
 };
 
-export type Language = "french" | "english";
+export type ClientDictionnary = {
+  content: string[];
+  hash: string;
+  language: LanguageType;
+};
 
 export const StringArray = z.string().array();

@@ -1,11 +1,12 @@
 import cors from "cors";
 import express from "express";
+const compression = require("compression");
 import { createServer, request } from "http";
 import { Server } from "socket.io";
 import { getUnknownDictionaries } from "../Endpoint/dictionary";
 import { get_guess } from "../Endpoint/guess";
 import { get_lobbies, get_lobby_id } from "../Endpoint/lobbies";
-import { get_id, get_word } from "../Endpoint/start_game";
+import { getId, getWord } from "../Endpoint/start_game";
 import {
   createLobbyEvent,
   createPlayerEvent,
@@ -35,6 +36,7 @@ import {
   PacketType,
   ReceivedChatMessage,
   StringArray,
+  Language,
 } from "./type";
 import { PUBLIC_CHAT, PUBLIC_LOBBIES } from "./utils";
 
@@ -51,8 +53,14 @@ export const getServer = () => {
   app.use(express.json());
   app.use(cors());
 
-  app.get("/dictionary", (req, res) => {
-    let hashes = StringArray.parse(req.query.hashes);
+  app.get("/dictionary", compression(), (req, res) => {
+    let hashes: string[] = [];
+
+    let parsing = StringArray.safeParse(req.query.hashes);
+
+    if (parsing.success) {
+      hashes = parsing.data;
+    }
 
     res.send(getUnknownDictionaries(hashes));
   });
@@ -66,8 +74,11 @@ export const getServer = () => {
   });
 
   app.post("/start_game", (req, res) => {
-    let id = get_id();
-    let word = get_word();
+    let id = getId();
+
+    let lang = Language.parse(req.query.language);
+
+    let word = getWord(lang);
     idToWord.set(id, word);
     idToLife.set(id, 6);
     console.log("word of the game : ", word);

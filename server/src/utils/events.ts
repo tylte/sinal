@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import { map } from "zod";
 import { dicoHasWord } from "../Endpoint/dictionary";
 import { get_guess, LetterResult } from "../Endpoint/guess";
-import { get_id, get_word } from "../Endpoint/start_game";
+import { getId, getWord } from "../Endpoint/start_game";
 import {
   channelIdToHistory,
   disconnectMap,
@@ -44,6 +44,7 @@ export const createLobbyEvent = (
   {
     isPublic,
     mode,
+    language,
     name,
     owner,
     place: totalPlace,
@@ -55,7 +56,7 @@ export const createLobbyEvent = (
   }: ArgCreateLobbyType,
   response: (payload: PacketType) => void
 ) => {
-  let lobbyId = get_id();
+  let lobbyId = getId();
   let lobby: LobbyType = {
     id: lobbyId,
     state: "pre-game",
@@ -67,6 +68,7 @@ export const createLobbyEvent = (
     owner: owner.id,
     isPublic,
     mode,
+    language,
     currentGameId: undefined,
     lastGame: undefined,
     globalTime,
@@ -292,7 +294,7 @@ export const createPlayerEvent = (
   playerName: string,
   response: EventResponseFn
 ) => {
-  let playerId = get_id();
+  let playerId = getId();
   let player = { id: playerId, name: playerName, lobbyId: null };
   playerMap.set(playerId, player);
   console.log(`player created : ${playerName} : ${playerId}`);
@@ -373,11 +375,11 @@ export const startGame1vs1Event = async (
     return;
   }
 
-  let gameId = get_id();
+  let gameId = getId();
   lobby.state = "in-game";
   lobby.currentGameId = gameId;
 
-  let word = get_word();
+  let word = getWord(lobby.language);
   console.log("Mot à découvrir : ", word);
   idToWord.set(gameId, word); //the ID of the word is the same as the game
   let game: Game1vs1 = {
@@ -496,7 +498,14 @@ export const guessWord1vs1Event = (
     return;
   }
 
-  if (!dicoHasWord(word)) {
+  let lobby = lobbyMap.get(lobbyId);
+
+  if (!lobby) {
+    console.error(`Lobby : ${lobbyId} doesn't exist`);
+    return;
+  }
+
+  if (!dicoHasWord(word, lobby.language)) {
     console.log("guess_word_1vs1 : this word isn't in the dictionary");
     return;
   }
@@ -520,7 +529,6 @@ export const guessWord1vs1Event = (
     if (letter !== LetterResult.RIGHT_POSITION) win = false;
   });
 
-  let lobby = lobbyMap.get(lobbyId);
   if (lobby !== undefined) {
     if (lobby.lastGame !== undefined) {
       for (let i = 0; i < lobby.playerList.length; i++) {
@@ -868,7 +876,7 @@ const newWord1vs1 = (io: Server, game: Game1vs1, lobby: LobbyType) => {
     game.endTime = undefined;
 
     // Choose a new word.
-    let newWord = get_word();
+    let newWord = getWord(lobby.language);
     console.log("Mot à découvrir : ", newWord);
     idToWord.set(game.id, newWord);
 
@@ -956,7 +964,7 @@ export const startGameBrEvent = async (
     return;
   }
 
-  let gameId = get_id();
+  let gameId = getId();
   lobby.state = "in-game";
   lobby.currentGameId = gameId;
 
@@ -1033,7 +1041,7 @@ export const guessWordBrEvent = (
     return;
   }
 
-  if (!dicoHasWord(word)) {
+  if (!dicoHasWord(word, lobby.language)) {
     console.log("guess_word_br : this word isn't in the dictionary : ", word);
     return;
   }
@@ -1252,13 +1260,19 @@ const newWordBr = (
   newTime: number,
   lobbyId: string
 ) => {
+  let lobby = lobbyMap.get(lobbyId);
+
+  if (!lobby) {
+    return;
+  }
+
   if (game !== undefined) {
     let time = timeoutMap.get(game.id);
     if (time !== undefined) {
       clearTimeout(time);
     }
     game.endTime = undefined;
-    let newWord = get_word();
+    let newWord = getWord(lobby.language);
     console.log("Mot à découvrir : ", newWord);
     idToWord.set(game.id, newWord);
     game.firstLetter = newWord.charAt(0);
@@ -1306,7 +1320,7 @@ export const sendChatMessage = (
     return;
   }
 
-  let messageId = get_id();
+  let messageId = getId();
 
   let messageToSend: ChatMessageToSend = {
     channelId,
@@ -1384,7 +1398,7 @@ export const sendAnnounceChatMessage = (
   io: Server,
   { content, channelId }: AnnounceChatMessage
 ) => {
-  let messageId = get_id();
+  let messageId = getId();
 
   let messageToSend: ChatMessageToSend = {
     isAnnoncement: true,
@@ -1425,7 +1439,10 @@ export const leaveGameBr = async (
     //the current game have one less player
     game.playersLastNextRound -= 1;
     //Informs the other players that a player has left.
-    io.to(game.id).emit("player_leave", {playerId:game.playerList[indexPlayer].id, playerName:game.playerList[indexPlayer].name}); //emit the name of the player that leave
+    io.to(game.id).emit("player_leave", {
+      playerId: game.playerList[indexPlayer].id,
+      playerName: game.playerList[indexPlayer].name,
+    }); //emit the name of the player that leave
     let timeout;
     let index = game.playerList.findIndex((player) => playerId === player.id);
     //reset the disconnect listeners

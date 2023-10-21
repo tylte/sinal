@@ -1,10 +1,21 @@
-import { v4 as uuidv4 } from "uuid";
-import dictionary from "../../data/dictionary.json";
+import { Language, LanguageType } from "src/utils/type";
+import { nanoid } from "nanoid";
+import { dicoEn, dicoFr } from "./dictionary";
 
-export function get_id() {
-  return uuidv4();
+export function getId() {
+  return nanoid();
 }
 
-export function get_word() {
-  return dictionary[Math.floor(Math.random() * dictionary.length)];
+export function getWord(language: LanguageType): string {
+  let content = null;
+  if (language === "french") {
+    content = dicoFr.contentArray;
+  } else if (language === "english") {
+    content = dicoEn.contentArray;
+  }
+  if (!content) {
+    throw "No content found";
+  } else {
+    return content[Math.floor(Math.random() * content.length)];
+  }
 }
