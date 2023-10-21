@@ -3,7 +3,6 @@ import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 
 export const DarkModeSwitch = () => {
   const { colorMode, toggleColorMode } = useColorMode();
-  console.log(`colorMode : ${colorMode}`);
   const isDark = colorMode === "dark";
   const preventFocus = (e: any) => {
     if (e.relatedTarget) {

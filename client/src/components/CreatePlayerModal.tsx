@@ -12,7 +12,7 @@ import {
   AlertIcon,
   AlertTitle,
   Input,
-  Flex,
+  Spacer,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -32,6 +32,7 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
 }) => {
   const router = useRouter();
   const socket = useSocket();
+  console.log(router.route);
   const [_, setPlayer] = usePlayer();
 
   const [pseudo, setPseudo] = useState("");
@@ -100,16 +101,28 @@ export const CreatePlayerModal: React.FC<CreatePlayerModalProps> = ({
         </ModalBody>
 
         <ModalFooter>
-          <Flex>
-            <Button
-              colorScheme="green"
-              mr={3}
-              onClick={createPlayer}
-              isDisabled={pseudo.length === 0}
-            >
-              Rejoindre la bataille
-            </Button>
-          </Flex>
+          {router.pathname !== "/" && (
+            <>
+              <Button
+                colorScheme="gray"
+                mr={3}
+                onClick={() => {
+                  router.push("/");
+                }}
+              >
+                Page d'accueil
+              </Button>
+              <Spacer />
+            </>
+          )}
+          <Button
+            colorScheme="green"
+            mr={3}
+            onClick={createPlayer}
+            isDisabled={pseudo.length === 0}
+          >
+            Rejoindre la bataille
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
