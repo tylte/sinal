@@ -12,6 +12,8 @@
 # L'application
 
 SINAL est une application web reprennant les règles de motus et en s'inspirant de sutom et tusmo, les adaptant à des modes multijoueurs, le battle royal et le 1vs1.
+Deux langues sont disponibles, le français et l'anglais.
+Les mots anglais sont issues du dictionnaire de wordle.
 Avec d'éventuels modes de jeu suplémentaires à venir plus tard.
 
 # Techonologies utilisées
