@@ -63,3 +63,8 @@ export const defaultGlobalTime1vs1 = 600000;
  * Time in milliseconds to guess a word on a 1vs1 game after opponent found the word
  */
 export const defaultTimeAfterFirstGuess1vs1 = 60000;
+
+/**
+ * Local storage key to story dictionnaries
+ */
+export const dictHashStorageKey = "dicts";

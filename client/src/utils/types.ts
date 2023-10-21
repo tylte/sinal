@@ -22,6 +22,19 @@ export type Player = {
   lobbyId: string | null;
 };
 
+export type DictionnaryResponse = {
+  content: string[];
+  hash: string;
+  language: Language;
+};
+
+export type Dictionnary = {
+  content: Set<string>;
+  hash: string;
+  language: Language;
+};
+
+export type Language = "french" | "english";
 export type GameMode = "1vs1" | "battle-royale";
 export type LobbyState = "in-game" | "pre-game" | "finished";
 
@@ -38,6 +51,7 @@ export type Lobby = {
   owner: string; // id du joueur owner
   isPublic: boolean;
   mode: GameMode;
+  language: Language;
   currentGameId: string;
   lastGame: LastGame | null;
   eliminationRate: number;

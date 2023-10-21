@@ -49,7 +49,7 @@ export const InGameLobbyBr: React.FC<InGameLobbyBrProps> = ({
 
   //Array of all the game state for each player
   const [gameState, setGameState] = useState<BrGameState[]>([]);
-  const dictionary = useDictionary();
+  const dictionary = useDictionary(lobby.language);
   const socket = useSocket();
 
   const isChatting = useIsChatting();

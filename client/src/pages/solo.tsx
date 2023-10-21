@@ -2,6 +2,7 @@ import { Box, Button, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Confetti from "react-confetti";
+import ReactCountryFlag from "react-country-flag";
 import { Layout } from "../components/Layout";
 import { PlayerGrid } from "../components/player-grid/PlayerGrid";
 import { guessWord } from "../utils/api";
@@ -9,6 +10,7 @@ import { serverHttpUrl } from "../utils/const";
 import { useClassicWordInput, useDictionary } from "../utils/hooks";
 import {
   KeyboardSettings,
+  Language,
   MyFocus,
   SoloGameState,
   StartGameResponse,
@@ -22,6 +24,7 @@ const NOT_IN_DICTIONARY = "NODICTIONARY";
 
 const Solo: React.FC<SoloProps> = ({}) => {
   const [gameState, setGameState] = useState<SoloGameState | null>(null);
+  const [language, setLanguage] = useState<Language | null>(null);
   const [word, setWord] = useState("");
   const [focus, setFocus] = useState<MyFocus>({
     index: 1,
@@ -30,12 +33,12 @@ const Solo: React.FC<SoloProps> = ({}) => {
     firstLetterWritable: false,
   });
 
-  const dictionary = useDictionary();
+  const dictionary = useDictionary(language);
 
-  const startGame = () => {
+  const startGame = (language: Language) => {
     axios
       .post<StartGameResponse>(`${serverHttpUrl}/start_game`, {
-        mode: "solo",
+        language,
       })
       .then(({ data: { firstLetter, id, length, nb_life } }) => {
         setGameState({
@@ -52,8 +55,10 @@ const Solo: React.FC<SoloProps> = ({}) => {
   };
   useEffect(() => {
     // Request the word when mounted
-    startGame();
-  }, []);
+    if (language) {
+      startGame(language);
+    }
+  }, [language]);
 
   const toast = useToast();
 
@@ -142,6 +147,34 @@ const Solo: React.FC<SoloProps> = ({}) => {
     gameState?.isFinished
   );
 
+  if (!language) {
+    return (
+      <Layout>
+        <Flex direction={"column"} alignContent={"center"}>
+          <Text>Choississez une langue</Text>
+          <Button
+            mt={4}
+            leftIcon={<ReactCountryFlag countryCode="FR" />}
+            onClick={() => {
+              setLanguage("french");
+            }}
+          >
+            Français
+          </Button>
+          <Button
+            mt={4}
+            leftIcon={<ReactCountryFlag countryCode="US" />}
+            onClick={() => {
+              setLanguage("english");
+            }}
+          >
+            English
+          </Button>
+        </Flex>
+      </Layout>
+    );
+  }
+
   if (gameState === null) {
     return (
       <Flex>
@@ -180,7 +213,12 @@ const Solo: React.FC<SoloProps> = ({}) => {
         />
         {isFinished && (
           <Box mt={6} mx="auto">
-            <Button colorScheme={"green"} onClick={startGame}>
+            <Button
+              colorScheme={"green"}
+              onClick={() => {
+                startGame(language);
+              }}
+            >
               Rejouer ?
             </Button>
           </Box>

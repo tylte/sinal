@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useContext, useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { SinalContext } from "./context";
-import { ChattingActions, MyFocus, Player } from "./types";
+import { ChattingActions, Language, MyFocus, Player } from "./types";
 import {
   classicWordDelete,
   classicWordWriting,
@@ -13,9 +13,12 @@ import {
 /**
  * @returns dictionary of word to try
  */
-export const useDictionary = (): Set<string> => {
-  let { dictionary } = useContext(SinalContext);
-  return dictionary;
+export const useDictionary = (language: Language | null): Set<string> => {
+  let { dictionaries } = useContext(SinalContext);
+  return (
+    dictionaries.find((dict) => dict.language === language)?.content ??
+    new Set()
+  );
 };
 
 /**

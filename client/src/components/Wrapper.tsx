@@ -6,6 +6,7 @@ export type WrapperVariant = "small" | "regular" | "large" | "grid";
 
 interface WrapperProps {
   variant?: WrapperVariant;
+  children?: React.ReactNode;
 }
 
 export const variantSize = (variant: WrapperVariant) => {

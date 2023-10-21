@@ -10,11 +10,16 @@ import {
   addSocketConnectionEvent,
   removeChatEvents,
 } from "src/utils/api";
-import { ChattingActions, Player } from "../utils/types";
+import {
+  ChattingActions,
+  Dictionnary,
+  DictionnaryResponse,
+  Player,
+} from "../utils/types";
 import { serverHttpUrl, serverWsUrl } from "../utils/const";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [dictionary, setDictionnary] = useState<Set<string>>(new Set());
+  const [dictionaries, setDictionnaries] = useState<Dictionnary[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [player, setPlayer] = useState<Player | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -25,13 +30,25 @@ function MyApp({ Component, pageProps }: AppProps) {
   });
 
   useEffect(() => {
-    axios.get<string[]>(`${serverHttpUrl}/dictionary`).then(({ data }) => {
-      const set: Set<string> = new Set();
-      data.forEach((word) => {
-        set.add(word);
+    axios
+      .get<DictionnaryResponse[]>(`${serverHttpUrl}/dictionary`)
+      .then(({ data }) => {
+        const dictionaries: Dictionnary[] = [];
+        data.forEach((dictionary) => {
+          const words = new Set<string>();
+
+          dictionary.content.forEach((word) => {
+            words.add(word);
+          });
+
+          dictionaries.push({
+            content: words,
+            hash: dictionary.hash,
+            language: dictionary.language,
+          });
+        });
+        setDictionnaries(dictionaries);
       });
-      setDictionnary(set);
-    });
     let socket = io(serverWsUrl, {
       transports: ["websocket"],
     });
@@ -54,7 +71,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <SinalContext.Provider
       value={{
-        dictionary,
+        dictionaries,
         socket,
         playerActions: [player, setPlayer],
         isConnected,

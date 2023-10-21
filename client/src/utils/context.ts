@@ -1,12 +1,12 @@
 import { createContext, Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
-import { ChattingActions, Player } from "./types";
+import { ChattingActions, Dictionnary, Player } from "./types";
 
 type SinalContextType = {
   // Is the user connected with websockets
   isConnected: boolean;
-  // Dictionnary of possible words to try
-  dictionary: Set<string>;
+  // Dictionnaries of possible words to try
+  dictionaries: Dictionnary[];
   // The socket connection
   socket: Socket | null;
   // The option the user has for chatting or no
@@ -22,7 +22,7 @@ type SinalContextType = {
 };
 
 export const SinalContext = createContext<SinalContextType>({
-  dictionary: new Set(),
+  dictionaries: [],
   playerActions: [null, null],
   socket: null,
   isConnected: false,

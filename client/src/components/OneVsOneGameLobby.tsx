@@ -49,7 +49,7 @@ export const OneVsOneGameLobby: React.FC<OneVsOneGameLobbyProps> = ({
   setGameState,
 }) => {
   const socket = useSocket();
-  const dictionary = useDictionary();
+  const dictionary = useDictionary(lobby.language);
   const toast = useToast();
   const isChatting = useIsChatting();
 
