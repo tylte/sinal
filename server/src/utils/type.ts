@@ -223,6 +223,7 @@ export type AnnounceChatMessage = {
 export type ServerDictionnary = {
   // Used to get word O(1) when choosing random word
   pickableWords: string[];
+  tryableWordsArray: string[];
   // Used to get word O(1) when checking if word in dictionary
   tryableWords: Set<string>;
   hash: string;

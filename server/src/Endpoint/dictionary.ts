@@ -23,6 +23,7 @@ const createDico = (
 ) => {
   const dico: ServerDictionnary = {
     pickableWords: pickableWords,
+    tryableWordsArray: tryableWords,
     tryableWords: new Set(tryableWords),
     hash: createDicoHash(tryableWords),
     language,
@@ -36,14 +37,14 @@ const createDico = (
 const dicos: ServerDictionnary[] = [];
 
 export const dicoFr = createDico(dicos, dict_full_fr, dict_pick_fr, "french");
-export const dicoEn = createDico(dicos, dict_full_en, dict_full_en, "english");
+export const dicoEn = createDico(dicos, dict_full_en, dict_pick_en, "english");
 
 export function getUnknownDictionaries(
   known_hashes: string[]
 ): ClientDictionnary[] {
   return dicos
     .filter((d) => !known_hashes.includes(d.hash))
-    .map(({ pickableWords: contentArray, hash, language }) => {
+    .map(({ tryableWordsArray: contentArray, hash, language }) => {
       let dico: ClientDictionnary = { content: contentArray, hash, language };
       return dico;
     });
